@@ -1,0 +1,641 @@
+<?php
+
+	require_once('common.php');
+ 	define('DEBUG', FALSE);
+	define('EXCEL_XML', TRUE);
+
+//	$fs = realpath('export/result.txt');
+//	// look for file delivery request
+//	if (isset($_GET['dl'])) {
+//		$fs = './boe_export.xls';
+//		dlFile($fs, 'EXPORT_EXCEL');
+//	}
+
+//print "<!--\n\n";
+//print_r($_POST);
+//print "\n-->\n";
+?>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<title>Results of the NYS Real Property Data Filter Request</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	</head>
+
+	<body>
+	
+<?php
+	//sanity checks done in previous file. Gather some initial info
+	//debug statements also serve as comments
+	$county = $_POST['county'];
+	$advWhere = $_POST['adv_where'];
+	if(isset($_POST['file'])){
+		$output_cols = $_POST['file'];
+	}
+	$output_street_addr = true;
+	$todo = $_POST['todo'];
+	$building_set = $_POST['building_set'];
+	$fuel_type = $_POST["fuel_type"];
+	
+	print '<h1>Generating counts for the selected criteria...</h1>';
+	ob_flush();
+	flush();
+	#dump($todo);
+	#$exclude = '||'. implode('|', (isset($_POST['exclude']) && is_array($_POST['exclude']) ? $_POST['exclude'] : array())) .'||';
+	if(!isset($_POST['exclude'])){
+		#set exclude as an empty array so we can just do an array search on it later
+		$exclude = array();
+	} else {
+		$exclude = $_POST['exclude'];
+	}
+	debug("County: {$county}");
+	debug("Advanced Where: {$advWhere}");
+	
+	debug("Excluding: ");
+	if(DEBUG){
+		dump($exclude);
+	}
+	debug("Gathering field selection data");
+	//set output cols that we want to get codes for
+	$output_codes = array('prop_class', 'overall_condition', 'fuel_type', 'heat_type', 'utilities', 'sewer_type',
+						  'water_supply', 'site_desirability', 'waterfront_type', 'soil_rating', 'land_type',
+						  'swis', 'sch_code', 'structure_cd',
+	);
+	/**
+	* there are three different types of critera from the selection:
+	* Selection Lists  (taken in as cols[]), Checkboxes (taken in as bools[]), and min/maxes (taken in as bounds[])
+	* For each type, gather the fields as an associative array with the fields as the key and the criteria as the values.
+	* Bools will have only one item (true if selected), Bounds will have two items (a min and a max for that field)
+	* and cols will have n items, n being the number of items selected for that field.
+	**/
+	
+	//warning - check whether we explode the com or res fields
+	$selFields = array();
+	$boolFields = array();
+	$boundedFields = array();
+	debug("Fields from Selection Lists to check:");
+	if(isset($_POST['cols'])){
+		$criteria = $_POST['cols'];
+		if(DEBUG){
+			dump($criteria);
+		}
+		foreach($criteria as $field){
+			//the user may have checked the box but not selected anything, so do a sanity check
+			if(isset($_POST[$field])){
+				$selFields[$field] = $_POST[$field]; 
+			} else {
+				debug("Field {$field} was checked, but not values were selected");
+			}
+		}
+
+		debug("Selection List fields with their values: ");
+		if(DEBUG) dump($selFields);
+		
+	} else {
+		debug("No Selection list fields selected");
+		$selFields = "";
+	}
+	if(isset($_POST['prop_groups'])){
+			$prop_groups = $_POST['prop_groups'];
+			debug("Property class groups:");
+			if(DEBUG) dump($prop_groups);
+	}
+	debug("Booleans to check: ");
+	if(isset($_POST['bools'])){
+		$criteria = $_POST['bools'];
+		if(DEBUG) dump($criteria);
+		foreach($criteria as $field){
+			$boolFields[$field] = 1;
+		}
+		debug("Boolean fields with their values: ");
+		if(DEBUG) dump($boolFields);
+	} else {
+		debug("No Boolean fields selected");
+		$boolFields = "";
+	}
+	debug("Bounded fields to check: ");
+	if(isset($_POST['bounds'])){
+		$criteria = $_POST['bounds'];
+		if(DEBUG) dump($criteria);
+		foreach($criteria as $field){
+			$boundedFields[$field]['min'] = $_POST["min_{$field}"];
+			$boundedFields[$field]['max'] = $_POST["max_{$field}"];
+		}
+		debug("Bounded fields with their values: ");
+		if(DEBUG){
+			dump($boundedFields);
+		}
+	} else {
+		debug("No bounded fields selected");
+		$boundedFields = "";
+	}
+	
+	if(isset($_POST['improvements'])){
+		$improvements = TRUE;
+		debug("Including property improvement information");
+	}
+	if(isset($_POST['second_address'])){
+		$second_address = TRUE;
+		debug("Only returning records where owner address != parcel address");
+	}
+	if(isset($_POST['primary_address'])){
+                $primary_address = TRUE;
+                debug("Only returning records where owner address == parcel address");
+        }
+	
+	if(isset($output_cols)){
+		debug("<br>Fields to include in output file: ");
+		if(DEBUG){
+			dump($output_cols);
+		}
+	}
+	
+	debug("Starting to build the query...");
+	$owner = $county . "_owner";
+	$parcel = $county . "_parcel";
+	$res = $county . "_res_bldg";
+	$site = $county . "_site";
+	$com_use = $county . "_com_use";
+	$land = $county . "_land";
+	
+
+	/************************old sql**********************************************************
+	$sqlSEL = "SELECT {$owner}.owner_id AS ID, {$owner}.owner_first_name AS FirstName, {$owner}.owner_init_name AS MiddleInitial, ";
+	$sqlSEL .= "{$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
+	//$sqlSEL .= "{$owner}.secondary_name AS ExtraName, {$owner}.prefix_dir AS PreDirection, {$owner}.mail_st_nbr AS StreetNo, {$owner}.mail_st_rte AS Street, {$owner}.owner_mail_st_suff AS StreetSuffix, {$owner}.post_dir AS PostDirection,
+	$sqlSEL .= " TRIM(CONCAT({$owner}.prefix_dir, ' ', {$owner}.mail_st_nbr, ' ', {$owner}.mail_st_rte, ' ',  {$owner}.owner_mail_st_suff, ' ', {$owner}.post_dir)) AS AddressLine1, ";
+	$sqlSEL .= "{$owner}.secondary_name AS AddressLine2, {$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, {$owner}.mail_country AS Country, {$owner}.po_box AS POBox, {$owner}.owner_unit_name AS UnitName, {$owner}.owner_unit_nbr AS UnitNo, ";
+	$sqlSEL .= "$owner.owner_addl_addr AS AddtlAddr";
+	*****************************************************************************************/
+	
+	$sqlSEL = <<<QRY
+    SELECT $owner.owner_id AS ID, $owner.secondary_name AS CompanyName, $owner.owner_first_name AS FirstName, $owner.owner_init_name AS MiddleInitial, 
+	$owner.owner_last_name AS LastName, $owner.owner_name_suffix AS Suffix,
+	$owner.concatenated_address_1 as AddressLine1,
+	$owner.concatenated_address_2 as AddressLine2,
+	$owner.mail_city AS City, $owner.owner_mail_state AS State, $owner.mail_zip AS Zip, $owner.mail_country AS Country
+QRY;
+
+	//output street address of parcel in output
+
+	if(isset($output_street_addr) && $output_street_addr) {
+		$sqlSEL .= <<<QRY
+		, TRIM(CONCAT($parcel.loc_prefix_dir, ' ', $parcel.loc_st_nbr, ' ', $parcel.loc_st_name, ' ', $parcel.loc_mail_st_suff, ' ', $parcel.loc_post_dir)) AS LocationAddressLine1, 
+	TRIM(CONCAT($parcel.loc_unit_name, ' ', $parcel.loc_unit_nbr)) AS LocationAddressLine2,
+	$parcel.loc_muni_name AS LocationCity, 'NY' AS LocationState, $parcel.loc_zip AS LocationZip
+QRY;
+	
+}
+	//add in the optional select fields
+	if(isset($output_cols)){	
+		$sqlSEL .= ", " . implode(', ', $output_cols) . ' ';
+	}
+	//TODO: only perform necessary joins
+	$sqlFROM = " FROM {$owner} ";
+	$sqlFROM .= "LEFT JOIN {$site} ON ({$site}.muni_code = {$owner}.muni_code AND {$site}.parcel_id = {$owner}.parcel_id) LEFT JOIN {$land} ON ({$land}.muni_code = {$owner}.muni_code AND {$owner}.parcel_id = {$land}.parcel_id) LEFT JOIN {$parcel} on {$parcel}.muni_code = {$owner}.muni_code AND {$parcel}.parcel_id = {$owner}.parcel_id ";
+	
+	if(isset($improvements)){
+		$sqlFROM .= "LEFT JOIN {$county}_improvement ON ({$site}.muni_code = {$county}_improvement.muni_code AND {$site}.parcel_id = {$county}_improvement.parcel_id) ";
+	}
+
+	//TODO: add conditional
+	$sqlFROM .= "LEFT JOIN {$county}_assessment ON ({$site}.muni_code = {$county}_assessment.muni_code AND {$site}.parcel_id = {$county}_assessment.parcel_id) ";
+
+	//TODO: add conditional
+	$sqlFROM .= "LEFT JOIN {$county}_res_bldg ON ({$site}.muni_code = {$county}_res_bldg.muni_code AND {$site}.parcel_id = {$county}_res_bldg.parcel_id) ";
+	
+	//determine what set of buildings we are filtering upon, then set the appropriate join
+	//if($building_set == 'res_buildings'){
+	//	$sqlFROM .= "LEFT JOIN {$res} using (muni_code, parcel_id)) ";
+	//} else {
+	//	$sqlFROM .= "LEFT JOIN {$county}_commercial_buildings using (muni_code, parcel_id)) ";
+	//}
+	//build the where clause from query selections, type by type (selection lists, checkboxes, bounded)
+	$sqlWHERE = " WHERE ( {$county}_owner.muni_code <> 9999 )";
+	$sqlSelWHERE = "  ";
+	
+	if($selFields != ""){
+		foreach($selFields as $field=>$values){
+			$sqlSelWHERE .= " AND (";
+			$sqlTEMP = "";
+			
+			if(array_search($field, $exclude) === false){
+				foreach($values as $value){
+					$sqlTEMP .= 'OR ' . $field . " = '" . $value . "' ";
+					//print("adding condition: " . $sqlTEMP . "<br />");
+				}
+				//dirty first condition
+				$sqlSelWHERE .= substr($sqlTEMP, 3) . ") ";
+				//$sqlSelWHERE .= $sqlTEMP . ") ";
+			} else {
+				foreach($values as $value){
+					$sqlTEMP .= ' AND ' . $field . " != '" . $value . "' ";
+				}
+				//dirty first condition
+				$sqlSelWHERE .= substr($sqlTEMP, 3) . ") ";
+				//$sqlSelWHERE .= $sqlTEMP . ") ";
+			}
+		}
+		
+		//$sqlSelWHERE = substr($sqlSelWHERE, 4);
+		$sqlWHERE = $sqlWHERE . $sqlSelWHERE;
+	} //else {
+		//$sqlWHERE .= " {$owner}.muni_code <> 99999 ";
+	//}
+	
+	if($boolFields != ""){	
+		$sqlBoolWHERE = "";
+		foreach($boolFields as $bool=>$value){
+			$sqlBoolWHERE .= 'AND (' . $bool . ' > 0 ) ';
+		}
+		$sqlBoolWHERE = substr($sqlBoolWHERE, 4); 
+		$sqlWHERE .= "AND " . $sqlBoolWHERE;
+		
+	}
+	
+	if(isset($prop_groups)){
+		$prop_clauses = array();
+
+		$sqlWHERE .= " AND (";
+		if(in_array('all_res', $prop_groups) && (in_array('all_com', $prop_groups))){
+			$sqlWHERE .= " prop_class LIKE '2%' OR prop_class LIKE '4%' ) " ;
+		} else {
+			if(in_array('all_res', $prop_groups)){
+                                $prop_clauses []= " prop_class LIKE '2%' " ;
+                        }
+			if(in_array('all_com', $prop_groups)){
+				$prop_clauses []= " prop_class LIKE '4%' " ;
+			} 
+			if(in_array('all_res_exclude', $prop_groups)){
+				$prop_clauses []= " prop_class NOT LIKE '2%' " ;
+			} 
+			if(in_array('all_com_exclude', $prop_groups)){
+				$prop_clauses []= " prop_class NOT LIKE '4%' " ;
+			} 
+			$sqlWHERE .= implode(" AND ", $prop_clauses) . ") ";
+		}
+	}
+	
+	if($boundedFields != ""){
+		$sqlBoundedWHERE = "";
+		foreach($boundedFields as $field=>$values){
+			//if the user specified 0 for a max (example: wants all properties that were never remodeled), use an '=' rather than a < or >
+			//ignore min because there are no negative fields in the database. There cant be. It would produce a hole in the space-time continuum
+			if($values['max'] == '0'){
+				$sqlBoundedWHERE .= "AND (" . $field . " = 0 )";
+			} else {
+				//in case the user only set one field.... or no fields and checked the box
+				if($values['min'] == ''){
+					$values['min'] = 0;
+				}
+				if($values['max'] == ''){
+					$values['max'] = 9999999999;
+				}
+				$sqlBoundedWHERE .= "AND (" . $field . " > " . $values['min'] . " AND " . $field . " < " . $values['max'] . ") ";
+			}
+		}
+		$sqlBoundedWHERE = substr($sqlBoundedWHERE, 4);
+		$sqlWHERE .= "AND " . $sqlBoundedWHERE;
+	}
+	
+	//add advanced where
+	$sqlWHERE .= " " . $advWhere;
+
+	//dedupe
+	$sqlGROUP = " GROUP BY {$owner}.owner_id ";
+
+	//build final query
+	$rpsql = $sqlSEL . $sqlFROM . $sqlWHERE . $sqlGROUP;
+	print('Executing query: please wait. This may take a while depending on the complexity of the query...');
+	print "<!-- \n<h3>".$rpsql."</h3>\n -->\n";
+	ob_flush();
+	flush();
+	debug($rpsql);
+	$result = mysqli_query($link, $rpsql);
+	
+	if(!$result){
+		print("Error retrieving result");
+			debug($rpsql);
+			debug('<br><br>');
+			debug(mysqli_error($link));
+	}
+	
+	$fs = "./export/realproperty_{$county}_export_raw.xls";
+	$fp = fopen($fs, 'w');
+	if(!$fp){
+		debug('error opening file');
+	}
+	$raw_count = mysqli_num_rows($result);
+	print("<h2>Raw count for selection grouped by ownerid: " . $raw_count . " Owners</h2>");
+	//prepare xml headers
+        $headers = array('OwnerID', 'CompanyName', 'FirstName', 'MiddleInitial', 'LastName', 'Suffix', 'AddressLine1', 'AddressLine2', 'City', 'State', 'Zip', 'Country');
+        $headers = array('OwnerID', 'CompanyName', 'FirstName', 'MiddleInitial', 'LastName', 'Suffix', 'ConcatAddress1', 'ConcatAddress2', 'City', 'State', 'Zip', 'Country');
+	
+	if(isset($output_street_addr) && $output_street_addr)
+	{
+	    $street_addr = array( 'StreetAddressLine1', 'StreetAddressLine2', 'StreetAddressCity', 'StreetAddressState', 'StreetAddressZip');
+	    foreach($street_addr as $field)
+	        array_push($headers, $field);
+	}	
+	//add the optional cols into the headers
+	if(isset($output_cols)){
+		foreach($output_cols as $col){
+			array_push($headers, $col);
+		}
+	}
+	//Thanks Justin
+	$headers = array_combine($headers, $headers);
+	foreach($headers as $k=>$v) $headers[$k] = ucwords($v);
+	writeExcelXML($fp, $headers, 'head', $raw_count+1, count($headers));
+	
+	while($row = mysqli_fetch_assoc($result)){
+		$address = array();
+		if(isset($output_cols)){
+			foreach($output_cols as $col){
+				//get code for the col here
+				if(in_array($col, $output_codes)){
+					$sql = "SELECT meaning FROM codes WHERE type = '{$col}' AND code = '{$row[$col]}'";
+					$code_result = mysqli_query($link, $sql);
+					if(!$code_result){
+						print("Error retrieving codes for result<br>");
+						debug($sql);
+						debug('<br><br>');
+						debug(mysqli_error($link));
+					}
+					$meaning = mysqli_fetch_assoc($code_result);
+					$row[$col] = $meaning['meaning'];
+				}
+			}
+		}
+		
+		//write row to xml
+		writeExcelXML($fp, $row);
+	}
+	//close xml file
+	writeExcelXML($fp, FALSE, 'foot');
+	fclose($fp);
+	
+	print('<FORM METHOD="LINK" ACTION="' . $fs . '"><INPUT TYPE="submit" VALUE="Get XML File"></FORM>');
+	//------------------------------------------------------------------------------------------------
+	 //Household
+        //$sqlGROUP = " GROUP BY owner_id ";
+       	/**
+	 $sqlSEL = "SELECT {$owner}.owner_id AS ID, {$owner}.owner_first_name AS FirstName, {$owner}.owner_init_name AS MiddleInitial, ";
+        $sqlSEL .= "{$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
+        $sqlSEL .= "{$owner}.secondary_name AS ExtraName, {$owner}.prefix_dir AS PreDirection, {$owner}.mail_st_nbr AS StreetNo, {$owner}.mail_st_rte AS Street, {$owner}.owner_mail_st_suff AS StreetSuffix, {$owner}.post_dir AS PostDirection,
+        {$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_country AS Country, {$owner}.mail_zip AS Zip, {$owner}.po_box AS POBox, {$owner}.owner_unit_name AS UnitName, {$owner}.owner_unit_nbr AS UnitNo, ";
+        $sqlSEL .= "{$owner}.owner_addl_addr AS AddtlAddr";
+	**/
+	
+	$sqlGROUP = "GROUP BY FirstName, LastName, {$owner}.mail_zip, {$owner}.mail_city, {$owner}.mail_st_rte, {$owner}.mail_st_nbr ORDER BY ID"; 
+	$sqlGROUP = "GROUP BY FirstName, LastName, {$owner}.mail_zip, {$owner}.mail_city, {$owner}.concatenated_address_1 ORDER BY ID"; 
+	$rpsql = $sqlSEL . $sqlFROM . $sqlWHERE . $sqlGROUP;
+        print('Executing query: please wait. This may take a while depending on the complexity of the query...');
+        ob_flush();
+        flush();
+        debug($rpsql);
+        $result = mysqli_query($link, $rpsql);
+
+        if(!$result){
+                print("Error retrieving result");
+                        debug($rpsql);
+                        debug('<br><br>');
+                        debug(mysqli_error($link));
+        }
+
+        $fs = "./export/realproperty_{$county}_exportdd.xls";
+        $fp = fopen($fs, 'w');
+        if(!$fp){
+                debug('error opening file');
+        }
+        $count = mysqli_num_rows($result);
+        print("<h2>Raw count for selection (deduped): " . $count . " Owners</h2>");
+        //prepare xml headers
+		$headers = array('OwnerID', 'CompanyName', 'FirstName', 'MiddleInitial', 'LastName', 'Suffix', 'AddressLine1', 'AddressLine2', 'City', 'State', 'Zip', 'Country' );
+
+	if(isset($output_street_addr) && $output_street_addr)
+	{
+	    $street_addr = array( 'StreetAddressLine1', 'StreetAddressLine2', 'StreetAddressCity', 'StreetAddressState', 'StreetAddressZip');
+	    foreach($street_addr as $field)
+	        array_push($headers, $field);
+	}	
+        //add the optional cols into the headers
+		if(isset($output_cols)){
+			foreach($output_cols as $col){
+				array_push($headers, $col);
+			}
+		}
+		foreach($headers as $k=>$v) $headers[$k] = ucwords($v);
+        writeExcelXML($fp, $headers, 'head', $count+1, count($headers));
+
+        while($row = mysqli_fetch_assoc($result)){
+				$address = array();
+				$row['AddressLine1'] = fixAddress($row['AddressLine1']);
+                if(isset($output_cols)){
+                        foreach($output_cols as $col){
+                                //get code for the col here
+                                if(in_array($col, $output_codes)){
+                                        $sql = "SELECT meaning FROM codes WHERE type = '{$col}' AND code = '{$row[$col]}'";
+                                        $code_result = mysqli_query($link, $sql);
+                                        if(!$code_result){
+                                                print("Error retrieving codes for result<br>");
+                                                debug($sql);
+                                                debug('<br><br>');
+                                                debug(mysqli_error($link));
+                                        }
+                                        $meaning = mysqli_fetch_assoc($code_result);
+                                        $row[$col] = $meaning['meaning'];
+                                }
+                        }
+                }
+
+                //write row to xls
+                writeExcelXML($fp, $row);
+        }
+        //close xml file
+        writeExcelXML($fp, FALSE, 'foot');
+        fclose($fp);
+
+        print('<FORM METHOD="LINK" ACTION="' . $fs . '"><INPUT TYPE="submit" VALUE="Get XML File"></FORM>');
+
+	$sqlGROUP = "GROUP BY {$owner}.mail_zip, {$owner}.mail_city, {$owner}.concatenated_address_1, {$owner}.concatenated_address_2 ORDER BY ID"; 
+		$rpsql = $sqlSEL . $sqlFROM . $sqlWHERE . $sqlGROUP;
+        print('Executing query: please wait. This may take a while depending on the complexity of the query...');
+        ob_flush();
+        flush();
+        debug($rpsql);
+        $result = mysqli_query($link, $rpsql);
+
+        if(!$result){
+                print("Error retrieving result");
+                        debug($rpsql);
+                        debug('<br><br>');
+                        debug(mysqli_error($link));
+        }
+
+        $fs = "./export/realproperty_{$county}_exporthh.xls";
+        $fp = fopen($fs, 'w');
+        if(!$fp){
+                debug('error opening file');
+        }
+        $count = mysqli_num_rows($result);
+        print("<h2>Raw count for selection (householded): " . $count . " Owners</h2>");
+        //prepare xml headers
+		$headers = array('OwnerID', 'CompanyName', 'FirstName', 'MiddleInitial', 'LastName', 'Suffix', 'AddressLine1', 'AddressLine2', 'City', 'State', 'Zip', 'Country');
+
+	if(isset($output_street_addr) && $output_street_addr)
+	{
+	    $street_addr = array( 'StreetAddressLine1', 'StreetAddressLine2', 'StreetAddressCity', 'StreetAddressState', 'StreetAddressZip');
+	    foreach($street_addr as $field)
+	        array_push($headers, $field);
+	}	
+        //add the optional cols into the headers
+		if(isset($output_cols)){
+			foreach($output_cols as $col){
+				array_push($headers, $col);
+			}
+		}
+		foreach($headers as $k=>$v) $headers[$k] = ucwords($v);
+        writeExcelXML($fp, $headers, 'head', $count+1, count($headers));
+
+        while($row = mysqli_fetch_assoc($result)){
+                $address = array();
+				$row['AddressLine1'] = fixAddress($row['AddressLine1']);
+                if(isset($output_cols)){
+                        foreach($output_cols as $col){
+                                //get code for the col here
+                                if(in_array($col, $output_codes)){
+                                        $sql = "SELECT meaning FROM codes WHERE type = '{$col}' AND code = '{$row[$col]}'";
+                                        $code_result = mysqli_query($link, $sql);
+                                        if(!$code_result){
+                                                print("Error retrieving codes for result<br>");
+                                                debug($sql);
+                                                debug('<br><br>');
+                                                debug(mysqli_error($link));
+                                        }
+                                        $meaning = mysqli_fetch_assoc($code_result);
+                                        $row[$col] = $meaning['meaning'];
+                                }
+                        }
+                }
+
+                //write row to xml
+                writeExcelXML($fp, $row);
+        }
+        //close xml file
+        writeExcelXML($fp, FALSE, 'foot');
+        fclose($fp);
+
+        print('<FORM METHOD="LINK" ACTION="' . $fs . '"><INPUT TYPE="submit" VALUE="Get XML File"></FORM>');
+		
+	function fixAddress($address)
+	{
+		$addr = $address;
+		$regex = '(^(N|S|E|W)\s[0-9-]+\s)';
+		if(preg_match($regex, $addr) == 1)
+		{
+			$strar = explode(' ', $addr);
+			$newaddr = $strar[1] + ' ' . ($strar[0] == 'N' ? ' North' : 
+			($strar[0] == 'E' ? ' East' : 
+			($strar[0] == 'S' ? ' South' : 
+			($strar[0] == 'W' ? ' West' : 'ERROR' ))));
+			for($x = 2;$x<=count($strar);$x++){
+				$newaddr .= ' ' . $strar[$x];
+			}
+			return($newaddr);
+		}
+		else return($address);
+	}
+	/*
+	$fs = "./export/realproperty_{$county}_export.xml";
+	$fp = fopen($fs, 'w');
+	if(!$fp){
+		debug('error opening file');
+	}
+
+	set_time_limit(180);
+	ob_flush();
+	flush();
+	//for householding, add the extra GROUP BY clause, and then we are going to play...
+	$sql = $sqlSEL . $sqlFROM . $sqlWHERE;
+	#$sqlGROUP = " GROUP BY {$county}_verified.zip4, {$county}_verified.address_line1, {$county}_verified.last_name";
+	#$sql .= $sqlGROUP;
+	debug("Final SQL Query:");
+	debug($sql);
+	$result = mysqli_query($link, $sql);
+	if(!$result){
+		print("Error retrieving result<br>");
+		debug($sql);
+		debug('<br><br>');
+		debug(mysqli_error($link));
+	}
+	debug("Using GROUP BY query: " . $sqlGROUP);
+	$householded_count = mysqli_num_rows($result);
+	print("<h2>Householded and deduped count for selection: " . $householded_count . " Owners</h2>");
+	//prepare xml headers
+	$count = $householded_count;
+	$headers = array('first_name', 'middle_initial', 'last_name', 'name_suffix', 'extra_name', 'address_line1', 'address_line2', 'city_state_zip', 'country', 'carrier_route', 'delivery_point' );
+	//add the optional cols into the headers
+	if(isset($output_cols)){
+		foreach($output_cols as $col){
+			array_push($headers, $col);
+		}
+	}
+	//Thanks Justin
+	$headers = array_combine($headers, $headers);
+	foreach($headers as $k=>$v) $headers[$k] = ucwords($v);
+	writeExcelXML($fp, $headers, 'head', $count+1, count($headers));
+	
+	while($row = mysqli_fetch_assoc($result)){
+		$address = array();
+		//dont concatenate name right now, save that for after householding
+		
+		//$address['first_name'] = $row['first_name'];
+		
+		//$address['middle_initial'] = $row['middle_initial'];
+	
+//		$address['last_name'] = $row['last_name'];
+
+//		$address['name_suffix'] = $row['name_suffix'];
+//
+//		$address['extra_name'] = $row['extra_name'];
+//
+//		$address['address_line1'] = $row['address_line1'];
+//
+//		$address['address_line2'] = $row['address_line2'];
+//		
+//		$address['city_state_zip'] = $row['city_state_zip'];
+//		
+//		$address['country'] = $row['country'];
+		if(isset($output_cols)){
+			foreach($output_cols as $col){
+				//get code for the col here
+				if(in_array($col, $output_codes)){
+					$sql = "SELECT meaning FROM codes WHERE type = '{$col}' AND code = '{$row[$col]}'";
+					$code_result = mysqli_query($link, $sql);
+					if(!$code_result){
+						print("Error retrieving codes for result<br>");
+						debug($sql);
+						debug('<br><br>');
+						debug(mysqli_error($link));
+					}
+					$meaning = mysqli_fetch_assoc($code_result);
+					$row[$col] = $meaning['meaning'];
+				}
+				//$address[$col] = $row[$col];
+			}
+		}
+		
+		//write row to xml
+		writeExcelXML($fp, $row);
+	}
+	//close xml file
+	writeExcelXML($fp, FALSE, 'foot');
+	fclose($fp);
+	
+	print('<FORM METHOD="LINK" ACTION="' . $fs . '"><INPUT TYPE="submit" VALUE="Get XML File"></FORM>');
+*/
+?>
+	</body>
+</html>
