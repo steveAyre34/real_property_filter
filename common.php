@@ -68,11 +68,11 @@ $counties_available = array('columbia','dutchess','greene','ulster','orange', 'p
 	//define what fields we have decoded
 	#$decoded_fields = array('swis_code', 'sch_code', 'prop_class', 'waterfront_type');
 	// connect to database
-	$link = mysqli_connect('localhost', 'nysrp2', 'Cornerstone2014', 'nys_real_property_2');
+	/*$link = mysqli_connect('localhost', 'nysrp2', 'Cornerstone2014', 'nys_real_property_2');
 	if (mysqli_connect_errno()){
 		printf("Connect failed: %s\n", mysqli_connect_error());
 		exit();
-	}
+	}*/
 
 	/*returns a mysqli connection object
 	function db_connect(){
