@@ -7,7 +7,7 @@
 <html>
 <body>
 <form action="do_import.php" method="POST" enctype="multipart/form-data">
-	<input type="file" name="uploadFile" /><br>
+	<input type="file" name="uploadFile[]" multiple=""/><br>
 	<select name="county">
 		<option value="selected">Choose a county</option>
 		<option value="ulster">Ulster County</option>
