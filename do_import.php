@@ -83,21 +83,12 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 	//if($check == 1) {
 		//$uploadCount = 0;
 		//$errorCount = 0;
-		//This loop will read the file line by line until the end is reached
-		//while(!feof($importFile)) {
-			//Read one line
-	//	$fileLine = fgets($importFile);
-			
-		//if($fileLine != "") {
-			
-			//Fields are tab-delimited, so this separates each field into its own array index
-		//	$fileLine = explode("\t", $fileLine);
-				
+						
 			/*Creating the insert statement
 			*/
 			$insertStatement = "LOAD DATA INFILE '" . $v . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES(";
 				
-			//Now append the headers to the insert statement, in the order they were retrieved from the file
+			//Now append the headers to the LOAD DATA INFILE statement, in the order they were retrieved from the file
 			//By structuring the query this way, even if the order of headers in the file changes the data can still be inserted
 			foreach($fileHeaders as $h) {
 				$insertStatement .= $h . ", ";
@@ -107,38 +98,22 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 			$insertStatement = substr($insertStatement, 0, -2);
 				
 			//Now we specify the values to be inserted
-			$insertStatement .= ");"; /*VALUES (";
-			foreach($fileLine as $f) {
-				$f = preg_replace("%'%", "\'", $f);
-				$insertStatement .= "'" . $f . "'" . ", ";
-			}
+			$insertStatement .= ");"; 
 				
 			//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
 			$insertStatement = substr($insertStatement, 0, -2);
-			*/
-			//Appends ending parentheses
-			//MySQL commands must end in a semicolon, so this appends a semicolon
-			//$insertStatement .= ");";
-				
-				
-			/*if(mysqli_query($conn, $insertStatement) == TRUE) 
-				++$uploadCount;
-			else {
-				echo "Error: " . $insertStatement . "<br>" . $conn->error;
-				++$errorCount;
-			}*/
 		//}
-	//}
+	
 		$failedCount = mysqli_query($conn, $insertStatement);
 		$checkUpload = "SELECT COUNT(*) FROM " . $databaseTable;
 		$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
 		$uploadCounter = mysqli_fetch_assoc($uploadCount);
 		if($failedCount == true)
 			print $uploadCounter['COUNT(*)'] . " records added successfully to " . $databaseTable . "<br>";
-		else
+		/*else
 			print $errorCount . " records not added successfully.<br>";
-	//}
-	/*else {
+	}
+	else {
 		foreach($check as $c) {
 			print $c . " is not a field in the database and must be added before import can be performed.<br>";
 		} 
