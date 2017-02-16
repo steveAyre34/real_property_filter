@@ -100,8 +100,8 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 			//Now we specify the values to be inserted
 			$insertStatement .= ");"; 
 				
-			//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
-			$insertStatement = substr($insertStatement, 0, -2);
+			/*//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
+			$insertStatement = substr($insertStatement, 0, -2);*/
 		//}
 	
 		$failedCount = mysqli_query($conn, $insertStatement);
