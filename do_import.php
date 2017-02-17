@@ -6,6 +6,7 @@
 		This importer checks if this is the case.
 */
 require("connection.php");
+require("import_createHeaders.php");
 
 /**
 	Checks that each of the file headers exists in their corresponding database table.
@@ -14,19 +15,23 @@ require("connection.php");
 function checkHeaders($databaseTableHeaders, $fileHeaders) {
 	$return = array();
 	print("<b>Database Headers from checkHeaders:</b><br>");
-	print_r($databaseTableHeaders);
+	foreach($databaseTableHeaders as $db) {
+		print($db->name . ", ");
+		array_push($return, $db->name);
+	}
 	print("<br><br>");
 	print("<b>File Headers from checkHeaders:</b><br>");
 	print_r($fileHeaders);
 	print("<br><br>");
 	foreach($fileHeaders as $f) {
-		print("Checking " . $f . "<br>");
-		if(!in_array($f, $databaseTableHeaders)) {
-			array_push($return, $f);
+		//print("Checking " . $f . "<br>");
+		//$key = array_search($f, $return);
+		if(($key = array_search($f, $return))!== false) {
+			unset($return[$f]);
 		}
 		/*$flag = 0;
 		foreach($databaseTableHeaders as $db) {
-			if(strcmp($db, $f) == 0)
+			if(strcmp($f, $db->name) == 0)
 				$flag = 1;
 		}
 		if($flag == 0)
@@ -71,13 +76,14 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 
 	//Get headers (in order) from specified table in the database and trim unnecessary object info 
 	$databaseTableHeaders = mysqli_fetch_fields($getDatabaseTable);
-	$databaseTableHeaders = trimHeaderInfo($databaseTableHeaders);
+	$databaseTableHeaderNames = trimHeaderInfo($databaseTableHeaders);
 
 	//Retrieves header layout from first line of file to be uploaded (each field is delimited with a tab)
 	$fileHeaders = fgets($importFile);
 	$fileHeaders = explode("\t", $fileHeaders);
-	//$check = checkHeaders($databaseTableHeaders, $fileHeaders);
-
+	//$missingHeaders = array_intersect($databaseTableHeaderNames, $fileHeaders);
+	$insertStatement = chooseHeaders($fileHeaders, $databaseTable);
+	print($insertStatement . "<br>");
 	//Check that each of the file headers has a corresponding column in the database table
 	//If there is a file header without a column, upload will not be allowed to proceed because it will not work until column is added
 	//if($check == 1) {
@@ -86,7 +92,7 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 						
 			/*Creating the insert statement
 			*/
-			$insertStatement = "LOAD DATA INFILE '" . $v . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES(";
+/*			$insertStatement = "LOAD DATA INFILE '" . $v . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES(";
 				
 			//Now append the headers to the LOAD DATA INFILE statement, in the order they were retrieved from the file
 			//By structuring the query this way, even if the order of headers in the file changes the data can still be inserted
@@ -100,11 +106,11 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 			//Now we specify the values to be inserted
 			$insertStatement .= ");"; 
 				
-			/*//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
+*/			/*//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
 			$insertStatement = substr($insertStatement, 0, -2);*/
 		//}
 	
-		$failedCount = mysqli_query($conn, $insertStatement);
+/*		$failedCount = mysqli_query($conn, $insertStatement);
 		$checkUpload = "SELECT COUNT(*) FROM " . $databaseTable;
 		$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
 		$uploadCounter = mysqli_fetch_assoc($uploadCount);
