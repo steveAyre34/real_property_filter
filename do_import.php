@@ -92,7 +92,7 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 						
 			/*Creating the insert statement
 			*/
-/*			$insertStatement = "LOAD DATA INFILE '" . $v . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES(";
+			$insertStatement = "LOAD DATA INFILE '" . $v . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES(";
 				
 			//Now append the headers to the LOAD DATA INFILE statement, in the order they were retrieved from the file
 			//By structuring the query this way, even if the order of headers in the file changes the data can still be inserted
@@ -106,7 +106,7 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 			//Now we specify the values to be inserted
 			$insertStatement .= ");"; 
 				
-*/			/*//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
+			/*//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
 			$insertStatement = substr($insertStatement, 0, -2);*/
 		//}
 	
