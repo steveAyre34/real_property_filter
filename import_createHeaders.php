@@ -1,4 +1,6 @@
 <?php
+	
+function chooseHeaders($fileHeaders, $databaseTable) {
 	//mysqli_fetch_fields yields a number for field type. This map will allow us to replace the number.
 	$mysql_data_type_map = array(
 		1	=>	'tinyint',
@@ -20,29 +22,27 @@
 		246	=>	'decimal'	
 	);
 	
-	function chooseHeaders($filename, $county) {
-		print("These are the file headers for THE FILENAME.txt. Please select a type and length for each field:<br><br>");
-	}
-?>
-
-	<html>
-	<head>
-	<link rel='stylesheet' type='text/css' href='import.css'>
-	</head>
-		<body>
-			<b>File Headers:</b><br>
+	//echo "<!DOCTYPE html>"
+	echo "<html>";
+	echo "<head>";
+	echo "<link rel='stylesheet' type='text/css' href='import.css'>";
+	echo "</head>";
+		echo "<body>";
+			print("<b>File Headers:</b><br>");
+			print("These are the file headers for " . $databaseTable . ".txt. Please select a type and length for each field:<br><br>");
+			foreach($fileHeaders as $f) {
+				print $f;
+				echo "<select name='headerType' id='headerType'>";
+				echo "<option value='selected'>Choose a data type</option>";
+				foreach($mysql_data_type_map as $k => $v) {
+					echo "<option value='" . $v . "'>" . $v . "</option>";
+				}
+				echo "</select>";
+				echo "<input name='headerLength' id='headerLength' placeholder='Enter field length'></input><br><br>";
+			}
+			echo "<button type='submit' name='btn-upload'>Next</button>";
 			
-			<?php foreach($_POST['uploadFile'] as $file) {
-					chooseHeaders($file, $_POST['county']);
-			}?>
-				<select name='headerType' id='headerType'>
-				<option value='selected'>Choose a data type</option>
-				<?php foreach($mysql_data_type_map as $k => $v) { ?>
-					<option value='" . <?php $v ?> . "'><?php $v  ?></option>
-			<?php } ?>
-				</select>
-				<input name='headerLength' id='headerLength' placeholder='Enter field length'></input><br><br>
-			<button type="submit" name="btn-upload">Next</button>
-		</body>
-	</html>
- 
+		echo "</body>";
+	echo "</html>";
+}
+?> 

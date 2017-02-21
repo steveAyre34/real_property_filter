@@ -64,8 +64,19 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 	//Prepend county name based on value chosen from dropdown menu
 	$databaseTable = $_POST['county'] . '_' . $v;
 	
+	/******************
+		Move files into XAMPP upload directory (C:\xampp\mysql\data\countyname)
+		Directory may need to be changed once this goes live
+	******************/
+	$upload_dir = 'C:\xampp\mysql\data\rp2_database\\' . $_POST['county'] . '\\'; 
+	foreach($_FILES['uploadFile']['name'] as $k => $v) {
+		$tmp_name = $upload_dir . $v;
+		$name = 'Y:\RP 2017 Data Files\\' . $_POST['county'] . '\\' . $v;
+		copy($name, $tmp_name);
+	}
+		
 	//Open file to be uploaded ('countyName_fileName.txt')
-	$importFile = fopen($v, "r") or die("Unable to open file.");
+	$importFile = fopen($upload_dir . $v, "r") or die("Unable to open file.");
 
 	//Removes file extension from filename to give table name  
 	$databaseTable = substr($databaseTable, 0, -4);
@@ -82,8 +93,8 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 	$fileHeaders = fgets($importFile);
 	$fileHeaders = explode("\t", $fileHeaders);
 	//$missingHeaders = array_intersect($databaseTableHeaderNames, $fileHeaders);
-	//$insertStatement = chooseHeaders($fileHeaders, $databaseTable);
-	//print($insertStatement . "<br>");
+	$insertStatement = chooseHeaders($fileHeaders, $databaseTable);
+	print($insertStatement . "<br>");
 	//Check that each of the file headers has a corresponding column in the database table
 	//If there is a file header without a column, upload will not be allowed to proceed because it will not work until column is added
 	//if($check == 1) {

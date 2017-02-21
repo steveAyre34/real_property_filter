@@ -1,5 +1,7 @@
 <?php
 	session_start();
+	require("import_createHeaders.php");
+	
 ?>
 
 
@@ -9,14 +11,34 @@
 	<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>-->
 </head>
 <body>
-<form method="import_createHeaders.php" method="POST" enctype="multipart/form-data">
+<form action="do_import.php" method="POST" enctype="multipart/form-data" id="form">
 	<input type="file" name="uploadFile[]" multiple=""/><br>
 	<select name="county">
 		<option value="selected">Choose a county</option>
 		<option value="ulster">Ulster County</option>
 	</select> 
-	<input type="submit">
+	<button type="submit" id="submits"/>Next</button>
 </form>
 </body>
 </html>
+
+<!--<script type="text/javascript">
+	$(document).ready(function() {
+		var dlg = $('#form').dialog({
+			title: 'Choose header data type and length',
+			resizable: true,
+			autoOpen: false,
+			modal: true,
+			hide: 'fade',
+		});
+		
+		$('#submits').click(function(e) {
+			e.preventDefault();
+			dlg.load('import_createHeaders.php', function() {
+				dlg.dialog('open');
+			});
+		});
+	});
+</script>-->
+
 
