@@ -19,17 +19,22 @@
 		254	=>	'char',
 		246	=>	'decimal'	
 	);
+	
+	function chooseHeaders($filename, $county) {
+		print("These are the file headers for THE FILENAME.txt. Please select a type and length for each field:<br><br>");
+	}
 ?>
-<!DOCTYPE html>
+
 	<html>
 	<head>
 	<link rel='stylesheet' type='text/css' href='import.css'>
 	</head>
 		<body>
 			<b>File Headers:</b><br>
-			These are the file headers for <?php $databaseTable ?> ".txt. Please select a type and length for each field:<br><br>
-			<?php foreach($fileHeaders as $f) {
-				print $f; ?>
+			
+			<?php foreach($_POST['uploadFile'] as $file) {
+					chooseHeaders($file, $_POST['county']);
+			}?>
 				<select name='headerType' id='headerType'>
 				<option value='selected'>Choose a data type</option>
 				<?php foreach($mysql_data_type_map as $k => $v) { ?>
@@ -37,7 +42,6 @@
 			<?php } ?>
 				</select>
 				<input name='headerLength' id='headerLength' placeholder='Enter field length'></input><br><br>
-			<?php } ?>
 			<button type="submit" name="btn-upload">Next</button>
 		</body>
 	</html>

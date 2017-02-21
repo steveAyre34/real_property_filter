@@ -1,6 +1,6 @@
 <?php
 /**
-	This is a file importer that can be used for the Real Property or Board of Elections File Uploads.
+	This is the server side of a file importer that can be used for the Real Property or Board of Elections File Uploads.
 	NOTE: file headers don't need to be in the same ORDER as the database headers, however every file header must have a corresponding column in 
 		their designated table.
 		This importer checks if this is the case.
@@ -82,8 +82,8 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 	$fileHeaders = fgets($importFile);
 	$fileHeaders = explode("\t", $fileHeaders);
 	//$missingHeaders = array_intersect($databaseTableHeaderNames, $fileHeaders);
-	$insertStatement = chooseHeaders($fileHeaders, $databaseTable);
-	print($insertStatement . "<br>");
+	//$insertStatement = chooseHeaders($fileHeaders, $databaseTable);
+	//print($insertStatement . "<br>");
 	//Check that each of the file headers has a corresponding column in the database table
 	//If there is a file header without a column, upload will not be allowed to proceed because it will not work until column is added
 	//if($check == 1) {
