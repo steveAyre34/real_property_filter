@@ -1,14 +1,19 @@
 #headerType {
-	position: absolute;
+	position: relative;
 	left: 250px;
 }
 
-#fileHeader {
-	position: absolute;
+#fieldName {
+	position: relative;
 	left: 0px;
 }
 
 #headerLength {
-	position: absolute;
-	left: 400px;
+	position: relative;
+	right: 400px;
+}
+
+#primaryKey {
+	position: relative;
+	left: 600px;
 }
