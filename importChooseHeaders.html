@@ -1,0 +1,26 @@
+<?php
+	require("connection.php");
+	
+	$county = $_POST['county'];
+	$filename = $_POST['uploadFile']['name'];
+	
+	
+?>
+
+
+<html>
+<head>
+	<link rel='stylesheet' type='text/css' href='import.css'>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+
+<body>
+	<p>These are the files for <?php echo $_POST['county']; ?> that you have selected to upload.</p><br><br>
+	<p>Click any file to set the headers for its corresponding database table.</p><br><br>
+	<?php foreach($filename as $f) { ?>
+		<button type="button" class="button" value="<?php echo $f; ?>"></button><br>
+	<?php 
+	} 
+	?>
+</body>
+</html>
