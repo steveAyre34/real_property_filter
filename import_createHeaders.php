@@ -26,7 +26,6 @@ function chooseHeaders($importFilePath, $importFileName, $databaseTable, $databa
 	$fileHeaders = fgets($importFile);
 	$fileHeaders = explode("\t", $fileHeaders);
 	
-	if(empty($missingHeaders)) {
 		//echo "<!DOCTYPE html>"
 		echo "<html>";
 		echo "<head>";
@@ -34,10 +33,25 @@ function chooseHeaders($importFilePath, $importFileName, $databaseTable, $databa
 		echo "</head>";
 			echo "<body>";
 				print("<b>File Headers:</b><br>");
-				print("These are the file headers for " . $databaseTable . ".txt. <br><br>");
+				print("These are the file headers for " . $databaseTable . ".txt that already exist in the RP2 database.");
 				echo "<form action='do_import_owner.php' method='POST' enctype='multipart/form-data'>";
 				foreach($fileHeaders as $f) {
-					echo "<input type='text' name='fieldName' id='fieldName' value=\"" . $f . "\"/>";
+					echo "<input type='text' name='fileHeader' id='fileHeader' value='" . $f . "' disabled='disabled'/>";
+					echo "<select name='databaseHeader' id='databaseHeader'/>";
+					echo "<option value='selected'>" . $f . "</option>";
+					foreach($databaseTableHeaders as $db) {
+						if($db !== $f) {
+							echo "<option value='" . $db . "'>" . $db . "</option>";
+						}
+					}
+					echo "</select>";
+					if(!in_array($f, $databaseTableHeaders)) {
+						continue;
+					}
+					else
+						echo "<br><br>";
+				}
+				foreach($missingHeaders as $m) {
 					echo "<select name='fieldType' id='fieldType'/>";
 					echo "<option value='selected'>Choose a data type</option>";
 					foreach($mysql_data_type_map as $k => $v) {
@@ -46,6 +60,7 @@ function chooseHeaders($importFilePath, $importFileName, $databaseTable, $databa
 					echo "</select>";
 					echo "<input name='fieldLength' id='fieldLength' placeholder='Enter field length'></input><br><br>";
 				}
+				echo "<br><br>";
 				echo "<button type='submit' name='btn-upload'>Next</button>";
 			echo "</form>";
 			echo "</body>";

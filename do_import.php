@@ -14,34 +14,18 @@ require("import_createHeaders.php");
 */
 function checkHeaders($databaseTableHeaders, $fileHeaders) {
 	$return = array();
-	print("<b>Database Headers from checkHeaders:</b><br>");
-	foreach($databaseTableHeaders as $db) {
-		print($db->name . ", ");
-		array_push($return, $db->name);
-	}
-	print("<br><br>");
-	print("<b>File Headers from checkHeaders:</b><br>");
-	print_r($fileHeaders);
-	print("<br><br>");
+	
 	foreach($fileHeaders as $f) {
-		//print("Checking " . $f . "<br>");
-		//$key = array_search($f, $return);
-		if(($key = array_search($f, $return))!== false) {
-			unset($return[$f]);
-		}
-		/*$flag = 0;
+		$flag = 0;
 		foreach($databaseTableHeaders as $db) {
-			if(strcmp($f, $db->name) == 0)
+			if(strcmp($f, $db) == 0)
 				$flag = 1;
 		}
 		if($flag == 0)
-			array_push($return, $f);*/
+			array_push($return, $f);
 	}
 	
-	if(empty($return))
-		return 1;
-	else
-		return $return;
+	return $return;
 }
 
 /**
@@ -87,9 +71,9 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 		foreach($fileHeaders as $k=>$vHeader) {
 			array_push($headers, trim($vHeader));
 		}
-		$missingHeaders = array_diff($databaseTableHeaderNames, $headers);
+		$missingHeaders = checkHeaders($databaseTableHeaderNames, $headers);
 		
-		chooseHeaders($v, $v, $databaseTable, $databaseTableHeaders, $missingHeaders);
+		chooseHeaders($v, $v, $databaseTable, $databaseTableHeaderNames, $missingHeaders);
 	}
 	else
 	{	
