@@ -38,8 +38,8 @@ function chooseHeaders($importFilePath, $importFileName, $databaseTable, $databa
 				foreach($fileHeaders as $f) {
 					echo "<input type='text' name='fileHeader' id='fileHeader' value='" . $f . "' disabled='disabled'/>";
 					echo "<select name='databaseHeader' id='databaseHeader'/>";
-					echo "<option value='selected'>" . $f . "</option>";
 					foreach($databaseTableHeaders as $db) {
+						if($db)
 						if($db !== $f) {
 							echo "<option value='" . $db . "'>" . $db . "</option>";
 						}
