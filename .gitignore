@@ -1,0 +1,5 @@
+*.txt
+jQuery-File-Upload-master/*
+sweetalert-master/*
+*.npmignore
+*.json
