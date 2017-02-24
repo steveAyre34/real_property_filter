@@ -1,6 +1,6 @@
-#headerType {
+#fieldType {
 	position: relative;
-	left: 250px;
+	left: 700px;
 }
 
 #fieldName {
@@ -8,12 +8,7 @@
 	left: 0px;
 }
 
-#headerLength {
+#fieldLength {
 	position: relative;
-	right: 400px;
-}
-
-#primaryKey {
-	position: relative;
-	left: 600px;
+	right: 900px;
 }
