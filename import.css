@@ -3,7 +3,7 @@
 	left: 700px;
 }
 
-#fieldName {
+#fileHeader {
 	position: relative;
 	left: 0px;
 }
@@ -11,4 +11,9 @@
 #fieldLength {
 	position: relative;
 	right: 900px;
+}
+
+#databaseHeader {
+	position: relative;
+	left: 400px;
 }
