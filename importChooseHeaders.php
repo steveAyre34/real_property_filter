@@ -54,7 +54,7 @@
 			data: {myData},
 			dataType: 'php',
 			success: function(response) {
-				alert(response);
+				returnVal = window.showModalDialog(response);
 			}	
 		});
 	}
