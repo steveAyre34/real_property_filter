@@ -15,7 +15,7 @@ require("import_createHeaders.php");
 function checkHeaders($databaseTableHeaders, $fileHeaders) {
 	$return = array();
 	
-	foreach($fileHeaders as $f) {
+	/*foreach($fileHeaders as $f) {
 		$flag = 0;
 		foreach($databaseTableHeaders as $db) {
 			if(strcmp($f, $db) == 0)
@@ -23,7 +23,7 @@ function checkHeaders($databaseTableHeaders, $fileHeaders) {
 		}
 		if($flag == 0)
 			array_push($return, $f);
-	}
+	}*/
 	
 	return $return;
 }
@@ -44,39 +44,6 @@ function trimHeaderInfo($databaseTableHeaders) {
 session_start();
 
 foreach($_FILES['uploadFile']['name'] as $k => $v) {
-	if($v == 'owner.txt')
-	{
-		$databaseTable = $_POST['county'] . '_' . $v;
-		
-		//Open file to be uploaded ('countyName_fileName.txt')
-		$importFile = fopen(/*$upload_dir . */$v, "r") or die("Unable to open file.");
-		
-		//Removes file extension from filename to give table name 
-		$databaseTable = substr($databaseTable, 0, -4);
-		
-		//Connect to database, clear old data and then perform SELECT * so we can get table headers later
-		$getDatabaseTable = mysqli_query($conn, "DELETE FROM " . $databaseTable);
-		$getDatabaseTable = mysqli_query($conn, "SELECT * FROM " . $databaseTable);
-		
-		//Get headers (in order) from specified table in the database and trim unnecessary object info 
-		$databaseTableHeaders = mysqli_fetch_fields($getDatabaseTable);
-		$databaseTableHeaderNames = trimHeaderInfo($databaseTableHeaders);
-
-		//Retrieves header layout from first line of file to be uploaded (each field is delimited with a tab)
-		$fileHeaders = fgets($importFile);
-		$fileHeaders = explode("\t", $fileHeaders);
-		
-		$headers = array();
-		//Trim whitespace from header names (was causing a mismatch on last header due to whitespace)
-		foreach($fileHeaders as $k=>$vHeader) {
-			array_push($headers, trim($vHeader));
-		}
-		$missingHeaders = checkHeaders($databaseTableHeaderNames, $headers);
-		
-		chooseHeaders($v, $v, $databaseTable, $databaseTableHeaderNames, $missingHeaders);
-	}
-	else
-	{	
 		//File name will not have county name included
 		//Prepend county name based on value chosen from dropdown menu
 		$databaseTable = $_POST['county'] . '_' . $v;
@@ -159,6 +126,6 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 				print $m . " is not a field in the database and must be added before import can be performed.<br>";
 			} 
 		}
-	}
+	
 }
 ?>
