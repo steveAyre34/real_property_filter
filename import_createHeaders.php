@@ -1,6 +1,10 @@
 <?php
+	
 
-function chooseHeaders($importFilePath, $importFileName, $databaseTable, $databaseTableHeaders, $missingHeaders) {
+function chooseHeaders($importFileName) {
+	
+	require("do_import.php");
+	require("connection.php");
 	//mysqli_fetch_fields yields a number for field type. This map will allow us to replace the number.
 	$mysql_data_type_map = array(
 		1	=>	'tinyint',
@@ -22,9 +26,40 @@ function chooseHeaders($importFilePath, $importFileName, $databaseTable, $databa
 		246	=>	'decimal'	
 	);
 	
-	$importFile = fopen($importFilePath, "r") or die("Unable to open file.");
+	//Create word list to check field spellings later
+	$fieldSpell_config = pspell_config_create("en");
+	
+	
+	$databaseTable = $_POST['county'] . '_' . $importFileName;
+		
+		//Open file to be uploaded ('countyName_fileName.txt')
+		$importFile = fopen(/*$upload_dir . */$importFileName, "r") or die("Unable to open file.");
+		
+		//Removes file extension from filename to give table name 
+		$databaseTable = substr($databaseTable, 0, -4);
+		
+		//Connect to database, clear old data and then perform SELECT * so we can get table headers later
+		$getDatabaseTable = mysqli_query($conn, "DELETE FROM " . $databaseTable);
+		$getDatabaseTable = mysqli_query($conn, "SELECT * FROM " . $databaseTable);
+		
+		//Get headers (in order) from specified table in the database and trim unnecessary object info 
+		$databaseTableHeaders = mysqli_fetch_fields($getDatabaseTable);
+		$databaseTableHeaderNames = trimHeaderInfo($databaseTableHeaders);
+
+		//Retrieves header layout from first line of file to be uploaded (each field is delimited with a tab)
+		$fileHeaders = fgets($importFile);
+		$fileHeaders = explode("\t", $fileHeaders);
+		
+		$headers = array();
+		//Trim whitespace from header names (was causing a mismatch on last header due to whitespace)
+		foreach($fileHeaders as $k=>$vHeader) {
+			array_push($headers, trim($vHeader));
+		}
+		$missingHeaders = checkHeaders($databaseTableHeaderNames, $headers);
+	
+	/*$importFile = fopen($importFilePath, "r") or die("Unable to open file.");
 	$fileHeaders = fgets($importFile);
-	$fileHeaders = explode("\t", $fileHeaders);
+	$fileHeaders = explode("\t", $fileHeaders);*/
 	
 		//echo "<!DOCTYPE html>"
 		echo "<html>";
@@ -35,11 +70,10 @@ function chooseHeaders($importFilePath, $importFileName, $databaseTable, $databa
 				print("<b>File Headers:</b><br>");
 				print("These are the file headers for " . $databaseTable . ".txt that already exist in the RP2 database.");
 				echo "<form action='do_import_owner.php' method='POST' enctype='multipart/form-data'>";
-				foreach($fileHeaders as $f) {
+				foreach($headers as $f) {
 					echo "<input type='text' name='fileHeader' id='fileHeader' value='" . $f . "' disabled='disabled'/>";
 					echo "<select name='databaseHeader' id='databaseHeader'/>";
 					foreach($databaseTableHeaders as $db) {
-						if($db)
 						if($db !== $f) {
 							echo "<option value='" . $db . "'>" . $db . "</option>";
 						}
