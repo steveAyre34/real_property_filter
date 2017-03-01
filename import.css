@@ -17,3 +17,7 @@
 	position: relative;
 	left: 400px;
 }
+
+.potentialMisspell input[type=text]{
+	background-color: red;
+}

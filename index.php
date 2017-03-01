@@ -1,30 +1,39 @@
 <?php
-	require_once('common.php');
-?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	require('common.php');
+?>
+<!DOCTYPE html>
+
 <html>
 <head>
 <title>Welcome to the New York State Real Property Data Filter</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<!--<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">-->
+<meta charset="UTF-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 
 <body bgcolor="#b3d5ff">
 <h1>Welcome to the New York State Real Property Data Filter</h1>
 
-<form method="get" action="select.php">
+<form id="form" action="createHeaders.php" method="GET" enctype="multipart/form-data">
 <p><strong>Please Select A County:</strong></p>
-<select name="county">
-<?
+<select name="county" id="chosenCounty">
+<?php
 	foreach($counties as $c) {
 	  $disabled = "";
-	  if (!in_array($c, $counties_available))
-	    $disabled = "disabled";
-		?><option value="<?= $c ?>" <?= $disabled?>><?= ucwords($c) ?></option><?
-	}
-
-?>
-</select><input type="submit" value="go" />
+	  if (!in_array($c, $counties_available)) {
+		$disabled = "disabled"; 
+		
+	  ?><option value='<?php echo $c ?>' <?php echo $disabled ?>><?php echo ucwords($c) ?></option><?php  }
+	  else {
+		  ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
+	<?php }} ?>
+</select>
+<input type="submit" value="Go" formmethod="GET" formaction="select.php"/><br>
+<input type="file" id="uploadFile" name="uploadFile[]" multiple="multiple"/>
+<input type="submit" value="Upload Files">
 </form>
 
-<? include ('maps/imagemap.php') ?>
+<?php include ('maps/imagemap.php') ?>
 </body>
 </html>
+

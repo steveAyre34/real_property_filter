@@ -11,18 +11,18 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 <body>
-<form id="import_form"  method="POST" enctype="multipart/form-data" accept-charset="utf-8">
+<form id="import_form"  action="do_import.php" method="POST" enctype="multipart/form-data" accept-charset="utf-8">
 	<input type="file" id="uploadFile" name="uploadFile[]" multiple="multiple"/><br>
 	<select name="county">
 		<option value="selected">Choose a county</option>
 		<option value="ulster">Ulster County</option>
 	</select> 
-	<input type="submit" class="button" onclick="return chooseHeaders()" id="submitButton" value="Submit"/>
+	<button type="submit" class="button" name="btn btn-submit">Submit</button>
 </form>
 </body>
 </html>
 
-<script type="text/javascript">
+<!--<script type="text/javascript">
 	function chooseHeaders() {
 		var uploadFiles = document.getElementById("uploadFile").value;
 		$.each(uploadFiles, function(i, val) {
@@ -49,4 +49,4 @@
 		}
 		});
 	}
-</script>		
+</script>-->		

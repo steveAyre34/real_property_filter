@@ -412,7 +412,7 @@ XMLHEADEND;
 </Workbook>
 XMLFOOTEND;
 				break;
-		}
+		}	
 		
 		fwrite($fp, $out);
 	}
