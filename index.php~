@@ -15,7 +15,7 @@
 <select name="county">
 <?
 	foreach($counties as $c) {
-		?><option value="<?= $c ?>"><?= ucwords($c) ?></option><?
+		?><option value="<?= $c ?>"/><?= ucwords($c) ?></option><?
 	}
 
 ?>

@@ -6,126 +6,74 @@
 		This importer checks if this is the case.
 */
 require("connection.php");
-require("import_createHeaders.php");
+//require("createHeaders.php");
 
-/**
-	Checks that each of the file headers exists in their corresponding database table.
-	Does not check the order of headers in the file -- the structure of our insert statement later renders this unnecessary
-*/
-function checkHeaders($databaseTableHeaders, $fileHeaders) {
-	$return = array();
-	
-	/*foreach($fileHeaders as $f) {
-		$flag = 0;
-		foreach($databaseTableHeaders as $db) {
-			if(strcmp($f, $db) == 0)
-				$flag = 1;
-		}
-		if($flag == 0)
-			array_push($return, $f);
-	}*/
-	
-	return $return;
-}
 
-/**
-	Trims header information to just names and returns array of column names 
-	mysqli_fetch_fields returns an object, we only need names
-*/
-function trimHeaderInfo($databaseTableHeaders) {
-	$return = array();
-	foreach($databaseTableHeaders as $db) {
-		array_push($return, $db->name);
-		//print $db->name . "<br>";
-	}
-	return $return;
-}
+
 
 session_start();
 
+$successMessage = "";
 foreach($_FILES['uploadFile']['name'] as $k => $v) {
 		//File name will not have county name included
 		//Prepend county name based on value chosen from dropdown menu
 		$databaseTable = $_POST['county'] . '_' . $v;
+						
+		/*****************
+			Move files into 'data' directory within application 
+		*****************/
+		$upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
+		copy($v, $upload_dir . $v);
 		
-		/******************
-			Move files into XAMPP upload directory (C:\xampp\mysql\data\countyname)
-			Directory may need to be changed once this goes live
-		******************/
-		/*$upload_dir = 'C:\xampp\mysql\data\rp2_database\\' . $_POST['county'] . '\\'; 
-		foreach($_FILES['uploadFile']['name'] as $k => $filename) {
-			$tmp_name = $upload_dir . $filename;
-			$name = 'Y:\RP 2017 Data Files\\' . $_POST['county'] . '\\' . $filename;
-			copy($name, $tmp_name);
-		}*/
-			
 		//Open file to be uploaded ('countyName_fileName.txt')
-		$importFile = fopen(/*$upload_dir . */$v, "r") or die("Unable to open file.");
+		$importFile = fopen($upload_dir . $v, "r") or die("Unable to open file.");
 
 		//Removes file extension from filename to give table name  
 		$databaseTable = substr($databaseTable, 0, -4);
 
 		//Connect to database, clear old data and then perform SELECT * so we can get table headers later
 		$getDatabaseTable = mysqli_query($conn, "DELETE FROM " . $databaseTable);
-		$getDatabaseTable = mysqli_query($conn, "SELECT * FROM " . $databaseTable);
-
-		//Get headers (in order) from specified table in the database and trim unnecessary object info 
-		$databaseTableHeaders = mysqli_fetch_fields($getDatabaseTable);
-		$databaseTableHeaderNames = trimHeaderInfo($databaseTableHeaders);
-
+		
 		//Retrieves header layout from first line of file to be uploaded (each field is delimited with a tab)
 		$fileHeaders = fgets($importFile);
 		$fileHeaders = explode("\t", $fileHeaders);
 		
 		$headers = array();
+		
 		//Trim whitespace from header names (was causing a mismatch on last header due to whitespace)
 		foreach($fileHeaders as $k=>$vHeader) {
-			array_push($headers, trim($vHeader));
+			array_push($headers, trim($vHeader));			
 		}
-		$missingHeaders = array_diff($databaseTableHeaderNames, $headers);
+								
+		//Create the LOAD DATA LOCAL INFILE statement
+		$insertStatement = "LOAD DATA LOCAL INFILE '" . $v . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES (";
+					
+		//Now append the headers to the LOAD DATA LOCAL INFILE statement, in the order they were retrieved from the file
+		//By structuring the query this way, even if the order of headers in the file changes the data can still be inserted
+		foreach($headers as $h) {
+			$insertStatement .= $h . ", ";
+		}
+					
+		//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
+		$insertStatement = substr($insertStatement, 0, -2);
+			
+		//Now we specify the values to be inserted
+		$insertStatement .= ");"; 
+									
+		/*//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
+		$insertStatement = substr($insertStatement, 0, -2);*/
+
 		
-		//$insertStatement = chooseHeaders($fileHeaders, $databaseTable);
-		//print($insertStatement . "<br>");
-		//Check that each of the file headers has a corresponding column in the database table
-		//If there is a file header without a column, upload will not be allowed to proceed because it will not work until column is added
-		if(empty($missingHeaders)) {
-			//$uploadCount = 0;
-			//$errorCount = 0;
-							
-				/*Creating the insert statement
-				*/
-				$insertStatement = "LOAD DATA INFILE '" . $v . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES(";
-					
-				//Now append the headers to the LOAD DATA INFILE statement, in the order they were retrieved from the file
-				//By structuring the query this way, even if the order of headers in the file changes the data can still be inserted
-				foreach($headers as $h) {
-					$insertStatement .= $h . ", ";
-				}
-					
-				//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
-				$insertStatement = substr($insertStatement, 0, -2);
-					
-				//Now we specify the values to be inserted
-				$insertStatement .= ");"; 
-					
-				/*//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
-				$insertStatement = substr($insertStatement, 0, -2);*/
-			//}
-		
-			$failedCount = mysqli_query($conn, $insertStatement);
-			$checkUpload = "SELECT COUNT(*) FROM " . $databaseTable;
-			$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
-			$uploadCounter = mysqli_fetch_assoc($uploadCount);
-			if($failedCount == true)
-				print $uploadCounter['COUNT(*)'] . " records added successfully to " . $databaseTable . "<br>";
-			/*else
-				print $errorCount . " records not added successfully.<br>";*/
+		$failedCount = mysqli_query($conn, $insertStatement);
+		$checkUpload = "SELECT COUNT(*) FROM " . $databaseTable;
+		$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
+		$uploadCounter = mysqli_fetch_assoc($uploadCount);
+		if($failedCount == true) {
+			$successMessage .= $databaseTable . " has uploaded " . $uploadCounter['COUNT(*)'] . " records successfully! ";
 		}
-		else {
-			foreach($missingHeaders as $m) {
-				print $m . " is not a field in the database and must be added before import can be performed.<br>";
-			} 
-		}
-	
 }
+		//$successMessage = json_encode($successMessage);
+		echo '<script type="text/javascript"> alert ("' . $successMessage . '");
+					window.history.back();
+					</script>';	
 ?>
