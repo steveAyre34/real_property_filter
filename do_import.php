@@ -2,6 +2,7 @@
 	<head>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	</head>
+	
 </html>
 <?php
 /**
@@ -12,24 +13,42 @@
 */
 require("connection.php");
 //require("createHeaders.php");
+//require("import.php");
 
 
 
 
-//session_start();
+session_start();
 
 $successMessage = "";
 $owner = false;
+
+if(empty($_FILES['uploadFile'])) {
+	echo '<script type="text/javascript"> alert("No more files!"); </script>';
+}
+else {
 foreach($_FILES['uploadFile']['name'] as $k => $v) {
-	if(strcmp($v, 'owner.txt') != 0) {
+		echo '<script type="text/javascript">
+		$.ajax({
+			type: "GET",
+			async: true,
+			url: "createHeaders.php",
+			data: {county: "' . $_POST["county"] . '", fileName: "' . $v. '"},
+			success: function(data) {
+				document.write(data);
+			}
+		});
+		</script>';
+}
+	//if(strcmp($v, 'owner.txt') != 0) {
 		//File name will not have county name included
 		//Prepend county name based on value chosen from dropdown menu
-		$databaseTable = $_POST['county'] . '_' . $v;
+//		$databaseTable = $_POST['county'] . '_' . $v;
 						
 		/*****************
 			Move files into 'data' directory within application 
 		*****************/
-		$upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
+		/*$upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
 		copy($v, $upload_dir . $v);
 		
 		//Open file to be uploaded ('countyName_fileName.txt')
@@ -67,46 +86,91 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 		//Now we specify the values to be inserted
 		$insertStatement .= ");"; 
 									
-		/*//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
+		//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
 		$insertStatement = substr($insertStatement, 0, -2);*/
 
 		
-		$failedCount = mysqli_query($conn, $insertStatement);
+		//$failedCount = mysqli_query($conn, $insertStatement);
 		/*$checkUpload = "SELECT COUNT(*) FROM " . $databaseTable;
 		$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
 		$uploadCounter = mysqli_fetch_assoc($uploadCount);
 		if($failedCount == true) {
 			$successMessage .= $databaseTable . " has uploaded " . $uploadCounter['COUNT(*)'] . " records successfully! ";
 		}*/
-	}
-	else {
+//	}
+	/*else {
 		$owner = true;
-	}
-}
+	}*/
+//}
 		//$successMessage = json_encode($successMessage);
 		/*echo '<script type="text/javascript">
 				history.back(alert ("' . $successMessage . '"));
 					</script>';*/
-if($owner == false) {
+/*if($owner == false) {
 	echo '<script type="text/javascript">
 			history.back(alert("Upload Finished!"));
 		</script>';
-}
-else {	
-	echo '<script type="text/javascript">
-		$.ajax({
-			type: "GET",
-			url: "createHeaders.php",
-			data: {"county": "' . $_POST["county"] . '"},
-			success: function(data) {
-				document.write(data);
-			}
-		});
-		</script>';
+} */
+//else {
+
 	/*ob_start();
 	include "createHeaders.php";
 	$createHeaders = ob_get_clean();
 	print $createHeaders;(*/
 }
 ?>
+
+<script type="text/javascript">
+	$('td').attr('contenteditable', 'true');
+	var cell;
+
+	function highlight() {
+		$(arguments).toggleClass('invalid', true);
+	}
+
+	function compareHeaders(e) {
+		//Reset style before re-checking
+		$('td.invalid').toggleClass('invalid');
+		//Get table rows as array of array
+		var rows = $('tr').map(function(elem, i) {
+			return [$(this).children('td').toArray()];
+		}).toArray();
+
+		//Loop through the rows and highlight non-equal
+		for(var i = 0; i < rows.length; ++i) {
+			cell = {};
+			for(var j = 0; j < rows[i].length; ++j) {
+				var cellText = $(rows[i][j]).text();
+				if(cell[cellText] != $(rows[i][j+1]).text()) {
+					highlight(cell[cellText], rows[i][j]);
+				}
+				else {
+					cell[cellText] = rows[i][j];
+				}
+				if(i < rows.length - 1 && cellText != $(rows[i + 1][j]).text()) {
+					highlight(rows[i][j], rows[i + 1][j]);
+				}
+			}
+		}
+	}
+
+	$('#databaseHeaders').change(compareHeaders);
+	
+	function poster() {
+		var TableData;
+		TableData = $.toJSON(storeTable());
+		
+		$.ajax({
+			type: "POST",
+			url: "import.php",
+			data: {"county": "<?php echo $_GET['county'] ?>", "fileName": "<?php echo $_GET["fileName"]?>", "tableData=" + TableData},
+			success: function(msg) {
+				alert("Success!");
+				console.log(TableData);
+			}
+		});
+	}
+	
+		
+</script>
 

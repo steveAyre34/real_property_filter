@@ -60,7 +60,9 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 	
 	
 	foreach($databaseTableHeaders as $key => $value) {
-		$return[$value] = $fileHeaders[$key];
+		if($key < count($fileHeaders)) {
+			$return[$value] = $fileHeaders[$key];
+		}
 	}
 
 	$return['missing'] = array();
@@ -95,10 +97,10 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 		246	=>	'decimal'	
 	);
 	
-	$databaseTable = $_GET['county'] . '_owner.txt';
+	$databaseTable = $_GET['county'] . '_' . $_GET['fileName'];
 		
 	//Open file to be uploaded ('countyName_fileName.txt')
-	$importFile = fopen('owner.txt', "r") or die("Unable to open file.");
+	$importFile = fopen($_GET['fileName'], "r") or die("Unable to open file.");
 		
 		//Removes file extension from filename to give table name 
 		$databaseTable = substr($databaseTable, 0, -4);
@@ -129,26 +131,33 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 <html>
 	<head>
 	<link rel='stylesheet' type='text/css' href='import.css'>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		</head>
 			<body>
 				<p>These are the file headers for <?php echo $databaseTable ?>.txt that already exist in the RP2 database.<br></p>
 				<h4>File Headers &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp DB Headers</h4>
-				<form action='do_import_owner.php' method='POST' enctype='multipart/form-data'>
-				<table id="table">
+				<form id='table<?php echo $databaseTable ?>'method='POST' enctype='multipart/form-data'>
+				<table>
 				<tr>
 				<th>File Headers</th>
 				<th>Database Headers</th>
 				</tr>
 <?php				foreach($map as $key => $value) {
 					if($key != "missing") { 
-					/*if($key !== $value) {	?>	
+					if($key !== $value) {	?>	
 						<tr bgcolor="red" id="row">
 <?php					} 	
 					else { ?>
 						<tr>
-<?php					}*/	?>	
+<?php					}	?>	
 					<td><input type='text' name='fileHeaders[]' value='<?php echo $value ?>'/></td>
-					<td><input type='text' name='databaseHeaders[]' value='<?php echo $key ?>'/></td>
+					<td><!--<input type='text' name='databaseHeaders[]' value='<//?php echo $key ?>'/>-->
+						<select name='databaseHeaders[]'>
+						<option value='selected'><?php echo $key ?></option>
+<?php						foreach($databaseTableHeaderNames as $db) { ?>
+								<option value='<?php echo $key ?>'><?php echo $db ?></option>
+<?php							} ?>
+					</td>
 					</tr>	
 <?php				}} ?>
 				</table><br><br>
@@ -158,73 +167,38 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 					if($m != 'Array')				?>
 						<input type='text' name='missingHeaders[]' value='<?php echo $m ?>'/><br>
 <?php				}
-				}  ?>
+				}
+				else {
+					echo "No missing";
+				}?>
 				<button type="submit">Import</button>
 			</form>
 			</body>
 		</html>
 
-<!--<script type="text/javascript">
-	 $("#databaseHeader").change(function() {
-		var databaseHeaders = document.getElementByClassName("databaseHeader");
-		var fileHeaders = document.getElementByClassName("fileHeader");
-		
-	});
-</script>-->
-<!--<script type="text/javascript">
-	$(".databaseHeader").change(function() {
-		compareRows(document.getElementById('table'));
-	});
-	$(".fileHeader").change(function() {
-	});
-
-	function compareRows(table) {
-		var row, rows = table.rows;
-		var cell, cells;
-		var rowText;
-
-		//For each row in the table
-		for(var i = 0; iLength = rows.length; i < iLength; ++i) {
-			rows = rows[i];
-			cells = rows.cells;
-			
-			//Compare each cell
-			for(var j = 0; jLength = cells.length; j < jLength; ++j) {
-				for(var k = 0; k < jLength; k++) {
-					if(k != j && cells[k].textContent == cell.textContent-->
 <script type="text/javascript">
-	$('td').attr('contenteditable', 'true');
-	var cell;
-
-	function highlight() {
-		$(arguments).toggleClass('invalid', true);
-	}
-
-	function compareHeaders(e) {
-		//Reset style before re-checking
-		$('td.invalid').toggleClass('invalid');
-		//Get table rows as array of array
-		var rows = $('tr').map(function(elem, i) {
-			return [$(this).children('td').toArray()];
-		}).toArray();
-
-		//Loop through the rows and highlight non-equal
-		for(var i = 0; i < rows.length; ++i) {
-			cell = {};
-			for(var j = 0; j < rows[i].length; ++j) {
-				var cellText = $(rows[i][j]).text();
-				if(cell[cellText] != $(rows[i][j]).text()) {
-					highlight(cell[cellText], rows[i][j]);
-				}
-				else {
-					cell[cellText] = rows[i][j];
-				}
-				/*if(i < rows.length - 1 && cellText != $(rows[i + 1][j]).text()) {
-					highlight(rows[i][j], rows[i + 1][j]);
-				}*/
+	/*function storeTable() {	
+		("#table<?php echo $databaseTable ?> tr").each(function(row, tr) {
+			TableData[row] = {
+				"fileHeaders": $(tr).find('td:eq(0').text() //File Headers
+				"DBHeaders": $(tr).find('td:eq(1)').text() //DB Headers
 			}
-		}
-	}
-
-	$('td').change(compareHeaders);
+		});
+		
+		return TableData;
+	}*/
+	(function ($) {
+		$('#table<?php echo $databaseTable ?>').on('submit', function(e) {
+			e.preventDefault();
+			$.ajax ({
+				type: 'POST',
+				url: 'import.php',
+				data: $('#table<?php echo $databaseTable ?>').serialize()
+				success: function(response) {
+					console.log(response);
+				}
+			});
+		});	
+	
 </script>
+
