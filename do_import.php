@@ -1,3 +1,8 @@
+<html>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	</head>
+</html>
 <?php
 /**
 	This is the server side of a file importer that can be used for the Real Property or Board of Elections File Uploads.
@@ -11,10 +16,12 @@ require("connection.php");
 
 
 
-session_start();
+//session_start();
 
 $successMessage = "";
+$owner = false;
 foreach($_FILES['uploadFile']['name'] as $k => $v) {
+	if(strcmp($v, 'owner.txt') != 0) {
 		//File name will not have county name included
 		//Prepend county name based on value chosen from dropdown menu
 		$databaseTable = $_POST['county'] . '_' . $v;
@@ -65,15 +72,41 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 
 		
 		$failedCount = mysqli_query($conn, $insertStatement);
-		$checkUpload = "SELECT COUNT(*) FROM " . $databaseTable;
+		/*$checkUpload = "SELECT COUNT(*) FROM " . $databaseTable;
 		$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
 		$uploadCounter = mysqli_fetch_assoc($uploadCount);
 		if($failedCount == true) {
 			$successMessage .= $databaseTable . " has uploaded " . $uploadCounter['COUNT(*)'] . " records successfully! ";
-		}
+		}*/
+	}
+	else {
+		$owner = true;
+	}
 }
 		//$successMessage = json_encode($successMessage);
-		echo '<script type="text/javascript"> alert ("' . $successMessage . '");
-					window.history.back();
-					</script>';	
+		/*echo '<script type="text/javascript">
+				history.back(alert ("' . $successMessage . '"));
+					</script>';*/
+if($owner == false) {
+	echo '<script type="text/javascript">
+			history.back(alert("Upload Finished!"));
+		</script>';
+}
+else {	
+	echo '<script type="text/javascript">
+		$.ajax({
+			type: "GET",
+			url: "createHeaders.php",
+			data: {"county": "' . $_POST["county"] . '"},
+			success: function(data) {
+				document.write(data);
+			}
+		});
+		</script>';
+	/*ob_start();
+	include "createHeaders.php";
+	$createHeaders = ob_get_clean();
+	print $createHeaders;(*/
+}
 ?>
+

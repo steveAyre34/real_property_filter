@@ -60,17 +60,18 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 	
 	
 	foreach($databaseTableHeaders as $key => $value) {
-		foreach($fileHeaders as $f) {
-			if(strcmp($f, $value) == 0) {
-				$return[$value] = $f;
-				break;
-			}
-			else if((levenshtein($f, $value) > 0) && (!in_array($f, $return))) {
-				$return[$value] = $f;
-				break;
-			}
+		$return[$value] = $fileHeaders[$key];
+	}
+
+	$return['missing'] = array();
+
+	if(count($fileHeaders) > count($databaseTableHeaders)) {
+		$returnMissingIndex = 0;
+		for($i = count($databaseTableHeaders); $i < count($fileHeaders); ++$i) {
+			$return['missing'][$returnMissingIndex++] = $fileHeaders[$i];
 		}
 	}
+
 	return $return;
 }	
 	//mysqli_fetch_fields yields a number for field type. This map will allow us to replace the number.
@@ -122,7 +123,7 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 		
 		//$misspelledHeaders = getMisspelledHeaders($databaseTableHeaderNames, $headers);
 		$map = mapHeaders($databaseTableHeaderNames, $headers);
-		$missingHeaders = getMissingHeaders($databaseTableHeaderNames, $map);
+		//$missingHeaders = getMissingHeaders($databaseTableHeaderNames, $map);
 ?>
 <!DOCTYPE html>
 <html>
@@ -133,21 +134,97 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 				<p>These are the file headers for <?php echo $databaseTable ?>.txt that already exist in the RP2 database.<br></p>
 				<h4>File Headers &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp DB Headers</h4>
 				<form action='do_import_owner.php' method='POST' enctype='multipart/form-data'>
-<?php			foreach($map as $key => $value) { ?>
-					<input type='text' name='fileHeaders[]' id='fileHeader' value='<?php echo $value ?>'/>
-<?php				if(levenshtein($key, $value) == 1) { ?>
-						<input type='text' name='databaseHeaders[]' value='<?php echo $key ?>' class='potentialMisspell'/><br>
-<?php				}
-					else {?>
-						<input type='text' name='databaseHeaders[]' value='<?php echo $key ?>'/><br>
-<?php 				}			
-				} ?>
-<?php			if(!empty($missingHeaders)) {  ?>
+				<table id="table">
+				<tr>
+				<th>File Headers</th>
+				<th>Database Headers</th>
+				</tr>
+<?php				foreach($map as $key => $value) {
+					if($key != "missing") { 
+					/*if($key !== $value) {	?>	
+						<tr bgcolor="red" id="row">
+<?php					} 	
+					else { ?>
+						<tr>
+<?php					}*/	?>	
+					<td><input type='text' name='fileHeaders[]' value='<?php echo $value ?>'/></td>
+					<td><input type='text' name='databaseHeaders[]' value='<?php echo $key ?>'/></td>
+					</tr>	
+<?php				}} ?>
+				</table><br><br>
+<?php			if(!empty($map['missing'])) {  ?>
 					<h4>These are headers in the file but not in the database.</h4>
-<?php				foreach($missingHeaders as $m) { ?>
+<?php				foreach($map['missing'] as $m) { 
+					if($m != 'Array')				?>
 						<input type='text' name='missingHeaders[]' value='<?php echo $m ?>'/><br>
 <?php				}
 				}  ?>
+				<button type="submit">Import</button>
 			</form>
 			</body>
-		</html> 
+		</html>
+
+<!--<script type="text/javascript">
+	 $("#databaseHeader").change(function() {
+		var databaseHeaders = document.getElementByClassName("databaseHeader");
+		var fileHeaders = document.getElementByClassName("fileHeader");
+		
+	});
+</script>-->
+<!--<script type="text/javascript">
+	$(".databaseHeader").change(function() {
+		compareRows(document.getElementById('table'));
+	});
+	$(".fileHeader").change(function() {
+	});
+
+	function compareRows(table) {
+		var row, rows = table.rows;
+		var cell, cells;
+		var rowText;
+
+		//For each row in the table
+		for(var i = 0; iLength = rows.length; i < iLength; ++i) {
+			rows = rows[i];
+			cells = rows.cells;
+			
+			//Compare each cell
+			for(var j = 0; jLength = cells.length; j < jLength; ++j) {
+				for(var k = 0; k < jLength; k++) {
+					if(k != j && cells[k].textContent == cell.textContent-->
+<script type="text/javascript">
+	$('td').attr('contenteditable', 'true');
+	var cell;
+
+	function highlight() {
+		$(arguments).toggleClass('invalid', true);
+	}
+
+	function compareHeaders(e) {
+		//Reset style before re-checking
+		$('td.invalid').toggleClass('invalid');
+		//Get table rows as array of array
+		var rows = $('tr').map(function(elem, i) {
+			return [$(this).children('td').toArray()];
+		}).toArray();
+
+		//Loop through the rows and highlight non-equal
+		for(var i = 0; i < rows.length; ++i) {
+			cell = {};
+			for(var j = 0; j < rows[i].length; ++j) {
+				var cellText = $(rows[i][j]).text();
+				if(cell[cellText] != $(rows[i][j]).text()) {
+					highlight(cell[cellText], rows[i][j]);
+				}
+				else {
+					cell[cellText] = rows[i][j];
+				}
+				/*if(i < rows.length - 1 && cellText != $(rows[i + 1][j]).text()) {
+					highlight(rows[i][j], rows[i + 1][j]);
+				}*/
+			}
+		}
+	}
+
+	$('td').change(compareHeaders);
+</script>

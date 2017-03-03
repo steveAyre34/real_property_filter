@@ -2,7 +2,7 @@
 
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = "SUNYFinaidOffice10940";
 $dbname = "rp2_database";
 
 
