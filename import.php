@@ -1,7 +1,7 @@
 <?php
 	//require("createHeaders.php");
 	require("do_import.php");
-	
+	$tableData = $_POST[""]
 	$tableData = json_decode($tableData, TRUE);
 	$county = $_POST['county'];
 	$fileName = $_POST['fileName'];

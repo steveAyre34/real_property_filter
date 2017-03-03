@@ -156,20 +156,18 @@ foreach($_FILES['uploadFile']['name'] as $k => $v) {
 
 	$('#databaseHeaders').change(compareHeaders);
 	
-	function poster() {
-		var TableData;
-		TableData = $.toJSON(storeTable());
-		
-		$.ajax({
-			type: "POST",
-			url: "import.php",
-			data: {"county": "<?php echo $_GET['county'] ?>", "fileName": "<?php echo $_GET["fileName"]?>", "tableData=" + TableData},
-			success: function(msg) {
-				alert("Success!");
-				console.log(TableData);
-			}
-		});
-	}
+	(function ($) {
+		$('#table<?php echo $databaseTable ?>').on('submit', function(e) {
+			e.preventDefault();
+			$.ajax ({
+				type: 'POST',
+				url: 'import.php',
+				data: $('#table<?php echo $databaseTable ?>').serialize()
+				success: function(response) {
+					console.log(response);
+				}
+			});
+		});	
 	
 		
 </script>
