@@ -126,6 +126,7 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 		//$misspelledHeaders = getMisspelledHeaders($databaseTableHeaderNames, $headers);
 		$map = mapHeaders($databaseTableHeaderNames, $headers);
 		//$missingHeaders = getMissingHeaders($databaseTableHeaderNames, $map);
+		$rowID = 0;
 ?>
 <!DOCTYPE html>
 <html>
@@ -135,24 +136,24 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 		</head>
 			<body>
 				<p>These are the file headers for <?php echo $databaseTable ?>.txt that already exist in the RP2 database.<br></p>
-				<h4>File Headers &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp DB Headers</h4>
 				<form name="table_form" id='<?php echo $databaseTable ?>'method='POST' enctype='multipart/form-data'>
 				<table>
 				<tr>
 				<th>File Headers</th>
 				<th>Database Headers</th>
 				</tr>
+				<tbody>
 <?php				foreach($map as $key => $value) {
 					if($key != "missing") { 
-					if($key !== $value) {	?>	
+					/*if($key !== $value) {	?>	
 						<tr bgcolor="red" id="row">
 <?php					} 	
-					else { ?>
-						<tr>
-<?php					}	?>	
+					else { ?>*/
+					?>	<tr>
+			<?php	//	}		?>
 					<td><input type='text' name='fileHeaders[]' value='<?php echo $value ?>'/></td>
 					<td><!--<input type='text' name='databaseHeaders[]' value='<//?php echo $key ?>'/>-->
-						<select name='databaseHeaders[]' id='databaseHeaders_<?php echo $databaseTable ?>'>
+						<select name='databaseHeaders[]' id='databaseHeaders_<?php echo $databaseTable ?>' onchange="changeValue(this)">
 						<option value='<?php echo $key ?>'><?php echo $key ?></option>
 <?php						foreach($databaseTableHeaderNames as $db) { ?>
 								<option value='<?php echo $key ?>'><?php echo $db ?></option>
@@ -160,6 +161,7 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 					</td>
 					</tr>	
 <?php				}} ?>
+				</tbody>
 				</table><br><br>
 <?php			if(!empty($map['missing'])) {  ?>
 					<h4>These are headers in the file but not in the database.</h4>
@@ -176,31 +178,67 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 			</body>
 		</html>
 <script type="text/javascript">
-	$('#fileHeaders').change(compareHeaders(document.getElementById('<?php echo $databaseTable ?>')));
-	$('#databaseHeaders_<?php echo $databaseTable ?>').change(compareHeaders(document.getElementById('<?php echo $databaseTable ?>')));
-
-	function compareHeaders(table) {
-		var row, rows = table.rows;
-		var cell, cells;
-		var rowText;
-
-		for(var i = 0; iLen = rows.length; i < iLen; ++i) {
-			row = rows[i];
-			cells = row.cells;
-
-			for(var j = 0; jLen = cells.length; j < jLen; ++j) {
-				cell = cells[j];
-				for(var k = 0; k < jLen; ++k) {
-					if(k != j && cells[k].textContent == cell.textContent) {
-				var $tr = $(this).closest('tr');
-				$tr.css('background-color', 'red');
-			}
-			else {
-				var $tr = $(this).closest('tr');
-				$tr.css('background-color', 'white');
-			}
+	//$('#'+'<?php echo $databaseTable ?>'+' tbody tr td').each(function() {
+		/*var $fileHeader = $('td:eq(0)', this);
+		var $databaseHeader = $('td:eq(1)', this);
+		
+		console.log("FILE HEADER: " + $fileHeader.text());
+		console.log("DATABASE HEADER: " + $databaseHeader.text());		
+		
+		if($fileHeader.text() != $databaseHeader.text()) {
+			$fileHeader.css('backgroundColor', 'red');
+			$databaseHeader.css('backgroundColor', 'red');
 		}
+		else {
+			$fileHeader.css('backgroundColor', 'white');	
+			$databaseHeader.css('backgroundColor', 'white');
+		}*/
+	
+	//});
+	
+	function changeValue(control) {
+		var headers = headers.elements['databaseTableHeaders[]'];
+		for(var i = 0; i < headers.length; ++i) {
+			console.log(headers[i]);
 		}
 	}
-}
+
+	inputCheck();
+	$("#<?php echo $databaseTable ?> input").bind("change paste keyup", function() {
+		inputCheck();
+	});
+	
+	//document.getElementById('databaseHeaders_<?php echo $databaseTable ?>').addEventListener('change', inputCheck(), true);
+	
+	function inputCheck() {
+		var fileInput = $("#<?php echo $databaseTable ?> input").length;
+		var databaseInput = document.getElementById('databaseHeaders_<?php echo $databaseTable ?>').value;
+		
+		var fileValArr = [];
+		for(var j = 0; j < fileInput - 1; ++j) {
+			var fileVal = $("#<?php echo $databaseTable?> input:eq(" + j + ")").val();
+			//console.log("TOTAL FILE INPUT VAL ARRAY " + j + ": " + fileVal);
+			if(fileVal != 'Import') {
+				fileValArr.push(fileVal);
+			}
+		}
+		
+		for(var i = 0; i < fileInput - 1; ++i) {
+			var databaseVal = $("#<?php echo $databaseTable ?> select:eq(" + i + ")").val();
+			//console.log("TOTAL DATABASE INPUT VAL ARRAY " + i + ": " + databaseVal);
+		}
+		
+		/*//var sorted_arr = fileValArr.sort();
+		var results = [];
+		for(var i = 0; i < fileValArr.length - 1; ++i) {
+			if(sorted_arr[i + 1] == sorted_arr[i]) {
+				results.push(sorted_arr[i]);
+			}
+		}
+		
+		$("#<?php echo $databaseTable ?> input").removeClass('highlight');
+		for(var k = 0; k < fileInput; ++k) {
+			$("#<?php echo $databaseTable ?> :input[value='" + results[k] + "']").addClass('highlight');
+		}*/
+	}
 </script>
