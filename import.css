@@ -19,6 +19,6 @@
 }
 
 
-td.invalid {
-	background-color:red;
+.highlight {
+	background: red;
 }
