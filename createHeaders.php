@@ -1,6 +1,6 @@
 <?php
 		
-	//require("do_import.php");
+	//include("importChooseCounty.php");
 	require("connection.php");
 	
 /**
@@ -136,7 +136,7 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 			<body>
 				<p>These are the file headers for <?php echo $databaseTable ?>.txt that already exist in the RP2 database.<br></p>
 				<h4>File Headers &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp DB Headers</h4>
-				<form id='table<?php echo $databaseTable ?>'method='POST' enctype='multipart/form-data'>
+				<form name="table_form" id='<?php echo $databaseTable ?>'method='POST' enctype='multipart/form-data'>
 				<table>
 				<tr>
 				<th>File Headers</th>
@@ -152,8 +152,8 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 <?php					}	?>	
 					<td><input type='text' name='fileHeaders[]' value='<?php echo $value ?>'/></td>
 					<td><!--<input type='text' name='databaseHeaders[]' value='<//?php echo $key ?>'/>-->
-						<select name='databaseHeaders[]'>
-						<option value='selected'><?php echo $key ?></option>
+						<select name='databaseHeaders[]' id='databaseHeaders_<?php echo $databaseTable ?>'>
+						<option value='<?php echo $key ?>'><?php echo $key ?></option>
 <?php						foreach($databaseTableHeaderNames as $db) { ?>
 								<option value='<?php echo $key ?>'><?php echo $db ?></option>
 <?php							} ?>
@@ -171,34 +171,36 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 				else {
 					echo "No missing";
 				}?>
-				<button type="submit">Import</button>
+				<input type="button" value="Import" onclick="submitTable('<?php echo $databaseTable ?>',  '<?php echo $_GET['fileName'] ?>')"/>
 			</form>
 			</body>
 		</html>
-
 <script type="text/javascript">
-	/*function storeTable() {	
-		("#table<?php echo $databaseTable ?> tr").each(function(row, tr) {
-			TableData[row] = {
-				"fileHeaders": $(tr).find('td:eq(0').text() //File Headers
-				"DBHeaders": $(tr).find('td:eq(1)').text() //DB Headers
-			}
-		});
-		
-		return TableData;
-	}*/
-	(function ($) {
-		$('#table<?php echo $databaseTable ?>').on('submit', function(e) {
-			e.preventDefault();
-			$.ajax ({
-				type: 'POST',
-				url: 'import.php',
-				data: $('#table<?php echo $databaseTable ?>').serialize()
-				success: function(response) {
-					console.log(response);
-				}
-			});
-		});	
-	
-</script>
+	$('#fileHeaders').change(compareHeaders(document.getElementById('<?php echo $databaseTable ?>')));
+	$('#databaseHeaders_<?php echo $databaseTable ?>').change(compareHeaders(document.getElementById('<?php echo $databaseTable ?>')));
 
+	function compareHeaders(table) {
+		var row, rows = table.rows;
+		var cell, cells;
+		var rowText;
+
+		for(var i = 0; iLen = rows.length; i < iLen; ++i) {
+			row = rows[i];
+			cells = row.cells;
+
+			for(var j = 0; jLen = cells.length; j < jLen; ++j) {
+				cell = cells[j];
+				for(var k = 0; k < jLen; ++k) {
+					if(k != j && cells[k].textContent == cell.textContent) {
+				var $tr = $(this).closest('tr');
+				$tr.css('background-color', 'red');
+			}
+			else {
+				var $tr = $(this).closest('tr');
+				$tr.css('background-color', 'white');
+			}
+		}
+		}
+	}
+}
+</script>
