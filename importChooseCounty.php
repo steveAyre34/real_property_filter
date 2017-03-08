@@ -18,9 +18,8 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script src="jquery-progressTimer-master/src/js/jquery.progressTimer.js"></script>
 	<script src="http://malsup.github.com/jquery.form.js"></script> 
-	<!--<script src="https://netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>-->
-	<!--<link rel="stylesheet" type="text/css" href="jquery-progressTimer-master/src/css/jquery.progressTimer.css">-->
-	<!--<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">-->
+	<script src="https://netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="jquery-progressTimer-master/src/css/jquery.progressTimer.css"/>
 	<link rel='stylesheet' type='text/css' href='import.css'>
 	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 </head>
@@ -41,24 +40,24 @@
 
 <script type="text/javascript">
 	
-	$("#import_form").on("submit", function() {
-		/*var progress = $(".loading-progress").progressTimer({
+	/*$("#import_form").on("submit", function() {
+		var progress = $(".loading-progress").progressTimer({
 			onFinish: function() {
 				window.location.assign("index.php");
 		}
-		});*/
-		$("#progressBar").progressTimer({ value: 0 });
+		});
+		/*$("#progressBar").progressTimer({ value: 0 });
 		
 		var source = new EventSource("do_import.php");
 		
 		source.addEventListener('message', function(e) {
 			var pct = e * 100;
 			$("#progressBar").progressBar('option', 'value', pct).children('.ui-progressbar-value').html(pct.toPrecision(3) + '%').css('display', 'block');
-		});
+		});*/
 	
-		$.ajax({
+		/*$.ajax({
 			url: "do_import.php",
-			/*error: function() {
+			error: function() {
 				progress.progressTimer('error', {
 					errorText: 'error',
 					onFinish: function() {
@@ -68,7 +67,7 @@
 			},
 			done: function() {
 				progress.progressTimer('complete');
-			},*/
+			},
 			
 			progress: function(e) {
 				if(e.lengthComputable) {
@@ -80,6 +79,8 @@
 				}
 			}
 		});
+	});
+		//});
 		//});
 	//});
 			/*function xhr() {

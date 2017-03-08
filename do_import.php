@@ -86,7 +86,7 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 		Move files into 'data' directory within application 
 	*****************/
 	$upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
-	copy(realpath($_FILES['uploadFile']['tmp_name'][$i]), $upload_dir . $_FILES['uploadFile']['name'][$i]);
+	copy(($_FILES['uploadFile']['tmp_name'][$i]), $upload_dir . $_FILES['uploadFile']['name'][$i]);
 	$localFile = $upload_dir . $_FILES['uploadFile']['name'][$i];
 		
 	//Open file to be uploaded ('countyName_fileName.txt')
