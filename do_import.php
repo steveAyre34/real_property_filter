@@ -12,127 +12,154 @@
 		This importer checks if this is the case.
 */
 require("connection.php");
+//header('Content-Type: text/event-stream');
 //require("createHeaders.php");
 //require("import.php");
 
-
-
-
 session_start();
+//mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, 5000);
+$totalSize = 0;
+$currentlyUploadedSize = 0;
 
-$successMessage = "";
-$owner = false;
-$file = array();
-array_push($file, $_POST['filename']);
-
-if(empty($file)) {
-	echo '<script type="text/javascript"> alert("No more files!"); </script>';
-}
-else {
-foreach($file as $filename) {
-	//if(strcmp($v, 'owner.txt') != 0) {
-		//File name will not have county name included
-		//Prepend county name based on value chosen from dropdown menu
-		$databaseTable = $_POST['databaseTable'];
-		$headers = json_decode($_POST['headers']);
-		/*foreach($_POST['headers'] as $h) {
-			array_push($headers, $h);
-		}*/
-
-		/*echo '<script type="text/javascript">
-			console.log("From do_import");
-			</script>';
-
-		foreach($headers as $h) {
-			echo '<script type="text/javascript>
-				console.log("'. $h->value .'");
-				</script>';
-		}*/
-		//parse_str($_POST['headers'], $headers);					
-		/*****************
-			Move files into 'data' directory within application 
-		*****************/
-		/*$upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
-		copy($v, $upload_dir . $v);
-		*/
-		//Open file to be uploaded ('countyName_fileName.txt')
-		$importFile = fopen($filename, "r") or die("Unable to open file.");
-
-		//Removes file extension from filename to give table name  
-		//$databaseTable = substr($filename, 0, -4);
-
-		//Connect to database, clear old data and then perform SELECT * so we can get table headers later
-		$getDatabaseTable = mysqli_query($conn, "DELETE FROM " . $databaseTable);
-								
-		//Create the LOAD DATA LOCAL INFILE statement
-		$insertStatement = "LOAD DATA LOCAL INFILE '" . $filename . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES (";
-					
-		//Now append the headers to the LOAD DATA LOCAL INFILE statement, in the order they were retrieved from the file
-		//By structuring the query this way, even if the order of headers in the file changes the data can still be inserted
-		foreach($headers as $h) {
-			$insertStatement .= $h->value . ', ';
-			//echo '<script type="text/javascript"> console.log("' . $h  . '"); </script>';
-		}
-					
-		//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
-		$insertStatement = substr($insertStatement, 0, -2);
-			
-		//Now we specify the values to be inserted
-		$insertStatement .= ");"; 
-		/*echo '<script type="text/javascript">
-			console.log("INSERT STATEMENT: "' . $insertStatement . '");
-			</script>';*/								
-		//Above loop leaves a trailing ", " (comma, space) on insertStatement, so this will remove it 
-		//$insertStatement = substr($insertStatement, 0, -2);
+function createTable($fileHeaders, $databaseTable) {
+	$return = "CREATE TABLE " . $databaseTable . " (primaryID INT NOT NULL AUTO_INCREMENT, ";
 	
-		/*$failedCount = mysqli_query($conn, $insertStatement);
-		if($failedCount == true) {
-			echo '<script type="text/javascript">
-				console.log("SUPPOSEDLY TRUE INSERT");
-				</script>';
-		}
-		else if ($failedCount == false) {
-			echo '<script type="text/javascript">
-				console.log("' . $mysqli->error . '");
-				</script>';
-		}*/
+	foreach($fileHeaders as $f) {
+		$return .= $f . " VARCHAR(50), ";
+	}
+	
+	$return .= "PRIMARY KEY (primaryID));";
+	
+	return $return;
+}
 
-		if(!mysqli_query($conn, $insertStatement)) {
-			echo 'script type="text/javascript">
-				console.log("' . mysqli_error($conn) . '");
-				</script>';
-		}
-		else {
-			echo '<script type="text/javascript">
-				console.log("SUPPOSEDLY TRUE INSERT");
-				</script>';
-		}	
-		/*$checkUpload = "SELECT COUNT(*) FROM " . $databaseTable;
-		$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
-		$uploadCounter = mysqli_fetch_assoc($uploadCount);
-		if($failedCount == true) {
-			$successMessage .= $databaseTable . " has uploaded " . $uploadCounter['COUNT(*)'] . " records successfully! ";
-		}*/
-//	}
-	/*else {
-		$owner = true;
+/**
+	Creates the LOAD DATA LOCAL INFILE statement for a file
+*/
+function createLoadStatement($fileHeaders, $filename, $databaseTable) {
+	
+	$return = "LOAD DATA LOCAL INFILE '" . $filename . "' INTO TABLE " . $databaseTable . " FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n' IGNORE 1 LINES(";
+				
+	foreach($fileHeaders as $f) {
+		$return .= $f . ", ";
+	}
+	
+	//Above loop leaves a trailing ', ' (comma space) so this removes it
+	$return = substr($return, 0, -2);
+	
+	//Now we specify the values to be inserted
+	$return .= ");";
+
+	return $return;
+}
+
+/*
+	Calculate percentage (as a function of total upload size) of file upload left.
+	Also updates currentlyUploadedSize.
+*/
+function calcUploadPercentage($currentFileSize) {
+	$currentlyUploadedSize += $currentFileSize;
+	return ($currentlyUploadedSize / $totalSize);
+}
+
+//foreach($_FILES['uploadFile'] as $keyOuter => $valueOuter) {
+	/*print('uploadFileKey: ' . $key);
+	print('uploadFileValue: ');
+	print_r($value);*/
+
+/*
+	Get total size of files to be uploaded
+*/
+
+for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']);  ++$i) {
+	$totalSize += $_FILES['uploadFile']['size'][$i];
+}
+
+for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
+	$filename = $_FILES['uploadFile']['name'][$i];
+	$tempPath = $_FILES['uploadFile']['tmp_name'][$i];
+	$filesize = $_FILES['uploadFile']['size'][$i];
+	$databaseTable = $_POST['county'] . '_' . $filename;
+	$databaseTable = substr($databaseTable, 0, -4);
+		
+	/*****************
+		Move files into 'data' directory within application 
+	*****************/
+	$upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
+	copy(realpath($_FILES['uploadFile']['tmp_name'][$i]), $upload_dir . $_FILES['uploadFile']['name'][$i]);
+	$localFile = $upload_dir . $_FILES['uploadFile']['name'][$i];
+		
+	//Open file to be uploaded ('countyName_fileName.txt')
+	$importFile = fopen(realpath($localFile), "r") or die("Unable to open file.");
+
+	//Check if file has existing table and drop if so 
+	$checkTable = mysqli_query($conn, "SHOW TABLES LIKE '" . $databaseTable . "';");
+	if(mysqli_num_rows($checkTable) > 0) {
+		$getDatabaseTable = mysqli_query($conn, "DROP TABLE " . $databaseTable);
+	}
+
+	//Retrieves header layout from first line of file to be uploaded (each field is delimited with a tab)
+	$fileHeaders = fgets($importFile);
+	$fileHeaders = explode("\t", $fileHeaders);	
+			
+	//Create corresponding table based on file headers 
+	$createTableStatement = createTable($fileHeaders, $databaseTable);
+	$checkTable = mysqli_query($conn, $createTableStatement);
+	if(!$checkTable) {
+		print "Error creating " . $databaseTable . ".";
+	}
+			
+	//Create the load data local infile statement
+	$loadStatement = createLoadStatement($fileHeaders, $localFile, $databaseTable);
+	/*echo "<br><br><br>";
+	print "LOAD STATEMENT: " . $loadStatement;
+	echo "<br><br><br>";*/
+				
+	$failedCount = mysqli_query($conn, $loadStatement);
+	$checkUpload = "SELECT COUNT(primaryID) FROM " . $databaseTable;
+	$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
+	$uploadCounter = mysqli_fetch_assoc($uploadCount);
+	/*if($failedCount == true) {
+		//print $uploadCounter['COUNT(primaryID)'] . " records added successfully to " . $databaseTable . "<br>";
+		$return = calcUploadPercentage($filesize);
+		echo $return . PHP_EOL;
+		ob_flush();
+		flush();
 	}*/
+	/*else {
+		print "Records not added successfully.<br>";
+	}*/
+}
+	/*foreach($value as $v) {
+		foreach($v as $key => $vs) {
+			print "Key: " . $key . "<br>";
+			print "Value: " . $vs . "<br>";
+		}
+	}
+	echo 'End outer <br>';*/
+	/*foreach($value as $file) {
+		print_r($file);
+		echo ' end outer <br>';
+		/*foreach($file as $key => $innerValue) {
+			
+			print "Key: " . $key . "<br>";
+			print "Inner value: " . $file[$key] . "<br>";
+			//print_r($key);
+			echo "END FILE KEY<br>"; 
+			//print_r($fileValue);
+			
+			//echo $FILES['name'][0];
+			//echo realpath($FILES['tmp_name'][0]);
+			//print_r($FILES);
+			//File name will not have county name included
+			//Prepend county name based on value chosen from dropdown menus	
+			/*$databaseTable = $_POST['county'] . '_' . $file[$key];
+			echo 'database table: ' . $databaseTable . '<br>';
+			echo "<br><br><br>";
+		}*/
+	//}
 //}
-		//$successMessage = json_encode($successMessage);
-		/*echo '<script type="text/javascript">
-				history.back(alert ("' . $successMessage . '"));
-					</script>';*/
-/*if($owner == false) {
-	echo '<script type="text/javascript">
-			history.back(alert("Upload Finished!"));
-		</script>';
-} */
-//else {
-
-	/*ob_start();
-	include "createHeaders.php";
-	$createHeaders = ob_get_clean();
-	print $createHeaders;(*/
-}}
+			
+			//echo "UPLOAD DIRECTORY: " . $localFile;
 ?>
 

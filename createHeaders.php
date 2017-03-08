@@ -196,7 +196,7 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 	
 	//});
 	
-	function changeValue(control) {
+	/*function changeValue(control) {
 		var headers = headers.elements['databaseTableHeaders[]'];
 		for(var i = 0; i < headers.length; ++i) {
 			console.log(headers[i]);
@@ -228,7 +228,7 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 			//console.log("TOTAL DATABASE INPUT VAL ARRAY " + i + ": " + databaseVal);
 		}
 		
-		/*//var sorted_arr = fileValArr.sort();
+		//var sorted_arr = fileValArr.sort();
 		var results = [];
 		for(var i = 0; i < fileValArr.length - 1; ++i) {
 			if(sorted_arr[i + 1] == sorted_arr[i]) {
@@ -239,6 +239,6 @@ function mapHeaders($databaseTableHeaders, $fileHeaders) {
 		$("#<?php echo $databaseTable ?> input").removeClass('highlight');
 		for(var k = 0; k < fileInput; ++k) {
 			$("#<?php echo $databaseTable ?> :input[value='" + results[k] + "']").addClass('highlight');
-		}*/
-	}
+		}
+	}*/
 </script>
