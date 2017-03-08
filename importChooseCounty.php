@@ -1,5 +1,5 @@
 <?php
-	//include("import_createHeaders.php");
+	include("common.php");
 	
 	/*if($_SERVER['REQUEST_METHOD'] == 'POST') {
 		session_start();
@@ -15,142 +15,183 @@
 <html>
 <head>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<script src="jquery-progressTimer-master/src/js/jquery.progressTimer.js"></script>
+	<script src="http://malsup.github.com/jquery.form.js"></script> 
+	<!--<script src="https://netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>-->
+	<!--<link rel="stylesheet" type="text/css" href="jquery-progressTimer-master/src/css/jquery.progressTimer.css">-->
+	<!--<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">-->
+	<link rel='stylesheet' type='text/css' href='import.css'>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 </head>
 <body>
-<form id="import_form" method="POST" enctype="multipart/form-data" accept-charset="utf-8">
+<form id="import_form" action="do_import.php" method="POST" enctype="multipart/form-data" accept-charset="utf-8">
 	<input type="file" id="uploadFile" name="uploadFile[]" multiple="multiple"/><br>
 	<select name="county" id="county">
 		<option value="selected">Choose a county</option>
-		<option value="ulster">Ulster County</option>
+		<?php foreach($counties as $c) { ?>
+			<option value="<?php echo $c ?>"><?php echo ucwords($c) ?></option>
+<?php	}	?>
 	</select> 
-	<input type="submit" class="button" id="import_form_submit" name="btn btn-submit"/>
+	<button type="submit" id="submit" name="btn btn-submit">Submit</button>
 </form>
+<div class="loading-progress" id="progressBar"></div>
 </body>
 </html>
 
 <script type="text/javascript">
-	var allFiles = Array();
-
-	$('#import_form_submit').click(function(e) {
-		var county = document.getElementById("county").value;
-		//var $this = $(this);
-		//$('#import_form').preventDefault();
-		e.preventDefault();
-		$('#uploadFile').each(function(index, element) {
-			var file = $(element);
-			file = file.val();
-			file = file.slice(file.lastIndexOf("\\"));
-			file = file.substring(1);
-			allFiles.push(file);
-			$.ajax({
-				type: "GET",
-				async: true,
-				url: "createHeaders.php",
-				data: { county: county, fileName: file } ,
-				success: function(response) {
-					$('#import_form').hide();
-					document.write(response);
-				},
-				error: function(response) {
-					//$('#import_form').hide();
-					console.log("ERROR: "+response);
-				}
-			});
-		//});
-		});
-		//$('#import_form').hide();
-		return false;
-	});
 	
-		/*$('.td').attr('contenteditable', 'true');
-		var cell;*/
-	function submitTable(databaseTable, file) {				
-			headers = document.getElementById(databaseTable);
-			headers = headers.elements['databaseHeaders[]'];
-
-			/*console.log("FILE: " + file);
-			console.log("TABLE: " + databaseTable);
-			console.log("HEADERS: " + JSON.stringify($(headers).serializeArray()));*/
-			$.ajax ({
-				xhr: function()
-  {
-    var xhr = new window.XMLHttpRequest();
-    //Upload progress
-    xhr.upload.addEventListener("progress", function(evt){
-      if (evt.lengthComputable) {
-        var percentComplete = evt.loaded / evt.total;
-        //Do something with upload progress
-        console.log(percentComplete);
-      }
-    }, false);
-    //Download progress
-    xhr.addEventListener("progress", function(evt){
-      if (evt.lengthComputable) {
-        var percentComplete = evt.loaded / evt.total;
-        //Do something with download progress
-        console.log(percentComplete);
-      }
-    }, false);
-    return xhr;
-  },
-				type: 'POST',
-				url: 'do_import.php',
-				data: { headers: JSON.stringify($(headers).serializeArray()), filename: file, databaseTable: databaseTable}, 
-				success: function(response) {
-					$('#'+databaseTable).hide();
-					var i = allFiles.indexOf(file);
-					if(i != -1) {
-						allFiles.splice(i, 1);
-					}	
-					if(allFiles.length == 0) {
-						window.location='importChooseCounty.php';
-					}
-					console.log(response);
-				},
-				error: function(response) {
-					$('#'+databaseTable).hide();
-					var i = allFiles.indexOf(file);
-					if(i != -1) {
-						allFiles.splice(i, 1);
-					}	
-					if(allFiles.length == 0) {
-						window.location='importChooseCounty.php';
-					}
-
-					console.log(response);
-				}
-			});
+	$("#import_form").on("submit", function() {
+		/*var progress = $(".loading-progress").progressTimer({
+			onFinish: function() {
+				window.location.assign("index.php");
 		}
-
-		/*function highlight() {
-			$(arguments).toggleClass('invalid', true);
-		}
-
-	function compareHeaders() {
-		//Reset style before re-checking
-		$('td.invalid').toggleClass('invalid');
-		//Get table rows as array of array
-		var rows = $('tr').map(function(elem, i) {
-			return [$(this).children('td').toArray()];
-		}).toArray();
-
-		//Loop through the rows and highlight non-equal
-		for(var i = 0; i < rows.length; ++i) {
-			cell = {};
-			for(var j = 0; j < rows[i].length; ++j) {
-				var cellText = $(rows[i][j]).text();
-				if(cell[cellText] != $(rows[i][j+1]).text()) {
-					highlight(cell[cellText], rows[i][j]);
+		});*/
+		$("#progressBar").progressTimer({ value: 0 });
+		
+		var source = new EventSource("do_import.php");
+		
+		source.addEventListener('message', function(e) {
+			var pct = e * 100;
+			$("#progressBar").progressBar('option', 'value', pct).children('.ui-progressbar-value').html(pct.toPrecision(3) + '%').css('display', 'block');
+		});
+	
+		$.ajax({
+			url: "do_import.php",
+			/*error: function() {
+				progress.progressTimer('error', {
+					errorText: 'error',
+					onFinish: function() {
+						alert('processing error');
+					}
+				});
+			},
+			done: function() {
+				progress.progressTimer('complete');
+			},*/
+			
+			progress: function(e) {
+				if(e.lengthComputable) {
+					var pct = (e.loaded /e.total) * 100;
+					$("#progressBar").progressbar('option', 'value', pct).children('.ui-progressbar-value').html(pct.toPrecision(3) + '%').css('display', 'block');	
 				}
 				else {
-					cell[cellText] = rows[i][j];
-				}
-				if(i < rows.length - 1 && cellText != $(rows[i + 1][j]).text()) {
-					highlight(rows[i][j], rows[i + 1][j]);
+					console.warn('didnt work');
 				}
 			}
+		});
+		//});
+	//});
+			/*function xhr() {
+			var xhr = new window.XMLHttpRequest();
+			//Upload progress
+			xhr.upload.addEventListener("progress", function(evt){
+			  if (evt.lengthComputable) {
+				var percentComplete = evt.loaded / evt.total;
+				//Do something with upload progress
+				console.log(percentComplete);
+			  }
+			}, false);
+			//Download progress
+			xhr.addEventListener("progress", function(evt){
+			  if (evt.lengthComputable) {
+				var percentComplete = evt.loaded / evt.total;
+				//Do something with download progress
+				console.log(percentComplete);
+			  }
+			}, false);
+			return xhr;
+		  }
+	});*/
+		  
+		  /*type: 'POST',
+		  url: "do_import.php",
+		  data: form_data,
+		  success: function(data){
+			console.log("success");
+		  }*/
+	//});
+//});
+	/*$("#progress").hide();
+		
+	
+	$("#import_form").on("submit", function() {
+			$("#progress").show();
+			var progressBar = document.getElementById("progress");
+	var xhr = new XMLHttpRequest();
+			xhr.open("POST", "do_import.php", true);
+		
+	xhr.upload.onprogress = function(e) {
+	if(e.lengthComputable) {
+			progressBar.max = e.total;
+			progressBar.value = e.loaded;
 		}
 	}
-	$('.td').change(compareHeaders());*/
+		
+	xhr.upload.onloadstart = function(e) {
+		progressBar.value = 0;
+	}
+		
+	xhr.upload.onloadend = function(e) {
+		progressBar.value = e.loaded;
+	}
 	
+	xhr.send(new FormData());
+	});*/
+		
+		/*var progressbar = $("#progressbar");
+		progressLabel = "Loading...";
+		progressLabel = $(progressLabel);
+		
+		$("#progressbar").progressbar({
+			value: false,
+			change: function() {
+				progressLabel.text(progressbar.progressbar("value") + "%");
+			},
+			complete: function() {
+				progressLabel.text("Import Complete");
+			}
+		});
+		function progress() {
+			var val = progressbar.progressbar("value") || 0;
+			progressbar.progressbar("value", val + 1);
+			
+		}*/
+		
+		
+		/*jQuery.ajaxSettings.xhr = function(){
+				var xhr = new window.XMLHttpRequest();
+				//Upload progress
+				xhr.upload.addEventListener("progress", function (evt) {
+					if (evt.lengthComputable) {
+						var percentComplete = evt.loaded / evt.total;
+						//Do something with upload progress
+						console.log('percent uploaded: ' + (percentComplete * 100));
+					}
+				}, false);
+				//Download progress
+				xhr.addEventListener("progress", function (evt) {
+					if (evt.lengthComputable) {
+						var percentComplete = evt.loaded / evt.total;
+						//Do something with download progress
+						console.log('percent downloaded: ' + (percentComplete * 100));
+					}
+				}, false);
+				return xhr;
+		}*/
+		
+		/*$.ajax({
+			type: 'POST',
+			url: "do_import.php",
+			data: {county: county},
+			success: function(response) {
+				console.log(response);	
+				window.location.assign("index.php");
+			}
+			/*progress: function(xhr) {
+				console.log(xhr);
+			}
+		});*/
+	//});
 </script>
+

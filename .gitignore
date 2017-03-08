@@ -4,3 +4,4 @@ sweetalert-master/*
 *.npmignore
 *.json
 data/*
+jquery-*
