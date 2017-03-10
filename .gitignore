@@ -5,3 +5,5 @@ sweetalert-master/*
 *.json
 data/*
 jquery-*
+*.sql
+sweetalert*

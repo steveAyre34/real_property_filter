@@ -1,13 +1,7 @@
-<?php
+<?php	
 	require('common.php');
-
-	/*if($_SERVER['REQUEST_METHOD'] == 'POST') {
-		if(in_array('owner.txt', $_FILES['uploadFile']['name'])) {
-			echo file_get_contents('https://localhost/real_property_filter/createHeaders.php');
-		}
-	}*/
-		
 ?>
+
 <!DOCTYPE html>
 
 <html>
@@ -22,9 +16,8 @@
 <body bgcolor="#b3d5ff">
 <h1>Welcome to the New York State Real Property Data Filter</h1>
 
-<form id="form" action="do_import.php" method="POST" enctype="multipart/form-data">
-
 <p><strong>Please Select A County:</strong></p>
+<form id="form">
 <select name="county" id="chosenCounty">
 <?php
 	foreach($counties as $c) {
@@ -37,12 +30,6 @@
 		  ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
 	<?php }} ?>
 </select>
-<input type="submit" value="Go" formmethod="GET" formaction="select.php"/><br>
-<input type="file" id="uploadFile" name="uploadFile[]" multiple="multiple"/>
-<input type="submit" value="Upload Files">
+<input type="submit" value="Go" formmethod="GET" formaction="select2.php"/><br>
+<input type="submit" value="Import" formmethod="GET" formaction="importChooseCounty.php"/>
 </form>
-
-<?php include ('maps/imagemap.php') ?>
-</body>
-</html>
-
