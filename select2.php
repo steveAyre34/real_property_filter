@@ -51,7 +51,7 @@
 	$(".ui-accordion").accordion({
 		heightStyle: "content",
 		collapsible: true,
-		active: false,
+		active: true,
 		activate: function(event, ui) {
 			var table = $(this).attr("id");
 			$.ajax({
