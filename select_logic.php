@@ -1,5 +1,6 @@
 <?php
 require_once('common.php');
+require("connection.php");
 
 //functions to create selection criteria form elements for the Real Property Data Filter
 	

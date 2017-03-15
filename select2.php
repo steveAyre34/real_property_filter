@@ -17,8 +17,7 @@
 	*/
 	$alreadyDisplayedFields = array();
 	$tableMarker = array();
-	$_SESSION['alreadyDisplayedFields'] = $alreadyDisplayedFields;
-	$_SESSION['tableMarker'] = $tableMarker;
+	$_SESSION['alreadyDisplayedFields'] = $alreadyDisplayedFields;	
 ?>
 
 
@@ -30,17 +29,17 @@
 	</head>
 
 	<body>
-			<div id="Owner" class="ui-accordion">
+			<div id="Owner" class="ui-accordion ui-state-disabled">
 				<div id="accordion-header_Owner" class="ui-accordion-header">
 					<h4>Owner</h4>
 				</div>
 				<div id="accordion-content_Owner" class="ui-accordion-content">
 				</div>
 			</div>
-		<?php 
-			foreach($tables as $key => $value) { 
+		
+<?php		foreach($tables as $key => $value) { 
 				if($value != "Owner") {?>
-				<div id="<?php echo $value ?>" class="ui-accordion">
+				<div id="<?php echo $value ?>" class="ui-accordion ui-state-disabled">
 					<div id="accordion-header_<?php echo $value ?>" class="ui-accordion-header">
 						<h4><?php echo $value ?></h4>
 					</div>
@@ -56,7 +55,7 @@
 	$(".ui-accordion").accordion({
 		heightStyle: "content",
 		collapsible: true,
-		active: true,
+		active: false,
 		create: function(event, ui) {
 			var table = $(this).attr("id");
 			$.ajax({
@@ -65,10 +64,22 @@
 				data: {county: '<?php echo $county ?>', table: table},
 				success: function(response) {
 					$("#accordion-content_" + table).html(response);
+				},
+				/*error: function(response) {
+					$("#accordion-content_" + table).html("Error loading response.");
+				}*/
+				complete: function(response) {
+					$("#" + table).removeClass("ui-state-disabled");
+					$("#" + table).addClass("ui-state-enabled");
 				}
 			});
-		}
+		}/*,
+		beforeActivate: function(event, ui) {
+			$("#accordion-content_" + table).accordion("enable");
+		}*/
 	});
-	
+	$(".selectMenu").multiselect({
+		columns: 2
+	});
 	
 </script>
