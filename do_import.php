@@ -25,7 +25,7 @@ function createTable($fileHeaders, $databaseTable) {
 	$return = "CREATE TABLE " . $databaseTable . " (primaryID INT NOT NULL AUTO_INCREMENT, ";
 	
 	foreach($fileHeaders as $f) {
-		$return .= $f . " VARCHAR(50), ";
+		$return .= strtolower($f) . " VARCHAR(50), ";
 	}
 	
 	$return .= "PRIMARY KEY (primaryID));";

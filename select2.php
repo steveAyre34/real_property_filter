@@ -1,15 +1,24 @@
 <?php
+	session_start();
 	require('connection.php');
 	$county = $_GET['county'];
 	
 	//Get names of all tables for chosen county 
 	$showTables = "SHOW TABLES LIKE '" . $county . "%';";
-	$result = mysqli_query($conn, $showTables);
-	
+	$result = mysqli_query($conn, $showTables);	
 	while($row = mysqli_fetch_array($result)) {
 		$name = $row[0];
 		$tables[] = ucwords(trim(preg_replace('/' . $county . '_/', ' ', $name)));
 	}
+	
+	/*
+	* Creates a master list of duplicate categories already displayed for this county
+	* This way we don't pull duplicate search categories across files 
+	*/
+	$alreadyDisplayedFields = array();
+	$tableMarker = array();
+	$_SESSION['alreadyDisplayedFields'] = $alreadyDisplayedFields;
+	$_SESSION['tableMarker'] = $tableMarker;
 ?>
 
 
@@ -44,15 +53,11 @@
 </html>
 
 <script type="text/javascript">
-	/*********************
-		Need js code to activate each accordion
-	//.accordion() 
-	*********************/
 	$(".ui-accordion").accordion({
 		heightStyle: "content",
 		collapsible: true,
 		active: true,
-		activate: function(event, ui) {
+		create: function(event, ui) {
 			var table = $(this).attr("id");
 			$.ajax({
 				type: "GET",
@@ -64,8 +69,6 @@
 			});
 		}
 	});
-	
-	//$("ui-accordion").on("accordionactivate")
 	
 	
 </script>

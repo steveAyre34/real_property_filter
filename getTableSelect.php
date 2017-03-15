@@ -1,52 +1,40 @@
 <?php
 	require("connection.php");
-	$county = $_GET['county'];
+	//include("select2.php");
+	session_start();
 	
-	/*
-	* Creates a master list of categories present in owner.txt for this county
-	* This way we don't pull duplicate search categories across files (everything in owner is searchable, not necessarily so for others)
-	*/
-	$query = "SHOW COLUMNS FROM " . $county . "_owner;";
-	$ownerFields = array();
-	if($result = mysqli_query($conn, $query)) {
-		//Get field information for all fields 
-		while($row = $result->fetch_assoc()) {
-			array_push($ownerFields, $row['Field']);
-		}
-		mysqli_free_result($result);
-	}
+	$county = $_GET['county'];
+	$alreadyDisplayedFields = $_SESSION['alreadyDisplayedFields'];
 	
 	$fieldNames = array();
 	
-	if(strcmp($_GET['table'], 'Owner') != 0) {
-		/*
-		* For display purposes table name was capitalized on view page
-		* This removes the capitalization to match table names
-		*/
-		$table = $county . '_' . lcfirst($_GET['table']);
+	/*
+	* For display purposes table name was capitalized on view page
+	* This removes the capitalization to match table names
+	*/
+	$table = $county . '_' . lcfirst($_GET['table']);
 		
-		/*
-		* Now we need to get the fields for whichever table is being requested
-		*/
-		$query = "SHOW COLUMNS FROM " . $table . ";";
-		if($result = mysqli_query($conn, $query)) {
-			//Get field information for all fields 		
-			while($row = $result->fetch_assoc()) {
-				if(!in_array($row['Field'], $ownerFields))
-					array_push($fieldNames, $row['Field']);
+	/*
+	* Now we need to get the fields for whichever table is being requested
+	* Also need to check for duplicates that already are displayed in other accordions and make sure primary key (primaryID) is not displayed - not a searchable field
+	*/
+	$query = "SHOW COLUMNS FROM " . $table . ";";
+	if($result = mysqli_query($conn, $query)) {
+		//Get field information for all fields 		
+		while($row = $result->fetch_assoc()) {
+			//If the field isn't a duplicate and isn't the primary key, add it to list of fields to be displayed and add to duplicate list for future checks
+			if(!in_array($row['Field'], $alreadyDisplayedFields) && strcmp($row['Field'], 'primaryID') != 0) {
+				array_push($fieldNames, $row['Field']);
+				array_push($alreadyDisplayedFields, $row['Field']);
 			}
+		}
 		
-			mysqli_free_result($result);
-		}
-		mysqli_close($conn);
+		mysqli_free_result($result);
 	}
-	else {
-		foreach($ownerFields as $owner) {
-			if(strcmp($owner, 'primaryID') != 0)
-				array_push($fieldNames, $owner);
-		}
-		mysqli_close($conn);
-	}
+	mysqli_close($conn);
+	
+	//Update the fields displayed for this table for future duplicate checks
+	$_SESSION['alreadyDisplayedFields'] = $alreadyDisplayedFields;
 ?>
 
 <html>
