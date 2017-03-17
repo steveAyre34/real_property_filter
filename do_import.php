@@ -163,8 +163,20 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 			//echo "UPLOAD DIRECTORY: " . $localFile;
 	
 	mysqli_close($conn);
-	echo '<script type="text/javascript">
-				window.location.assign("importChooseCounty.php");
-			</script>';
+	
 ?>
+
+<!--<script type="text/javascript">
+	$(document).ready(function() {
+			swal({
+			title: "Please be patient!",
+			text: "Some counties can contain multiple hundreds of thousands of records - it may take a few minutes!",
+			type: "warning",
+			showCancelButton: true,
+			showConfirmButton: false,
+			showLoaderOnConfirm: true,
+			allowOutsideClick: false	
+		})
+	});
+</script>-->
 
