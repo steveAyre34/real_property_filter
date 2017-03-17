@@ -75,7 +75,6 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']);  ++$i) {
 	$totalSize += $_FILES['uploadFile']['size'][$i];
 }
 
-//$timer = false;
 for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 	$filename = $_FILES['uploadFile']['name'][$i];
 	$tempPath = $_FILES['uploadFile']['tmp_name'][$i];
@@ -131,8 +130,6 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 		print "Records not added successfully.<br>";
 	}*/
 }
-
-	//$timer = true;
 	/*foreach($value as $v) {
 		foreach($v as $key => $vs) {
 			print "Key: " . $key . "<br>";
@@ -171,18 +168,3 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 			</script>';
 ?>
 
-<script type="text/javascript">
-	/*Object.observe($timer, function(changes) {
-		console.log(changes[0]);
-	});*/
-	
-	/*swal({
-			title: "Please be patient!",
-			text: "Some counties can contain multiple hundreds of thousands of records - it may take a few minutes!",
-			type: "warning",
-			showCancelButton: true,
-			confirmButtonText: "Submit",
-			showLoaderOnConfirm: true,
-			allowOutsideClick: false,
-		})*/
-</script>
