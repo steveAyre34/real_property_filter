@@ -5,6 +5,7 @@
 	//define selection criteria for the Real Property Data Filter. Sends form data to results.php
 	require_once('common.php');
 	require_once('select_logic.php');
+	
 	//sanity check on location
 	if(!isset($_GET['county'])){
 		die("Error: No county specified. County must be specified as an HTTP Get");

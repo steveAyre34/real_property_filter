@@ -12,7 +12,7 @@
 	
 </head>
 <body>
-<form id="import_form" action="do_import.php" method="POST" enctype="multipart/form-data" accept-charset="utf-8">
+<form id="import_form"  method="POST" enctype="multipart/form-data" accept-charset="utf-8">
 	<input type="file" id="uploadFile" name="uploadFile[]" multiple="multiple"/><br>
 	<select name="county" id="county">
 		<option value="selected">Choose a county</option>
@@ -26,7 +26,7 @@
 </html>
 
 <script type="text/javascript">	
-	/*$("#import_form").on("submit", function(e) {
+	$("#import_form").on("submit", function(e) {
 		e.preventDefault();
 		swal({
 			title: "Please be patient!",
@@ -50,6 +50,6 @@
 				})
 			}
 		});
-	});*/
+	});
 </script>
 
