@@ -35,7 +35,9 @@
 					$query = "SELECT DISTINCT " . $field . " FROM " . $table . /*" USE INDEX (" . $field . "_index)*/";";
 					if($result = mysqli_query($conn, $query)) {
 						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-							array_push($this->selectMenuValues, $row[$field]);
+							if(trim($row[$field]) != "") {
+								array_push($this->selectMenuValues, $row[$field]);
+							}
 						}
 					}
 			}
@@ -88,25 +90,27 @@
 	<link rel="stylesheet" href="jquery.multiselect.css"/>
 <body>
 	
-		<?php foreach($fields as $field) { ?>
-			<select name="<?php echo $field->fieldName ?>_menu[]" multiple="multiple" class="selectMenu[]" placeholder="<?php echo $field->fieldName ?>">
+		<?php foreach($fields as $field) { 
+			if(sizeOf($field->selectMenuValues) > 0) {?>
+			<h4><?php echo $field->fieldName ?></h4>
+			<select name="<?php echo $field->fieldName ?>" multiple="multiple" class="selectMenu[]">
 <?php			foreach($field->selectMenuValues as $menuValue) { ?>
 						<option value="<?php echo $menuValue ?>"><?php echo $menuValue ?></option>
 <?php			} ?>
 			</select>
 			<br>
-<?php		} ?>
+<?php		}} ?>
 	
 </body>
 </html>
 
-<script type="text/javascript">
+<!--<script type="text/javascript">
 	$(".selectMenu").each(function() {
 		$(this).multiselect({
 			placeholder: $(this).attr('placeholder')
 		})
 	});
-</script>
+</script>-->
 
 <?php
 	if(!is_dir($cache_folder)) {
