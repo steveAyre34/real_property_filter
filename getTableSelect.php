@@ -32,7 +32,7 @@
 			public function __construct($field, $table, $conn){
 				
 					$this->fieldName = $field;
-					$query = "SELECT DISTINCT " . $field . " FROM " . $table . /*" USE INDEX (" . $field . "_index)*/";";
+					$query = "SELECT DISTINCT " . $field . " FROM " . $table . /*" USE INDEX queryIndex*/";";
 					if($result = mysqli_query($conn, $query)) {
 						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 							if(trim($row[$field]) != "") {

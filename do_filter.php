@@ -1,10 +1,7 @@
 <?php
 	require("connection.php");
 	
-	echo "POST:<br>";
-	//print_r($_POST);
-
-	$filterStatement = "SELECT COUNT(" . $_POST['county'] . "_owner.ownerID) FROM " . $_POST['county'] . "_owner, ";
+	$filterStatement = "SELECT COUNT(" . $_POST['county'] . "_owner.owner_id) FROM " . $_POST['county'] . "_owner, ";
 	$tablesAddedToStatement = array();
 	array_push($tablesAddedToStatement, "owner");
 
@@ -35,9 +32,16 @@
 			if($separatePostValue[1] != "owner") {
 				$filterStatement .= "(";
 				foreach($postValue as $selectMenuValue) {
-					$whereClause = $_POST['county'] . "_" . $separatePostValue[1] . "." . $separatePostValue[0] . "=" . $_POST['county'] . "_owner" . "." . $separatePostValue[0];
+					$whereClause = "(" . $_POST['county'] . "_" . $separatePostValue[1] . "." . $separatePostValue[0] . "='" . $selectMenuValue . "'";
+					$whereClause .= " AND (";
+					if(/*table has owner id*/) {
+						. $_POST['county'] . "_owner.owner_id=" . $_POST['county'] . "_owner.owner_id)";
+					}
+					else {
+						//match by parcel_id and muni_code 
+					}
 					$filterStatement .= $whereClause;
-					$filterStatement .= " or ";
+					$filterStatement .= " OR ";
 				}
 				$filterStatement .= ")";
 			}
@@ -46,17 +50,26 @@
 				foreach($postValue as $selectMenuValue) {
 					$whereClause = $_POST['county'] . "_owner." . $separatePostValue[0] . "='" . $selectMenuValue . "'";
 					$filterStatement .= $whereClause;
-					$filterStatement .= " or ";
+					$filterStatement .= " OR ";
 				}
 				$filterStatement .= ")";
 			}
 			$filterStatement = substr($filterStatement, 0, -5);
-			$filterStatement .= ") and ";
+			$filterStatement .= ") AND ";
 		}
 	}
 
 	//Remove trailing ' and ' (space and space)
 	$filterStatement = substr($filterStatement, 0, -5);
+	
+	//Add trailing semicolon
+	$filterStatement .= ";";
 	echo "<br><br>";
 	echo $filterStatement;
+	$filterQuery = mysqli_query($conn, $filterStatement);
+	$filterResult = mysqli_fetch_assoc($filterQuery);
+	print("Filter Result: ");
+	foreach($filterResult as $resultKey => $resultValue) {
+		print($resultValue . "<br>");
+	}
 ?>	
