@@ -93,7 +93,7 @@
 		<?php foreach($fields as $field) { 
 			if(sizeOf($field->selectMenuValues) > 0) {?>
 			<h4><?php echo $field->fieldName ?></h4>
-			<select name="<?php echo $field->fieldName ?>" multiple="multiple" class="selectMenu[]">
+			<select name="<?php echo $field->fieldName ?>||<?php echo strtolower($_GET['table']) ?>[]" multiple="multiple" class="selectMenu[]">
 <?php			foreach($field->selectMenuValues as $menuValue) { ?>
 						<option value="<?php echo $menuValue ?>"><?php echo $menuValue ?></option>
 <?php			} ?>

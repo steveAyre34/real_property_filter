@@ -46,10 +46,13 @@
 		<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
 		<script src="jquery.multiselect.js"></script>
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-		<link href="jquery.multiselect.css" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
+		<link rel="stylesheet" type="text/css" href="filter.css">
 	</head>
 
 	<body>
+		<form id="filter_form" action="do_filter.php" method="POST">
+			<input name="county" type="hidden" value="<?php echo $_GET['county'] ?>"/>
 			<div id="Owner" class="ui-accordion ui-state-disabled">
 				<div id="accordion-header_Owner" class="ui-accordion-header">
 					<h4>Owner</h4>
@@ -69,6 +72,8 @@
 				</div>
 <?php			}
 			} ?>
+			<button type="submit" id="filterButton">Filter</button>
+		</form>
 	</body>
 </html>
 
