@@ -4,6 +4,7 @@
 
 	//define selection criteria for the Real Property Data Filter. Sends form data to results.php
 	require_once('common.php');
+	include('connection.php');
 	require_once('select_logic.php');
 	//sanity check on location
 	if(!isset($_GET['county'])){
@@ -11,7 +12,7 @@
 	}
 	$county = $_GET['county'];
 	if(!in_array($county, $counties)){
-		die("Sorry, {$county} county is not in our database");
+		die("Sorry, " . $county . " county is not in our database");
 	}
 	$default_width = 60;
 ?>
@@ -33,12 +34,12 @@
 
 			<h2>Section 0: Assessment Information</h2>
 			<?
-			$table = $county . '_class';
-			print('<table><tr><td width = "540px">');
+			$table = $county . '_class.total_av';
+			print(<table><tr><td width = '540px'>);
 			print(makeMinMaxSelector('total_av', 'Dollars', 'Total Assessment', $default_width));
 			print('</td><td width = "540px">');
 			print(makeMinMaxSelector('land_av', 'Dollars', 'Land Assessment', $default_width));
-			print('</td></tr></table>');
+			print('</td></tr></table>';)
 			?>
 
 			<h2>Section 1: Parcel (Location) Information</h2>

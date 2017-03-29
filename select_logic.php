@@ -1,4 +1,5 @@
 <?php
+include("connection.php");
 require_once('common.php');
 
 //functions to create selection criteria form elements for the Real Property Data Filter
@@ -54,12 +55,12 @@ function makeMinMaxSelector($name, $units, $label, $width){
 	$label = makeCheckbox('bounds[]', $name, $label);
 	//$file = makeCheckbox('file[]', $name, '(Include Field in Output)');
 	$file = "";
-	$html .= "<tr {$width}>";
+	$html .= "<tr " . $width . "}>";
 	$html .= '<div class="dcfieldname">' . $label . '&nbsp;&nbsp;' . $file . '</div>';
 	$html .= "</tr><tr>";
-	$html .= "<td>At least&nbsp;&nbsp;</td><td><input type='text' name='min_{$name}' size='10'/></td><td>&nbsp {$units}</td>";
+	$html .= "<td>At least&nbsp;&nbsp;</td><td><input type='text' name='min_" . $name . "}' size='10'/></td><td>&nbsp " . $units . "}</td>";
 	$html .= "</tr><tr>";
-	$html .= "<td>At most&nbsp;&nbsp;</td><td><input type='text' name='max_{$name}' size='10'/></td><td>&nbsp {$units}</td>";
+	$html .= "<td>At most&nbsp;&nbsp;</td><td><input type='text' name='max_" . $name . "}' size='10'/></td><td>&nbsp " . $units . "}</td>";
 	$html .= '<input type="hidden" id="' . $name . '" name="'. $name .'[]" value="-1" />';
 	$html .= "</tr></table>"; 
 	return $html;

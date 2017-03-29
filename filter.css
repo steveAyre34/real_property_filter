@@ -1,7 +1,8 @@
 #filterButton {
-	bottom: 10%;
+	bottom: 0%;
 	vertical-align: middle;
 	position: fixed;
 	width: 50%;
-	height: 25%;
+	height: 15%;
+	background-color: blue;
 }
