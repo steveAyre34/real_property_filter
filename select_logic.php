@@ -50,17 +50,17 @@ function makeCheckBox($name, $value, $label, $align='left', $checked=FALSE){
 *@return: the html for a checkbox		
 **/
 function makeMinMaxSelector($name, $units, $label, $width){
-	$html = "<table>";
+	$html = '<table>';
 	$width = ' style="width: ' . $width . 'ex;"';
 	$label = makeCheckbox('bounds[]', $name, $label);
 	//$file = makeCheckbox('file[]', $name, '(Include Field in Output)');
 	$file = "";
-	$html .= "<tr " . $width . "}>";
+	$html .= '<tr ' . $width . '>';
 	$html .= '<div class="dcfieldname">' . $label . '&nbsp;&nbsp;' . $file . '</div>';
-	$html .= "</tr><tr>";
-	$html .= "<td>At least&nbsp;&nbsp;</td><td><input type='text' name='min_" . $name . "}' size='10'/></td><td>&nbsp " . $units . "}</td>";
-	$html .= "</tr><tr>";
-	$html .= "<td>At most&nbsp;&nbsp;</td><td><input type='text' name='max_" . $name . "}' size='10'/></td><td>&nbsp " . $units . "}</td>";
+	$html .= '</tr><tr>';
+	$html .= '<td>At least&nbsp;&nbsp;</td><td><input type="text" name="min_' . $name . '" size="10"/></td><td>&nbsp ' . $units . '</td>';
+	$html .= '</tr><tr>';
+	$html .= '<td>At most&nbsp;&nbsp;</td><td><input type="text" name="max_' . $name . '" size="10"/></td><td>&nbsp ' . $units . '</td>';
 	$html .= '<input type="hidden" id="' . $name . '" name="'. $name .'[]" value="-1" />';
 	$html .= "</tr></table>"; 
 	return $html;
@@ -98,10 +98,10 @@ function makeSelectionList($link, $county, $field, $table, $label, $name, $width
 	$html .= "</tr><tr>";
 	$sql = 'SELECT ' . $field . ', COUNT(*) FROM ' . $table . ' GROUP BY ' . $field . ' ORDER BY ' . $field;
 	if(in_array($field, $decoded_fields)){
-		$sql = "SELECT {$table}.{$field}, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.{$field} WHERE codes.type = '{$field}' GROUP BY codes.meaning ORDER BY codes.meaning ";
+		$sql = "SELECT {$table}.{$field}, {$county}_codes.meaning, COUNT(*) FROM {$table} LEFT JOIN {$county}_codes ON {$county}_codes.code = {$table}.{$field} WHERE {$county}_codes.type = '{$field}' GROUP BY {$county}._codes.meaning ORDER BY {$county}_codes.meaning ";
 		//We want certain fields to be ordered by code, not by name. In later iterations of the filter this should be done in the ui
 		if($field == 'prop_class' | $field == 'struct_code' | $field == 'overall_condition' ){
-			$sql = "SELECT {$table}.{$field}, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.{$field} WHERE codes.type = '{$field}' GROUP BY codes.meaning ORDER BY {$table}.{$field} ";
+			$sql = "SELECT {$table}.{$field}, {$county}_codes.meaning, COUNT(*) FROM {$table} LEFT JOIN {$county}_codes ON {$county}_codes.code = {$table}.{$field} WHERE {$county}_.specdist_def.type = '{$field}' GROUP BY {$county}._.specdist_def.meaning ORDER BY {$table}.{$field} ";
 		}
 	}
 	$result = mysqli_query($link, $sql);

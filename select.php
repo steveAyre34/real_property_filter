@@ -24,6 +24,11 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 	<link rel="stylesheet" href="main.css" type="text/css" />
 	<script src="forms.js" type="text/javascript"></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
+	<script src="jquery.multiselect.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+	<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
 </head>
 
 <body>
@@ -32,16 +37,21 @@
 			<input type="submit" class="button" value="Get Counts!" onClick="setAction('count');" style="height:75px;width:540px;background-color:#FA8072;font-size:20px" />
             <input type="reset" value="Reset Criteria" style="height:75px;width:540px;background-color:#FA8072;font-size:20px"/>	
 
-			<h2>Section 0: Assessment Information</h2>
-			<?
-			$table = $county . '_class.total_av';
-			print(<table><tr><td width = '540px'>);
-			print(makeMinMaxSelector('total_av', 'Dollars', 'Total Assessment', $default_width));
-			print('</td><td width = "540px">');
-			print(makeMinMaxSelector('land_av', 'Dollars', 'Land Assessment', $default_width));
-			print('</td></tr></table>';)
-			?>
-
+			<div id="assessment" class="ui-accordion">
+				<div id="accordion-header_assessment" class="ui-accordion-header">
+					<h2>Section 0: Assessment Information</h2>
+				</div>
+				<div id="accordion-content_assessment" class="ui-accordion-content">
+					<?php
+						$table = $county . '_assessment';
+						print('<table><tr><td width="540px">');
+						print(makeMinMaxSelector('total_av', 'Dollars', 'Total Assessment', $default_width));
+						print('</td><td width = "540px">');
+						print(makeMinMaxSelector('land_av', 'Dollars', 'Land Assessment', $default_width));
+						print('</td></tr></table>');
+					?>
+				</div>
+			</div>
 			<h2>Section 1: Parcel (Location) Information</h2>
 			
 			<?php
@@ -296,3 +306,9 @@
 		</form>
 	</body>
 </html>
+<script type="text/javascript">
+	$(".ui-accordion").accordion({
+		heightStyle: "content",
+		collapsible: true
+	});
+</script>
