@@ -17,16 +17,17 @@ require_once('common.php');
 ********/
 function makeCheckBox($name, $value, $label, $align='left', $checked=FALSE){
 	$id = preg_replace('/[^A-Za-z0-9\_\-]/', '', $name .'_'. $value);
-	//if($name == 'file[]'){
+	if($name == 'file[]'){
 	//	$button = '<input id="'. $id .'" type="checkbox" name="'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') .'visibility: hidden'.' />';
 		//$label = '<label for="'. $id .'">'. $label .'</label>';
 	//}
 	//else{
-		$button = '<input id="'. $id .'" type="checkbox" name="'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') .' />';
-		$label = '<label for="'. $id .'">'. $label .'</label>';
-	//}
+		$html .= '<select id="' . $id . '" multiple="multiple" class="multiple_checkbox">';
+		$html .= '<option value="'. $id .'">'. $label .'</option>';
+		$html .= "</select>";
+	}
 		
-	if ($align == 'left') {
+	/*if ($align == 'left') {
 		//if($name == 'file[]'){
 		//	$html = $button;
 		//}
@@ -35,7 +36,7 @@ function makeCheckBox($name, $value, $label, $align='left', $checked=FALSE){
 		//}
 	} else {
 		$html = $label .'&nbsp;'. $button;
-	}
+	}*/
 	
 	return $html;
 }
@@ -79,10 +80,18 @@ function makeMinMaxSelector($name, $units, $label, $width){
 
 function makeSelectionList($link, $county, $field, $table, $label, $name, $width=FALSE){
 	//define what fields we have decoded
-	$decoded_fields = array('bsmnt_type','overall_cond', 'ext_wall_material', 'structure_cd', 'swis', 'sch_code', 'prop_class', 'waterfront_type', 'land_type', 'soil_rating',
+	/*$decoded_fields = array('bsmnt_type','overall_cond', 'ext_wall_material', 'structure_cd', 'swis', 'sch_code', 'prop_class', 'waterfront_type', 'land_type', 'soil_rating',
 							'site_desirability', 'water_supply', 'utilities', 'sewer_type', 'heat_type', 'fuel_type'
 							
-	);
+	);*/
+	//Get any codes in the database
+	$decoded_fields = array();	
+	$codesQuery = "SELECT DISTINCT type FROM codes ORDER BY type";
+	$codesResult = mysqli_query($link, $codesQuery);
+	while($codes = mysqli_fetch_array($codesResult)) {
+		array_push($decoded_fields, $codes['type']);
+	}
+	
 	//reset time limit so we do not timeout on long requests
 	set_time_limit(30);
 	$html = "";
@@ -98,10 +107,10 @@ function makeSelectionList($link, $county, $field, $table, $label, $name, $width
 	$html .= "</tr><tr>";
 	$sql = 'SELECT ' . $field . ', COUNT(*) FROM ' . $table . ' GROUP BY ' . $field . ' ORDER BY ' . $field;
 	if(in_array($field, $decoded_fields)){
-		$sql = "SELECT {$table}.{$field}, {$county}_codes.meaning, COUNT(*) FROM {$table} LEFT JOIN {$county}_codes ON {$county}_codes.code = {$table}.{$field} WHERE {$county}_codes.type = '{$field}' GROUP BY {$county}._codes.meaning ORDER BY {$county}_codes.meaning ";
+		$sql = "SELECT {$table}.{$field}, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.{$field} WHERE codes.type = '{$field}' GROUP BY codes.meaning ORDER BY codes.meaning ";
 		//We want certain fields to be ordered by code, not by name. In later iterations of the filter this should be done in the ui
 		if($field == 'prop_class' | $field == 'struct_code' | $field == 'overall_condition' ){
-			$sql = "SELECT {$table}.{$field}, {$county}_codes.meaning, COUNT(*) FROM {$table} LEFT JOIN {$county}_codes ON {$county}_codes.code = {$table}.{$field} WHERE {$county}_.specdist_def.type = '{$field}' GROUP BY {$county}._.specdist_def.meaning ORDER BY {$table}.{$field} ";
+			$sql = "SELECT {$table}.{$field}, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.{$field} WHERE codes.type = '{$field}' GROUP BY codes.meaning ORDER BY {$table}.{$field} ";
 		}
 	}
 	$result = mysqli_query($link, $sql);
@@ -201,18 +210,21 @@ function fmtListItem($id, $name, $num, $length) {
 	$idlen = strlen($id) + 1;
 	#$idlen = 11;
 	$out = trim($id);
+	$lame_variable = false;
+	$newOut = trim($id);
 	// workaround to print undefined instead of a blank space 
 	if($out == ''){
-		$out = 'undefined';
+		$newOut = 'None provided';
 		$lame_variable = true;
 	}
 	
 	$charcount = $idlen - strLen($out);
+	
 	//check to see if we have a meaning associated with a field
 	if(trim($name) != ''){
-		$out .= str_repeat('&nbsp;', $charcount) .': '. trim($name);
+		$newOut .= str_repeat('&nbsp;', $charcount) .': '. trim($name);
 	} else {
-		$out .= str_repeat('&nbsp;', $charcount);
+		$newOut .= str_repeat('', $charcount);
 	}
 	$charcount = $length - $idlen - 12 - strLen(trim($name)) - strLen(trim($num));
 	#ugly hack for property class
@@ -222,17 +234,17 @@ function fmtListItem($id, $name, $num, $length) {
 	if ($charcount > 0) {
 		//workaround for adjusting the numbers for undefined field
 		if($lame_variable){
-				$out .= str_repeat('&nbsp;', $charcount - 8) . trim($num);
+				$newOut .= str_repeat('&nbsp', $charcount - 8) . trim($num);
 		}
 		
 		else{
-			$out .= str_repeat('&nbsp;', $charcount) . trim($num);
+			$newOut .= str_repeat('&nbsp;', $charcount) . trim($num);
 		}
 		#print $out;
 	} else {
-		$out .= ' '. trim($num);
+		$newOut .= ' '. trim($num);
 	}
-	return $out;
+	return $newOut;
 }
 	
 ?>

@@ -211,7 +211,7 @@
 			<h3>Section 4.2: Commercial Building Information</h3>
 			
 			<?php 
-			$table = $county . '_com_use';
+			$table = $county . '_comm_use';
 			print("<table><tr><td>");
 			print('<input type="radio" name="building_set" id="com_buildings" value="com_buildings" title="Filter on commerical buildings"/><label for="com_buildings"><strong>Filter on Commercial Buildings</strong></label>');
 			print("</td></tr><tr><td>");
@@ -252,7 +252,7 @@
 			<h2>Section 5: Improvement Information</h2>
 			<h3>Section 5.1: Structures (Pools, Sheds, Barns, etc)</h3>
 			
-			<? 
+			<?php
 			$table = $county . '_improvement';
 			print('<table><tr><td>');
 			print(makeCheckBox('improvements', 'structs', 'Include Improvements In Filter'));
