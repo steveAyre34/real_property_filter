@@ -6,3 +6,11 @@
 	height: 15%;
 	background-color: blue;
 }
+
+.majorSection {
+	min-height: 5000;
+}
+
+td .selectMenu {
+	width: 360px;
+}
