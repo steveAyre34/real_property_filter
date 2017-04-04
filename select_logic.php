@@ -95,7 +95,7 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 	//reset time limit so we do not timeout on long requests
 	set_time_limit(30);
 	$html = "";
-	$length = $width - 4;
+	//$length = $width - 4;
 	/*$width = ' style="width: ' . $width . 'ex;"';
 	$label = makeCheckbox('cols[]', $name, $label);
 	//$exc = makeCheckbox('exclude[]', $name, '(Exclude)');
@@ -181,6 +181,22 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 				$count = $row[1];
 			}
 
+			//For SWIS, need to filter village vs towns
+			//If description has () in it
+			if(strpos($meaning, '(') != FALSE) {
+				//Town outside village
+				//Change TOV to town
+				if(strpos($meaning, 'TOV') != FALSE) {
+					echo '<script>console.log("'.strpos($meaning, 'TOV').'");</script>';
+					$meaning = substr($meaning, 0, strpos($meaning, 'TOV'));
+					$meaning .= 'Town)';
+				}
+				else {
+					$endParenIndex = strpos($meaning, ')');
+					$meaning = substr($meaning, 0, $endParenIndex);
+					$meaning .= ' - Village)';
+				}
+			}
 			//$txt = fmtListItem($id, $meaning, $count, $length);
 			$txt = $id . ' : ' . $meaning . ' (' . $count . ')';
 			$html .= '<option value="'. $id .'">'. $txt .'</option>';
@@ -201,7 +217,7 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 		}
 		$html .= '<input type="hidden" name="'. $name .'[]" value="-1" />';
 	}
-	$html .= '</table>';
+	//$html .= '</table>';
 	return $html;
 }
 
