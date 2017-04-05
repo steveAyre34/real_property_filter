@@ -8,3 +8,5 @@ jquery-*
 *.sql
 sweetalert*
 ProposalScreenshots/index.php
+views/*
+.idea/*

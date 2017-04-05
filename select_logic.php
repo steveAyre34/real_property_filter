@@ -1,4 +1,5 @@
 <?php
+include("connection.php");
 require_once('common.php');
 
 //functions to create selection criteria form elements for the Real Property Data Filter
@@ -16,22 +17,23 @@ require_once('common.php');
 ********/
 function makeCheckBox($name, $value, $label, $align='left', $checked=FALSE){
 	$id = preg_replace('/[^A-Za-z0-9\_\-]/', '', $name .'_'. $value);
-	//if($name == 'file[]'){
-	//	$button = '<input id="'. $id .'" type="checkbox" name="'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') .'visibility: hidden'.' />';
-		//$label = '<label for="'. $id .'">'. $label .'</label>';
-	//}
-	//else{
-		$button = '<input id="'. $id .'" type="checkbox" name="'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') .' />';
+	if($name == 'file[]'){
+		$button = '<input id="'. $id .'" type="checkbox" name="'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') .'visibility: hidden'.' />';
 		$label = '<label for="'. $id .'">'. $label .'</label>';
-	//}
+	}
+	else{
+		$html = '<select name="' . $id . '[]" id="' . $id . '" multiple class="multiple_checkbox">';
+		$html .= '<option value="'. $id .'">'. $label .'</option>';
+		$html .= '</select>';
+	}
 		
 	if ($align == 'left') {
-		//if($name == 'file[]'){
-		//	$html = $button;
-		//}
-		//else{
+		if($name == 'file[]'){
+			$html = $button;
+		}
+		else{
 			$html = $button . $label;
-		//}
+		}
 	} else {
 		$html = $label .'&nbsp;'. $button;
 	}
@@ -49,17 +51,17 @@ function makeCheckBox($name, $value, $label, $align='left', $checked=FALSE){
 *@return: the html for a checkbox		
 **/
 function makeMinMaxSelector($name, $units, $label, $width){
-	$html = "<table>";
+	$html = '<table>';
 	$width = ' style="width: ' . $width . 'ex;"';
 	$label = makeCheckbox('bounds[]', $name, $label);
 	//$file = makeCheckbox('file[]', $name, '(Include Field in Output)');
 	$file = "";
-	$html .= "<tr {$width}>";
+	$html .= '<tr ' . $width . '>';
 	$html .= '<div class="dcfieldname">' . $label . '&nbsp;&nbsp;' . $file . '</div>';
-	$html .= "</tr><tr>";
-	$html .= "<td>At least&nbsp;&nbsp;</td><td><input type='text' name='min_{$name}' size='10'/></td><td>&nbsp {$units}</td>";
-	$html .= "</tr><tr>";
-	$html .= "<td>At most&nbsp;&nbsp;</td><td><input type='text' name='max_{$name}' size='10'/></td><td>&nbsp {$units}</td>";
+	$html .= '</tr><tr>';
+	$html .= '<td>At least&nbsp;&nbsp;</td><td><input type="text" name="min_' . $name . '" size="10"/></td><td>&nbsp ' . $units . '</td>';
+	$html .= '</tr><tr>';
+	$html .= '<td>At most&nbsp;&nbsp;</td><td><input type="text" name="max_' . $name . '" size="10"/></td><td>&nbsp ' . $units . '</td>';
 	$html .= '<input type="hidden" id="' . $name . '" name="'. $name .'[]" value="-1" />';
 	$html .= "</tr></table>"; 
 	return $html;
@@ -76,28 +78,36 @@ function makeMinMaxSelector($name, $units, $label, $width){
 *@return	the html for the selection list (as a table)
 **********/
 
-function makeSelectionList($link, $county, $field, $table, $label, $name, $width=FALSE){
+function makeSelectionList($link, $county, $field, $table, $label, $name){
 	//define what fields we have decoded
-	$decoded_fields = array('bsmnt_type','overall_cond', 'ext_wall_material', 'structure_cd', 'swis', 'sch_code', 'prop_class', 'waterfront_type', 'land_type', 'soil_rating',
+	/*$decoded_fields = array('bsmnt_type','overall_cond', 'ext_wall_material', 'structure_cd', 'swis', 'sch_code', 'prop_class', 'waterfront_type', 'land_type', 'soil_rating',
 							'site_desirability', 'water_supply', 'utilities', 'sewer_type', 'heat_type', 'fuel_type'
 							
-	);
+	);*/
+	//Get any codes in the database
+	$decoded_fields = array();	
+	$codesQuery = "SELECT DISTINCT type FROM codes ORDER BY type";
+	$codesResult = mysqli_query($link, $codesQuery);
+	while($codes = mysqli_fetch_array($codesResult)) {
+		array_push($decoded_fields, $codes['type']);
+	}
+	
 	//reset time limit so we do not timeout on long requests
 	set_time_limit(30);
 	$html = "";
-	$length = $width - 4;
-	$width = ' style="width: ' . $width . 'ex;"';
+	//$length = $width - 4;
+	/*$width = ' style="width: ' . $width . 'ex;"';
 	$label = makeCheckbox('cols[]', $name, $label);
 	//$exc = makeCheckbox('exclude[]', $name, '(Exclude)');
 	//$file = makeCheckbox('file[]', $name, '(Include Field in Output)');
 	$file = "";
 	$html .= "<table>";
 	$html .= "<tr {$width}>";
-	$html .= '<div class="dcfieldname">' . $label . '&nbsp;&nbsp;' . $file . '</div>';
-	$html .= "</tr><tr>";
+	$html .= '<div class=".multiple_checkbox">' . $label . '&nbsp;&nbsp;' . $file . '</div>';
+	$html .= "</tr><tr>";*/
 	$sql = 'SELECT ' . $field . ', COUNT(*) FROM ' . $table . ' GROUP BY ' . $field . ' ORDER BY ' . $field;
 	if(in_array($field, $decoded_fields)){
-		$sql = "SELECT {$table}.{$field}, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.{$field} WHERE codes.type = '{$field}' GROUP BY codes.meaning ORDER BY codes.meaning ";
+		$sql = "SELECT {$table}.{$field}, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.{$field} WHERE codes.type = '{$field}' GROUP BY codes.code ORDER BY codes.meaning ";
 		//We want certain fields to be ordered by code, not by name. In later iterations of the filter this should be done in the ui
 		if($field == 'prop_class' | $field == 'struct_code' | $field == 'overall_condition' ){
 			$sql = "SELECT {$table}.{$field}, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.{$field} WHERE codes.type = '{$field}' GROUP BY codes.meaning ORDER BY {$table}.{$field} ";
@@ -115,7 +125,8 @@ function makeSelectionList($link, $county, $field, $table, $label, $name, $width
 	#	print $sql;
 	#}
 	if($num_rows > 1){		
-		$html .= '<select name="' . $name . '[]" class="dcinput" multiple="multiple" size="8"' . $width . '>';
+		//$html .= '<select name="' . $name . '[]" class="dcinput" multiple="multiple" size="8"' . $width . '>';
+		$html .= '<select name="' . $table . '_' . $name . '[]" multiple class="multiple_checkbox id="' . $name . '>';
 		/* function compare($a, $b)
 		{
 		// Assuming you're sorting on bar field
@@ -169,10 +180,25 @@ function makeSelectionList($link, $county, $field, $table, $label, $name, $width
 				$meaning = '';
 				$count = $row[1];
 			}
-			
-			
-			$txt = fmtListItem($id, $meaning, $count, $length);
-			#$txt = $id . ' : ' . $meaning . ' - ' . $count;
+
+			//For SWIS, need to filter village vs towns
+			//If description has () in it
+			if(strpos($meaning, '(') != FALSE) {
+				//Town outside village
+				//Change TOV to town
+				if(strpos($meaning, 'TOV') != FALSE) {
+					echo '<script>console.log("'.strpos($meaning, 'TOV').'");</script>';
+					$meaning = substr($meaning, 0, strpos($meaning, 'TOV'));
+					$meaning .= 'Town)';
+				}
+				else {
+					$endParenIndex = strpos($meaning, ')');
+					$meaning = substr($meaning, 0, $endParenIndex);
+					$meaning .= ' - Village)';
+				}
+			}
+			//$txt = fmtListItem($id, $meaning, $count, $length);
+			$txt = $id . ' : ' . $meaning . ' (' . $count . ')';
 			$html .= '<option value="'. $id .'">'. $txt .'</option>';
 		}
 		
@@ -182,7 +208,7 @@ function makeSelectionList($link, $county, $field, $table, $label, $name, $width
 			$row = mysqli_fetch_array($result);
 			$id = $row[0];
 			if(!empty($id)){
-				$html .= '<em>' . fmtListItem($id, -1) . ' records</em>';
+				$html .= '<em>' . /*fmtListItem(*/$id/*, -1)*/ . ' records</em>';
 			} else {
 				$html .= '<em>none found</em>';
 			}
@@ -191,7 +217,7 @@ function makeSelectionList($link, $county, $field, $table, $label, $name, $width
 		}
 		$html .= '<input type="hidden" name="'. $name .'[]" value="-1" />';
 	}
-	$html .= '</table>';
+	//$html .= '</table>';
 	return $html;
 }
 
@@ -200,18 +226,21 @@ function fmtListItem($id, $name, $num, $length) {
 	$idlen = strlen($id) + 1;
 	#$idlen = 11;
 	$out = trim($id);
+	$lame_variable = false;
+	$newOut = trim($id);
 	// workaround to print undefined instead of a blank space 
 	if($out == ''){
-		$out = 'undefined';
+		$newOut = 'None provided';
 		$lame_variable = true;
 	}
 	
 	$charcount = $idlen - strLen($out);
+	
 	//check to see if we have a meaning associated with a field
 	if(trim($name) != ''){
-		$out .= str_repeat('&nbsp;', $charcount) .': '. trim($name);
+		$newOut .= str_repeat('&nbsp;', $charcount) .': '. trim($name);
 	} else {
-		$out .= str_repeat('&nbsp;', $charcount);
+		$newOut .= str_repeat('', $charcount);
 	}
 	$charcount = $length - $idlen - 12 - strLen(trim($name)) - strLen(trim($num));
 	#ugly hack for property class
@@ -221,17 +250,17 @@ function fmtListItem($id, $name, $num, $length) {
 	if ($charcount > 0) {
 		//workaround for adjusting the numbers for undefined field
 		if($lame_variable){
-				$out .= str_repeat('&nbsp;', $charcount - 8) . trim($num);
+				$newOut .= str_repeat('&nbsp', $charcount - 8) . trim($num);
 		}
 		
 		else{
-			$out .= str_repeat('&nbsp;', $charcount) . trim($num);
+			$newOut .= str_repeat('&nbsp;', $charcount) . trim($num);
 		}
 		#print $out;
 	} else {
-		$out .= ' '. trim($num);
+		$newOut .= ' '. trim($num);
 	}
-	return $out;
+	return $newOut;
 }
 	
 ?>

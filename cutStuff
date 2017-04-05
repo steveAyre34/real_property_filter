@@ -1,0 +1,305 @@
+/**
+	CUT FROM GETTABLESELECT
+**/
+/**/
+
+
+	
+<!--
+<html>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
+	<script src="jquery.multiselect.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
+	<link rel="stylesheet" href="jquery.multiselect.css"/>
+<body> 
+	
+		 <php/*foreach($fields as $field) { 
+			if(sizeOf($field->selectMenuValues) > 0) {?>
+			<h4><php echo $field->fieldName ?></h4>
+			<select name="<php echo $field->fieldName ?>||<php echo strtolower($_GET['table']) ?>[]" multiple="multiple" class="selectMenu[]">
+<php			foreach($field->selectMenuValues as $menuValue) { ?>
+						<option value="<php echo $menuValue ?>"><php echo $menuValue ?></option>
+<php			} ?>
+			</select>
+			<br>
+<php		}} ?>*/
+	
+</body>
+</html>
+
+<!--<script type="text/javascript">
+	$(".selectMenu").each(function() {
+		$(this).multiselect({
+			placeholder: $(this).attr('placeholder')
+		})
+	});
+</script>
+
+-->
+
+
+---------------------------------------------------
+<?php
+	session_start();
+	
+	
+		require("connection.php");
+		//include("select2.php");
+		
+	$cache_ext = '.php';
+	$cache_folder = 'views/' . $_GET['county'] . '/';
+	$ignore_pages = array('', '');
+	
+	$dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $_SERVER['QUERY_STRING'];
+	$cache_file = $cache_folder . md5($dynamic_url) . $cache_ext;
+	$ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
+	
+	if(!$ignore && file_exists($cache_file)) {
+		ob_start('ob_gzhandler');
+		readfile($cache_file);
+		ob_end_flush();
+		exit();
+	}
+	else {
+		
+		/*
+		* Class to hold field names along with values for the field's dropdown select menu
+		* Seems like this is an easier way to link the dropdown menu values with a field name rather than using an associative array
+		*/
+		class Field
+		{
+			public $fieldName;
+			public $selectMenuValues = array();
+			
+			public function __construct($field, $table, $conn){
+				
+					$this->fieldName = $field;
+					$query = "SELECT DISTINCT " . $field . " FROM " . $table . " USE INDEX (" . $field . ");";
+					if($result = mysqli_query($conn, $query)) {
+						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+							if(trim($row[$field]) != "") {
+								array_push($this->selectMenuValues, $row[$field]);
+							}
+						}
+					}
+			}
+		}
+		
+		
+		
+		$county = $_GET['county'];
+		$alreadyDisplayedFields = $_SESSION['alreadyDisplayedFields'];
+		$fields = array();
+		
+		/*
+		* For display purposes table name was capitalized on view page
+		* This removes the capitalization to match table names
+		*/
+		$table = $county . '_' . strtolower($_GET['table']);
+			
+		/*
+		* Now we need to get the fields for whichever table is being requested
+		* Check for duplicates that already are displayed in other accordions and make sure primary key (primaryID) is not displayed - not a searchable field
+		* Gather distinct selection options for dropdown menu
+		*/
+		$query = "SHOW COLUMNS FROM " . $table . ";";
+		if($result = mysqli_query($conn, $query)) {
+			//Get field information for all fields 		
+			while($row = $result->fetch_assoc()) {
+				//If the field isn't a duplicate and isn't the primary key, add it to list of fields to be displayed and add to duplicate list for future checks
+				if(!in_array($row['Field'], $alreadyDisplayedFields) && strcmp($row['Field'], 'primaryID') != 0)/* && strcmp($row['Field'], "owner_id") != 0)*/ {
+					array_push($fields, new Field($row['Field'], $table, $conn));
+					array_push($alreadyDisplayedFields, $row['Field']);
+				}
+			}
+			
+			mysqli_free_result($result);
+		}
+		//mysqli_close($conn);
+		
+		//Update the fields displayed for this table for future duplicate checks
+		$_SESSION['alreadyDisplayedFields'] = $alreadyDisplayedFields;
+		
+		ob_start('ob_gzhandler');
+		//echo json_encode($fields);
+	}
+?>
+
+<html>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
+	<script src="jquery.multiselect.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
+	<link rel="stylesheet" href="jquery.multiselect.css"/>
+<body> 
+	
+		 <?php foreach($fields as $field) { 
+			if(sizeOf($field->selectMenuValues) > 0) {?>
+			<h4><?php echo $field->fieldName ?></h4>
+			<select name="<php echo $field->fieldName ?>||<php echo strtolower($_GET['table']) ?>[]" multiple="multiple" class="selectMenu[]">
+<?php			foreach($field->selectMenuValues as $menuValue) { ?>
+						<option value="<php echo $menuValue ?>"><php echo $menuValue ?></option>
+<?php			} ?>
+			</select>
+			<br>
+<?php		}} ?>
+	
+</body>
+</html>
+
+<?php
+	if(!is_dir($cache_folder)) {
+		mkdir($cache_folder);
+	}
+	if(!$ignore) {
+		$fp = fopen($cache_file, 'w');
+		fwrite($fp, ob_get_contents());
+		fclose($fp);
+	}
+	ob_end_flush();
+?>
+
+
+<!--<script type="text/javascript">
+	$(".selectMenu").each(function() {
+		$(this).multiselect({
+			placeholder: $(this).attr('placeholder')
+		})
+	});
+</script>
+
+----------------------select2-------------------------
+<?php
+	session_start();
+	$cache_ext = '.php';
+	$cache_folder = 'views/' . $_GET['county'] . '/';
+	$ignore_pages = array('', '');
+	
+	$dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $_SERVER['QUERY_STRING'];
+	$cache_file = $cache_folder . md5($dynamic_url) . $cache_ext;
+	$ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
+	
+	if(!$ignore && file_exists($cache_file)) {
+		ob_start('ob_gzhandler');
+		readfile($cache_file);
+		ob_end_flush();
+		exit();
+	}
+	else {
+		require('connection.php');
+		$county = $_GET['county'];
+		
+		//Get names of all tables for chosen county 
+		$showTables = "SHOW TABLES LIKE '" . $county . "%';";
+		$result = mysqli_query($conn, $showTables);	
+		while($row = mysqli_fetch_array($result)) {
+			$name = $row[0];
+			$tables[] = ucwords(trim(preg_replace('/' . $county . '_/', ' ', $name)));
+		}
+		
+		/*
+		* Creates a master list of duplicate categories already displayed for this county
+		* This way we don't pull duplicate search categories across files 
+		*/
+		$alreadyDisplayedFields = array();
+		$tableMarker = array();
+		$_SESSION['alreadyDisplayedFields'] = $alreadyDisplayedFields;
+		$_SESSION['tableMarker'] = $tableMarker;
+	}
+	
+	ob_start('ob_gzhandler');
+?>
+
+
+<html>
+	<head>
+		<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+		<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
+		<script src="jquery.multiselect.js"></script>
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+		<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
+		<link rel="stylesheet" type="text/css" href="filter.css">
+	</head>
+
+	<body>
+		<form id="filter_form" action="do_filter.php" method="POST">
+			<input name="county" type="hidden" value="<?php echo $_GET['county'] ?>"/>
+			<div id="Owner" class="ui-accordion ui-state-disabled">
+				<div id="accordion-header_Owner" class="ui-accordion-header">
+					<h4>Owner</h4>
+				</div>
+				<div id="accordion-content_Owner" class="ui-accordion-content">
+				</div>
+			</div>
+		<?php 
+			foreach($tables as $key => $value) { 
+				if($value != "Owner") {?>
+				<div id="<?php echo $value ?>" class="ui-accordion ui-state-disabled">
+					<div id="accordion-header_<?php echo $value ?>" class="ui-accordion-header">
+						<h4><?php echo $value ?></h4>
+					</div>
+					<div id="accordion-content_<?php echo $value ?>" class="ui-accordion-content">
+					</div>
+				</div>
+<?php			}
+			} ?>
+			<button type="submit" id="filterButton">Filter</button>
+		</form>
+	</body>
+</html>
+
+<script type="text/javascript">
+	$(".ui-accordion").accordion({
+		heightStyle: "content",
+		collapsible: true,
+		active: false,
+		create: function(event, ui) {
+			var table = $(this).attr("id");
+			$.ajax({
+				type: "GET",
+				url: "getTableSelect.php",
+				dataType: 'json',
+				data: {county: '<php echo $county ?>', table: table},
+				async: true,
+				success: function(response) {
+					//var contentData = JSON.stringify(response);
+					//$("#accordion-content_" + table).html(response);
+					/*var content = "";
+					for(i = 0; i < response.length; ++i) {
+						content += '<h4>' + response[i].fieldName + '</h4>';
+						content += '<select name="' + response[i].fieldName + '||' + table + '[]" multiple="multiple" class="selectMenu[]">';
+						for(j = 0; j < response[i].selectMenuValues; ++j) {
+							content += '<option value="' + response[i].selectMenuValues[j] + '">' + response[i].selectMenuValues[j] + '</option>';
+						}
+						content += '</select><br>';
+					}
+					$("accordion-content_" + table).html(content);*/
+					$("accordion-content_" + table).html(response);
+				},
+				complete: function(response) {
+					$("#" + table).removeClass("ui-state-disabled");
+					$("#" + table).addClass("ui-state-enabled");
+				}
+			});
+		}
+	});
+	
+	/*$(".selectMenu").multiselect({
+		columns: 2
+	});*/
+</script>
+<?php
+	if(!is_dir($cache_folder)) {
+		mkdir($cache_folder);
+	}
+	if(!$ignore) {
+		$fp = fopen($cache_file, 'w');
+		fwrite($fp, ob_get_contents());
+		fclose($fp);
+	}
+	ob_end_flush();
+?>
+
+
+

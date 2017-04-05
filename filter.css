@@ -1,0 +1,16 @@
+#filterButton {
+	bottom: 0%;
+	vertical-align: middle;
+	position: fixed;
+	width: 50%;
+	height: 15%;
+	background-color: blue;
+}
+
+.majorSection {
+	min-height: 5000;
+}
+
+td .selectMenu {
+	width: 360px;
+}

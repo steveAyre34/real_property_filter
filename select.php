@@ -4,6 +4,7 @@
 
 	//define selection criteria for the Real Property Data Filter. Sends form data to results.php
 	require_once('common.php');
+	include('connection.php');
 	require_once('select_logic.php');
 	//sanity check on location
 	if(!isset($_GET['county'])){
@@ -11,7 +12,7 @@
 	}
 	$county = $_GET['county'];
 	if(!in_array($county, $counties)){
-		die("Sorry, {$county} county is not in our database");
+		die("Sorry, " . $county . " county is not in our database");
 	}
 	$default_width = 60;
 ?>
@@ -23,6 +24,11 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 	<link rel="stylesheet" href="main.css" type="text/css" />
 	<script src="forms.js" type="text/javascript"></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
+	<script src="jquery.multiselect.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+	<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
 </head>
 
 <body>
@@ -31,45 +37,175 @@
 			<input type="submit" class="button" value="Get Counts!" onClick="setAction('count');" style="height:75px;width:540px;background-color:#FA8072;font-size:20px" />
             <input type="reset" value="Reset Criteria" style="height:75px;width:540px;background-color:#FA8072;font-size:20px"/>	
 
-			<h2>Section 0: Assessment Information</h2>
-			<?
-			$table = $county . '_class';
-			print('<table><tr><td width = "540px">');
-			print(makeMinMaxSelector('total_av', 'Dollars', 'Total Assessment', $default_width));
-			print('</td><td width = "540px">');
-			print(makeMinMaxSelector('land_av', 'Dollars', 'Land Assessment', $default_width));
-			print('</td></tr></table>');
-			?>
+			<div id="assessmentInformation" class="ui-accordion majorSection">
+				<div id="accordion-header_assessmentInformation" class="ui-accordion-header">
+					<h2>Section 1: Assessment Information</h2>
+				</div>
+				<div id="accordion-content_assessmentInformation" class="ui-accordion-content">
+                    <?php
+                        $table = $county . '_class';
+                    ?>
+                    <table><tr><td width="540px">
+                        <div id="total_av" class="ui-accordion minorSection">
+                            <div id="accordion-header_total_av" class="ui-accordion-header">
+                                <b>Total Assessment</b>
+                            </div>
+                            <div id="accordion-content_total_av" class="ui-accordion-content">
+                                <i>At least </i><input type="text" name="<?php echo $table ?>.total_av_min"><i> Dollars</i><br><br>
+                                <i>At most </i><input type="text" name="<?php echo $table ?>.total_av_max"><i> Dollars</i>
+                            </div>
+                        </div>
+                    </td>
+                    <td width="540px">
+                        <div id="land_av" class="ui-accordion minorSection">
+                            <div id="accordion-header_land_av" class="ui-accordion-header">
+                                <b>Land Assessment</b>
+                            </div>
+                            <div id="accordion-content_land_av" class="ui-accordion-content">
+                                <i>At least </i><input type="text" name="<?php echo $table ?>.land_av_min"><i> Dollars</i><br><br>
+                                <i>At most </i><input type="text" name="<?php echo $table ?>.land_av_max"><i> Dollars</i>
+                            </div>
+                        </div>
+                    </td></tr></table>
+				</div>
+			</div>
+        <div id="parcelInformation" class="ui-accordion majorSection">
+            <div id="accordion-header_parcelInformation" class="ui-accordion-header">
+                <h2>Section 2: Parcel (Location) Information</h2>
+            </div>
+            <div id="accordion-content_parcelInformation" class="ui-accordion-content">
+                <?php
+                    $table = $county . '_site';
+                ?>
+                <table>
+                    <tr>
+                        <td width="360px">
+                            <b>SWIS Code</b>
+                            <?php
+                                print(makeSelectionList($link, $county, 'swis', $table, 'SWIS', 'swis'));
+                            ?>
+                        </td>
 
-			<h2>Section 1: Parcel (Location) Information</h2>
-			
-			<?php
-			$table = $county . '_site';
-			print("<table><tr><td>");
-			print(makeSelectionList($link, $county, 'swis', $table, 'SWIS', 'swis', $default_width)); 
-			print("</td><td>");
-			//moved field
-			print(makeSelectionList($link, $county, 'sch_code', $county . '_assessment', 'School Code', 'sch_code', $default_width)); 
-			print("</td><td>");
-			$table = $county . '_parcel';
-			print(makeSelectionList($link, $county, 'loc_zip', $table, 'ZIP Code', 'loc_zip', $default_width)); 
-			print('</td></tr><tr><td>');
-			//print(makeMinMaxSelector('grid_east', 'Degrees', 'Grid East', $default_width));
-			//print("</td><td>");
-			//print(makeMinMaxSelector('grid_north', 'Degrees', 'Grid North', $default_width));
-			//print('</td></tr><tr><td>');
+                        <?php
+                            $table = $county . '_assessment';
+                        ?>
+                        <td width="360px">
+                            <b>School Code</b>
+                            <?php
+                                print(makeSelectionList($link, $county, 'sch_code', $table, 'School Code', 'sch_code'));
+                            ?>
+                        </td>
+
+                        <?php
+                            $table = $county . '_parcel';
+                        ?>
+                        <td width="360px">
+                            <b>ZIP Code</b>
+                            <?php
+                                print(makeSelectionList($link, $county, 'loc_zip', $table, 'ZIP Code', 'loc_zip'));
+                            ?>
+                        </td>
+
+                    </tr>
+                </table>
+                <!--(hopefully) temporary hack to increase height of accordion content-->
+                <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+            </div>
+        </div>
+        </div>
+
+
+            <!--
 			//print(makeCheckBox('second_address', 'second_address', '<strong>Property Owners do not reside at the property <u> EXPERIMENTAL</u></strong>')); 
 			//print('</td><td>');
 			//print(makeCheckBox('primary_address', 'primary_address', '<strong>Property Owners DO reside at the property <u> EXPERIMENTAL</u></strong>'));
                         //print('</td><td>');
 			//print('</td></tr><tr><td>');
 			print("</td></tr></table>\n");
-			?>
-			
-			<h2>Section 2: Land Information</h2>
-			<?php
-			$table = $county . '_land';
-			print("<table><tr><td>");
+			?>-->
+        <div id="landInformation" class="ui-accordion majorSection">
+			<div id="accordion-header_landInformation" class="ui-accordion-header">
+			    <h2>Section 3: Land Information</h2>
+            </div>
+            <div id="accordion-content_landInformation" class="ui-accordion-content">
+			    <?php
+			        $table = $county . '_land';
+                ?>
+                <table>
+                    <tr>
+                        <td width="360px">
+                            <div id="full_market_value" class="ui-accordion minorSection">
+                                <div id="accordion-header_full_market_value" class="ui-accordion-header">
+                                    <b>Market Value</b>
+                                </div>
+                                <div id="accordion-content_full_market_value" class="ui-accordion-content">
+                                    <p style="font-size:12px"><i>At least </i><input type="text" name="<?php echo $table ?>.full_market_value_min"><i> Dollars</i></p>
+                                    <p style="font-size:12px"><i>At most </i><input type="text" name="<?php echo $table ?>.full_market_value_max"><i> Dollars</i></p>
+                                </div>
+                            </div>
+                        </td>
+                        <td width="360px">
+                            <div id="acres" class="ui-accordion minorSection">
+                                <div id="accordion-header_acres" class="ui-accordion-header">
+                                    <b>Acreage</b>
+                                </div>
+                                <div id="accordion-content_acres" class="ui-accordion-content">
+                                    <p style="font-size:12px"><i>At least </i><input type="text" name="<?php echo $table ?>.acres_min"><i> Acres</i></p>
+                                    <p style="font-size:12px"><i>At most </i><input type="text" name="<?php echo $table ?>.acres_max"><i> Acres</i></p>
+                                </div>
+                            </div>
+                        </td>
+                        <td width="360px">
+                            <div id="sqft" class="ui-accordion minorSection">
+                                <div id="accordion-header_sqft" class="ui-accordion-header">
+                                    <b>Square Feet</b>
+                                </div>
+                                <div id="accordion-content_sqft" class="ui-accordion-content">
+                                    <p style="font-size:12px"><i>At least </i><input type="text" name="<?php echo $table ?>.sqft_min"><i> Square Feet</i></p>
+                                    <p style="font-size:12px"><i>At most </i><input type="text" name="<?php echo $table ?>.sqft_max"><i> Square Feet</i></p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="360px">
+                            <div id="unit_price" class="ui-accordion minorSection">
+                                <div id="accordion-header_unit_price" class="ui-accordion-header">
+                                    <b>Unit Price</b>
+                                </div>
+                                <div id="accordion-content_unit_price" class="ui-accordion-content">
+                                    <p style="font-size:10px"><i>At least </i><input type="text name=<?php echo $table ?>.unit_price_min"><i> Square Footage</i></p>
+                                    <p style="font-size:10px"><i>At most </i><input type="text name=<?php echo $table ?>.unit_price_max"><i> Square Footage</i></p>
+                                </div>
+                            </div>
+                        </td>
+                        <td width="360px">
+                            <div id="land_value" class="ui-accordion minorSection">
+                                <div id="accordion-header_land_value" class="ui-accordion-header">
+                                    <b>Land Value</b>
+                                </div>
+                                <div id="accordion-content_land_value" class="ui-accordion-content">
+                                    <p style="font-size:12px"><i>At least </i><input type="text name=<?php echo $table ?>.land_value_min"><i> Dollars</i></p>
+                                    <p style="font-size:12px"><i>At most </i><input type="text name=<?php echo $table ?>.land_value_max"><i> Dollars</i></p>
+                                </div>
+                            </div>
+                        </td>
+                        <td width="360px">
+                            <div id="wf_feet" class="ui-accordion minorSection">
+                                <div id="accordion-header_wf_feet" class="ui-accordion-header">
+                                    <b>Unit Price</b>
+                                </div>
+                                <div id="accordion-content_wf_feet" class="ui-accordion-content">
+                                    <p style="font-size:14px"><i>At least </i><input type="text name=<?php echo $table ?>.wf_feet_min"><i> Feet</i></p>
+                                    <p style="font-size:14px"><i>At most </i><input type="text name=<?php echo $table ?>.wf_feet_max"><i> Feet</i></p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+			<!--print("<table><tr><td>");
 			
 			print(makeMinMaxSelector('full_market_value', 'Dollars', 'Market Value', $default_width));
 			print("</td><td>");
@@ -83,18 +219,17 @@
 			print("</td><td>");
 			print(makeMinMaxSelector('wf_feet', 'ft', 'Waterfront Feet', $default_width));
 			print("</td></tr>");
-			
-			?>
-			<h3>Section 2.1: Additional Land Information</h3>
-			<?php
-			print("<td>");
-			print(makeSelectionList($link, $county, 'land_type', $table, 'Land Type', 'land_type', $default_width)); 
-			print('</td><td>');
-			print(makeSelectionList($link, $county, 'waterfront_type', $table, 'Waterfront Type', 'waterfront_type', $default_width)); 
-			print("</td><td>");
-			print(makeSelectionList($link, $county, 'soil_rating', $table, 'Soil Rating', 'soil_rating', $default_width)); 
-			print("</td></tr></table>\n");
-			?>
+
+			 <!--
+         print("<td>");
+        print(makeSelectionList($link, $county, 'land_type', $table, 'Land Type', 'land_type', $default_width));
+        print('</td><td>');
+        print(makeSelectionList($link, $county, 'waterfront_type', $table, 'Waterfront Type', 'waterfront_type', $default_width));
+        print("</td><td>");
+        print(makeSelectionList($link, $county, 'soil_rating', $table, 'Soil Rating', 'soil_rating', $default_width));
+        print("</td></tr></table>\n");
+        ?>-->
+
 			<h2>Section 3: Site Information</h2>
 			
 			<?php
@@ -200,7 +335,7 @@
 			<h3>Section 4.2: Commercial Building Information</h3>
 			
 			<?php 
-			$table = $county . '_com_use';
+			$table = $county . '_comm_use';
 			print("<table><tr><td>");
 			print('<input type="radio" name="building_set" id="com_buildings" value="com_buildings" title="Filter on commerical buildings"/><label for="com_buildings"><strong>Filter on Commercial Buildings</strong></label>');
 			print("</td></tr><tr><td>");
@@ -241,7 +376,7 @@
 			<h2>Section 5: Improvement Information</h2>
 			<h3>Section 5.1: Structures (Pools, Sheds, Barns, etc)</h3>
 			
-			<? 
+			<?php
 			$table = $county . '_improvement';
 			print('<table><tr><td>');
 			print(makeCheckBox('improvements', 'structs', 'Include Improvements In Filter'));
@@ -295,3 +430,23 @@
 		</form>
 	</body>
 </html>
+<script type="text/javascript">
+	$(".majorSection").accordion({
+		collapsible: true,
+        heightStyle: "content",
+        active: false
+	});
+
+	$(".minorSection").accordion({
+        collapsible: true,
+        active: false,
+        heightStyle: "content"
+    });
+
+	$(".multiple_checkbox").multiselect({
+        columns: 1,
+        search: true,
+        selectAll: true
+    });
+
+</script>
