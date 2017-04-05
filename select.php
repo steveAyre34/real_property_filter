@@ -32,9 +32,9 @@
 </head>
 
 <body>
-	<form name="frm_fields" action="results.php" method="post" target="_blank">
+	<form name="frm_fields" action="get_export.php" method="post">
 			<h1>Real Property Data Filter for <?= $county ?> county:</h1>
-			<input type="submit" class="button" value="Get Counts!" onClick="setAction('count');" style="height:75px;width:540px;background-color:#FA8072;font-size:20px" />
+			<input type="submit" class="button" value="Get Counts!"  style="height:75px;width:540px;background-color:#FA8072;font-size:20px" />
             <input type="reset" value="Reset Criteria" style="height:75px;width:540px;background-color:#FA8072;font-size:20px"/>	
 
 			<div id="assessmentInformation" class="ui-accordion majorSection">

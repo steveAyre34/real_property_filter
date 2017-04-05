@@ -61,12 +61,12 @@
 		* Gather distinct selection options for dropdown menu
 		*/
 		$query = "SHOW COLUMNS FROM " . $table . ";";
-		if($result = mysqli_query($conn, $query)) {
+		if($result = mysqli_query($link, $query)) {
 			//Get field information for all fields 		
 			while($row = $result->fetch_assoc()) {
 				//If the field isn't a duplicate and isn't the primary key, add it to list of fields to be displayed and add to duplicate list for future checks
 				if(!in_array($row['Field'], $alreadyDisplayedFields) && strcmp($row['Field'], 'primaryID') != 0)/* && strcmp($row['Field'], "owner_id") != 0)*/ {
-					array_push($fields, new Field($row['Field'], $table, $conn));
+					array_push($fields, new Field($row['Field'], $table, $link));
 					array_push($alreadyDisplayedFields, $row['Field']);
 				}
 			}
@@ -90,9 +90,17 @@
 	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
 	<link rel="stylesheet" href="jquery.multiselect.css"/>
 <body>
-	
+	<table>
 		<?php foreach($fields as $field) { 
 			if(sizeOf($field->selectMenuValues) > 0) {?>
+                <?php
+                if($gridCount == 0) {
+                    echo "<tr>";
+                }
+                if($gridCount < 3) {
+                    echo "<td width='360px'>";
+                }
+                ?>
 			<h4><?php echo $field->fieldName ?></h4>
 
 			<select name="<?php echo $field->fieldName ?>||<?php echo strtolower($_GET['table']) ?>[]" multiple="multiple" class="selectMenu[]">
@@ -100,10 +108,18 @@
 						<option value="<?php echo $menuValue ?>"><?php echo $menuValue ?></option>
 <?php			} ?>
 			</select>
-
-			<br>
+            <?php
+                echo "</td>";
+                if($gridCount == 2) {
+                    echo "</tr>";
+                    $gridCount = 0;
+                }
+                else {
+                    $gridCount += 1;
+                }
+            ?>
 <?php		}} ?>
-	
+    </table>
 </body>
 </html>
 

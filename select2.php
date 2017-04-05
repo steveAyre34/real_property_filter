@@ -20,7 +20,7 @@
 		
 		//Get names of all tables for chosen county 
 		$showTables = "SHOW TABLES LIKE '" . $county . "%';";
-		$result = mysqli_query($conn, $showTables);	
+		$result = mysqli_query($link, $showTables);
 		while($row = mysqli_fetch_array($result)) {
 			$name = $row[0];
 			$tables[] = ucwords(trim(preg_replace('/' . $county . '_/', ' ', $name)));

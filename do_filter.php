@@ -1,5 +1,5 @@
 <?php
-	require("connection.php");
+	/*require("connection.php");
 	
 	$filterStatement = "SELECT COUNT(" . $_POST['county'] . "_owner.owner_id) FROM " . $_POST['county'] . "_owner, ";
 	$tablesAddedToStatement = array();
@@ -34,7 +34,7 @@
 				foreach($postValue as $selectMenuValue) {
 					$whereClause = "(" . $_POST['county'] . "_" . $separatePostValue[1] . "." . $separatePostValue[0] . "='" . $selectMenuValue . "'";
 					$whereClause .= " AND (";
-					if(/*table has owner id*/) {
+					if(/*table has owner id) {
 						. $_POST['county'] . "_owner.owner_id=" . $_POST['county'] . "_owner.owner_id)";
 					}
 					else {
@@ -71,5 +71,15 @@
 	print("Filter Result: ");
 	foreach($filterResult as $resultKey => $resultValue) {
 		print($resultValue . "<br>");
+	}*/
+
+
+
+	//This code block isolates the selected field values -- need to get names associated as well
+	foreach($_POST as $POST) {
+		if(!empty($POST) && $POST[0] != -1 && is_array($POST)) {
+            print_r($POST);
+            echo '<br>';
+        }
 	}
 ?>	
