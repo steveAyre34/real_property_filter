@@ -63,7 +63,7 @@ session_start();
 	$databaseTable = $_POST['county'] . '_' . $_FILES['uploadFile']['name'];
 	$databaseTable = substr($databaseTable, 0, -4);
 	
-	$getDatabaseTable = mysqli_query($conn, "SELECT * FROM " . $databaseTable);
+	$getDatabaseTable = mysqli_query($link, "SELECT * FROM " . $databaseTable);
 	$databaseTableHeaders = mysqli_fetch_fields($getDatabaseTable);
 	$databaseTableHeaders = trimHeaderInfo($databaseTableHeaders);
 	

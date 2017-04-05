@@ -93,9 +93,9 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 	$importFile = fopen(realpath($localFile), "r") or die("Unable to open file.");
 
 	//Check if file has existing table and drop if so 
-	$checkTable = mysqli_query($conn, "SHOW TABLES LIKE '" . $databaseTable . "';");
+	$checkTable = mysqli_query($link, "SHOW TABLES LIKE '" . $databaseTable . "';");
 	if(mysqli_num_rows($checkTable) > 0) {
-		$getDatabaseTable = mysqli_query($conn, "DROP TABLE " . $databaseTable);
+		$getDatabaseTable = mysqli_query($link, "DROP TABLE " . $databaseTable);
 	}
 
 	//Retrieves header layout from first line of file to be uploaded (each field is delimited with a tab)
@@ -104,7 +104,7 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 			
 	//Create corresponding table based on file headers 
 	$createTableStatement = createTable($fileHeaders, $databaseTable);
-	$checkTable = mysqli_query($conn, $createTableStatement);
+	$checkTable = mysqli_query($link, $createTableStatement);
 	if(!$checkTable) {
 		print "Error creating " . $databaseTable . ".";
 	}
@@ -115,9 +115,9 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 	print "LOAD STATEMENT: " . $loadStatement;
 	echo "<br><br><br>";*/
 				
-	$failedCount = mysqli_query($conn, $loadStatement);
+	$failedCount = mysqli_query($link, $loadStatement);
 	$checkUpload = "SELECT COUNT(primaryID) FROM " . $databaseTable;
-	$uploadCount = mysqli_query($conn, $checkUpload) or die(mysqli_error());
+	$uploadCount = mysqli_query($link, $checkUpload) or die(mysqli_error());
 	$uploadCounter = mysqli_fetch_assoc($uploadCount);
 	/*if($failedCount == true) {
 		//print $uploadCounter['COUNT(primaryID)'] . " records added successfully to " . $databaseTable . "<br>";
@@ -162,7 +162,7 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 			
 			//echo "UPLOAD DIRECTORY: " . $localFile;
 	
-	mysqli_close($conn);
+	mysqli_close($link);
 	
 ?>
 
