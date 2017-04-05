@@ -17,11 +17,11 @@ require_once('common.php');
 ********/
 function makeCheckBox($name, $value, $label, $align='left', $checked=FALSE){
 	$id = preg_replace('/[^A-Za-z0-9\_\-]/', '', $name .'_'. $value);
-	if($name == 'file[]'){
-		$button = '<input id="'. $id .'" type="checkbox" name="'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') .'visibility: hidden'.' />';
-		$label = '<label for="'. $id .'">'. $label .'</label>';
-	}
-	else{
+	//if($name == 'file[]'){
+		$button = '<input id="'. $id .'" type="checkbox" name="'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') . '>';
+		//$label = '<label for="'. $id .'">'. $label .'</label>';
+	//}
+	/*else{
 		$html = '<select name="' . $id . '[]" id="' . $id . '" multiple class="multiple_checkbox">';
 		$html .= '<option value="'. $id .'">'. $label .'</option>';
 		$html .= '</select>';
@@ -34,9 +34,9 @@ function makeCheckBox($name, $value, $label, $align='left', $checked=FALSE){
 		else{
 			$html = $button . $label;
 		}
-	} else {
-		$html = $label .'&nbsp;'. $button;
-	}
+	} else {*/
+		$html = $button . $label;
+	//}
 	
 	return $html;
 }

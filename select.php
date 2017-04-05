@@ -193,7 +193,7 @@
                         <td width="360px">
                             <div id="wf_feet" class="ui-accordion minorSection">
                                 <div id="accordion-header_wf_feet" class="ui-accordion-header">
-                                    <b>Unit Price</b>
+                                    <b>Waterfront Feet</b>
                                 </div>
                                 <div id="accordion-content_wf_feet" class="ui-accordion-content">
                                     <p style="font-size:14px"><i>At least </i><input type="text name=<?php echo $table ?>.wf_feet_min"><i> Feet</i></p>
@@ -202,35 +202,41 @@
                             </div>
                         </td>
                     </tr>
+                    <br>
+                    <tr>
+                        <td width="360px">
+                            <b>Land Type</b>
+                            <?php
+                            print(makeSelectionList($link, $county, 'land_type', $table, 'Land Type', 'land_type'));
+                            ?>
+                        </td>
+                        <td width="360px">
+                            <b>Waterfront Type</b>
+                            <?php
+                            print(makeSelectionList($link, $county, 'waterfront_type', $table, 'Waterfront Type', 'waterfront_type'));
+                            ?>
+                        </td>
+                        <td width="360px">
+                            <b>Soil Rating</b>
+                            <?php
+                            print(makeSelectionList($link, $county, 'soil_rating', $table, 'Soil Rating', 'soil_rating'));
+                            ?>
+                        </td>
+                    </tr>
                 </table>
+                <!--(hopefully) temporary hack to increase height of accordion content-->
+                <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
             </div>
         </div>
-			<!--print("<table><tr><td>");
-			
-			print(makeMinMaxSelector('full_market_value', 'Dollars', 'Market Value', $default_width));
-			print("</td><td>");
-			print(makeMinMaxSelector('acres', 'Acres', 'Acreage', $default_width));
-			print("</td><td>");
-			print(makeMinMaxSelector('sqft', 'ft^2', 'Square Footage', $default_width));
-			print("</td></tr><tr><td>");
-			print(makeMinMaxSelector('unit_price', 'Dollars', 'Unit Price', $default_width));
-			print("</td><td>");
-			print(makeMinMaxSelector('land_value', 'Dollars', 'Land Value', $default_width));
-			print("</td><td>");
-			print(makeMinMaxSelector('wf_feet', 'ft', 'Waterfront Feet', $default_width));
-			print("</td></tr>");
+        <div id="siteInformation majorSection" class="ui-accordion">
+            <div id="accordion-header_siteInformation" class="ui-accordion-header">
+                <h2>Section 4: Site Information</h2>
+            </div>
+            <div id="accordion-content_siteInformation" class="ui-accordion-content">
+                <?php
+                $table = $county . '_site';
+                ?>
 
-			 <!--
-         print("<td>");
-        print(makeSelectionList($link, $county, 'land_type', $table, 'Land Type', 'land_type', $default_width));
-        print('</td><td>');
-        print(makeSelectionList($link, $county, 'waterfront_type', $table, 'Waterfront Type', 'waterfront_type', $default_width));
-        print("</td><td>");
-        print(makeSelectionList($link, $county, 'soil_rating', $table, 'Soil Rating', 'soil_rating', $default_width));
-        print("</td></tr></table>\n");
-        ?>-->
-
-			<h2>Section 3: Site Information</h2>
 			
 			<?php
 			$table = $county . '_site';
@@ -275,6 +281,7 @@
 			print(makeSelectionList($link, $county, 'nbhd_rating', $table, 'Nghbrd Rating', 'nbhd_rating', $default_width)); 
 			print("</td></tr></table>\n");
 			?>
+        </div>
 			<br/>
 			<input type="submit" class="button" value="Get Counts!" onClick="setAction('count');" style="height:75px;width:540px;background-color:#FA8072;font-size:20px" />
             <input type="reset" value="Reset Criteria" style="height:75px;width:540px;background-color:#FA8072;font-size:20px"/>	
