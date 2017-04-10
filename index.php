@@ -1,7 +1,7 @@
 <?php	
 	require('common.php');
-    session_start();
-	//$_POST['']
+   // session_start();
+
 ?>
 
 <!DOCTYPE html>
@@ -32,7 +32,7 @@
 		  ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
 	<?php }} ?>
 </select>
-<input type="submit" value="Go" formmethod="GET" formaction="select.php"/><br>
+<input type="submit" value="Go" formmethod="GET" formaction="select2.php"/><br>
 <input type="submit" value="Import" formmethod="GET" formaction="importChooseCounty.php"/>
-<input type="submit" value="Export" formmethod="GET" formmaction="get_export.php"/>
+<input type="submit" value="Export" formmethod="GET" formaction="get_export.php"/>
 </form>

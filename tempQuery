@@ -1,0 +1,118 @@
+SELECT COUNT(columbia_owner.owner_id)
+FROM
+    columbia_owner,
+    columbia_assessment,
+    columbia_comm_bldg,
+    columbia_comm_use,
+    columbia_exempt,
+    columbia_improvement,
+    columbia_land,
+    columbia_mobile_home,
+    columbia_parcel,
+    columbia_parcel_to_owner,
+    columbia_res_bldg,
+    columbia_site,
+    columbia_valuation
+where
+    (columbia_owner.muni_code='104400'
+        OR columbia_owner.muni_code='100600'
+        OR columbia_owner.muni_code='105400')
+     AND )
+        (
+            (columbia_assessment.prop_class='842')
+            AND (
+                (columbia_owner.owner_id=columbia_assessment.owner_id)
+                AND (columbia_owner.muni_code=columbia_assessment.muni_code)
+                OR (columbia_assessment.prop_class='331')
+                AND (
+                    (columbia_owner.owner_id=columbia_assessment.owner_id)
+                    AND (columbia_owner.muni_code=columbia_assessment.muni_code)
+                 )
+                 AND
+             )
+             (
+                (columbia_comm_bldg.bldg_perimeter='120')
+                AND (
+                    (columbia_owner.muni_code=columbia_comm_bldg.muni_code)
+                    AND (columbia_owner.parcel_id=columbia_comm_bldg.parcel_id)
+                 )
+                 AND
+             )
+             (
+                (columbia_comm_use.used_as_cd='Z98')
+                AND (
+                    (columbia_owner.muni_code=columbia_comm_use.muni_code)
+                    AND (columbia_owner.parcel_id=columbia_comm_use.parcel_id)
+                )
+                AND
+             )
+             (
+                (columbia_exempt.ex_init_yr='2004')
+                AND (
+                    (columbia_owner.muni_code=columbia_exempt.muni_code)
+                    AND (columbia_owner.parcel_id=columbia_exempt.parcel_id)
+                )
+                AND
+             )
+             (
+                (columbia_improvement.structure_cd='FC4')
+                AND (
+                    (columbia_owner.muni_code=columbia_improvement.muni_code)
+                    AND (columbia_owner.parcel_id=columbia_improvement.parcel_id)
+                )
+                AND
+             )
+             (
+                (columbia_land.land_type='14')
+                AND (
+                    (columbia_owner.muni_code=columbia_land.muni_code)
+                    AND (columbia_owner.parcel_id=columbia_land.parcel_id)
+                ) AND
+             )
+             (
+                (columbia_mobile_home.lot_num='14')
+                AND (
+                    (columbia_owner.muni_code=columbia_mobile_home.muni_code)
+                    AND (columbia_owner.parcel_id=columbia_mobile_home.parcel_id)
+                ) AND
+             )
+             (
+                (columbia_parcel.swis_muni='20')
+                AND (
+                    (columbia_owner.owner_id=columbia_parcel.owner_id)
+                    AND (columbia_owner.muni_code=columbia_parcel.muni_code)
+                 )
+                 AND
+              )
+              (
+                (columbia_parcel_to_owner.bkpg_seq='303951266') \
+                AND (
+                    (columbia_owner.owner_id=columbia_parcel_to_owner.owner_id)
+                    AND (columbia_owner.muni_code=columbia_parcel_to_owner.muni_code)
+                 )
+                 AND
+              )
+              (
+                (columbia_res_bldg.sqft_living_area='2108')
+                AND (
+                    (columbia_owner.muni_code=columbia_res_bldg.muni_code)
+                    AND (columbia_owner.parcel_id=columbia_res_bldg.parcel_id)
+                 )
+                 AND
+              )
+              (
+                (columbia_site.zoning_cd='R1')
+                AND (
+                    (columbia_owner.muni_code=columbia_site.muni_code)
+                    AND (columbia_owner.parcel_id=columbia_site.parcel_id)
+                 )
+                 AND
+              )
+                (
+                    (columbia_valuation.final_land='34500')
+                    AND (
+                        (columbia_owner.muni_code=columbia_valuation.muni_code)
+                        AND (columbia_owner.parcel_id=columbia_valuation.parcel_id)
+                     ) ;
+                 )
+            )

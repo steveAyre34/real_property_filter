@@ -1,5 +1,5 @@
 <?php
-	/*require("connection.php");
+	require("connection.php");
 	
 	$filterStatement = "SELECT COUNT(" . $_POST['county'] . "_owner.owner_id) FROM " . $_POST['county'] . "_owner, ";
 	$tablesAddedToStatement = array();
@@ -23,25 +23,39 @@
 	}
 	//Remove trailing ', ' (comma space)
 	$filterStatement = substr($filterStatement, 0, -2);
-	$filterStatement .= " where ";	
+	$filterStatement .= " WHERE ";
 
 	//Now add where clauses
 	foreach($_POST as $postKey => $postValue) {
 		if($postKey != "county") {
 			$separatePostValue = explode('||', $postKey);
-			if($separatePostValue[1] != "owner") {
+			if($separatePostValue[1] != "owner" && $separatePostValue[1] != "spec_dist" && $separatePostValue[1] != "specdist_def") {
+                //Need to check if current table has ownerID so we know how to construct WHERE clause
+                $checkForOwnerId = "SHOW COLUMNS IN {$_POST['county']}_{$separatePostValue[1]} LIKE 'owner_id';";
+                $checkForOwnerIdResult = mysqli_query($link, $checkForOwnerId);
+                //Assume table does not have ownerId
+                $hasOwnerId = 0;
+                $checkForOwnerIdArray = mysqli_fetch_assoc($checkForOwnerIdResult);
+                if(!empty($checkForOwnerIdArray))
+                    $hasOwnerId = 1;
+
 				$filterStatement .= "(";
 				foreach($postValue as $selectMenuValue) {
 					$whereClause = "(" . $_POST['county'] . "_" . $separatePostValue[1] . "." . $separatePostValue[0] . "='" . $selectMenuValue . "'";
-					$whereClause .= " AND (";
-					if(/*table has owner id) {
-						. $_POST['county'] . "_owner.owner_id=" . $_POST['county'] . "_owner.owner_id)";
+					$whereClause .= ") AND ";
+					//If this table has owner_id, match with owner by ownerID and muni_code
+					if($hasOwnerId == 1) {
+						$whereClause .= "(" . $_POST['county'] . "_owner.owner_id=" . $_POST['county'] . "_" . $separatePostValue[1] . ".owner_id) AND ";
+						$whereClause .= "(" . $_POST['county'] . "_owner.muni_code=" . $_POST['county'] . "_" . $separatePostValue[1] . ".muni_code)";
 					}
+					//This table does not have owner_id
+                    //Match by muni_code and parcel_id
 					else {
-						//match by parcel_id and muni_code 
-					}
+                        $whereClause .= "(" . $_POST['county'] . "_owner.muni_code=" . $_POST['county'] . "_". $separatePostValue[1] . ".muni_code) AND ";
+                        $whereClause .= "(" . $_POST['county'] . "_owner.parcel_id=" . $_POST['county'] . "_" . $separatePostValue[1] . ".parcel_id)";
+                    }
 					$filterStatement .= $whereClause;
-					$filterStatement .= " OR ";
+					$filterStatement .= ") OR (";
 				}
 				$filterStatement .= ")";
 			}
@@ -60,26 +74,18 @@
 	}
 
 	//Remove trailing ' and ' (space and space)
-	$filterStatement = substr($filterStatement, 0, -5);
+	$filterStatement = substr($filterStatement, 0, -7);
 	
 	//Add trailing semicolon
 	$filterStatement .= ";";
 	echo "<br><br>";
 	echo $filterStatement;
-	$filterQuery = mysqli_query($conn, $filterStatement);
+	echo "<br>";
+	$filterQuery = mysqli_query($link, $filterStatement);
 	$filterResult = mysqli_fetch_assoc($filterQuery);
 	print("Filter Result: ");
 	foreach($filterResult as $resultKey => $resultValue) {
 		print($resultValue . "<br>");
-	}*/
-
-
-
-	//This code block isolates the selected field values -- need to get names associated as well
-	foreach($_POST as $POST) {
-		if(!empty($POST) && $POST[0] != -1 && is_array($POST)) {
-            print_r($POST);
-            echo '<br>';
-        }
 	}
+
 ?>	
