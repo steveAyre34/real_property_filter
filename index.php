@@ -32,7 +32,7 @@
 		  ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
 	<?php }} ?>
 </select>
-<input type="submit" value="Go" formmethod="GET" formaction="select3.php"/><br>
+<input type="submit" value="Go" formmethod="GET" formaction="selectQuery.php"/><br>
 <input type="submit" value="Import" formmethod="GET" formaction="importChooseCounty.php"/>
 <input type="submit" value="Export" formmethod="GET" formaction="get_export.php"/>
 </form>

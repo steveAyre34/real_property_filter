@@ -7,8 +7,9 @@
      */
     require("connection.php");
     require_once("Field.php");
+    $county = $_POST['county'];
     session_start();
-    $county = $_GET['county'];
+
 
     //Get names of all tables for chosen county
     $showTables = "SHOW TABLES LIKE '" . $county . "%';";
@@ -33,9 +34,7 @@
     $query = "SELECT DISTINCT type FROM codes WHERE county='" . ucfirst($county) . "' OR county='all';";
     if($result = mysqli_query($link, $query)) {
         while($row = $result->fetch_assoc()) {
-            //array_push($codes, new Code($row['type'], $row['code'], $row['meaning']));
             if(!in_array($row['type'], $codeTypes)) {
-                //echo"<br>";
                 array_push($codeTypes, $row['type']);
             }
         }
@@ -52,7 +51,7 @@
         while($row = $result->fetch_assoc()) {
             foreach($row as $key => $value) {
                 //Only need the def file for specified county
-                if(strpos($value, $_GET['county']) == 0) {
+                if(strpos($value, $county) == 0) {
                     $innerQuery = "SHOW COLUMNS IN " . $value . " LIKE '%code%';";
                     if($innerResult = mysqli_query($link, $innerQuery)) {
                         while($innerRow = $innerResult->fetch_assoc()) {
@@ -68,6 +67,7 @@
 
     $_SESSION['codeTypes'] = $codeTypes;
     $_SESSION['definitionCodes'] = $definitionCodes;
+
 ?>
 <html>
 	<head>
@@ -101,7 +101,7 @@
                     </div>
                 <?php			}
             } ?>
-<button type="submit" id="filterButton">Filter</button>
+<button type="submit" id="filterButton">Create</button>
 </form>
 </body>
 </html>
@@ -128,8 +128,4 @@
             });
         }
     });
-
-    /*$(".selectMenu").multiselect({
-     columns: 2
-     });*/
 </script>

@@ -62,11 +62,6 @@ function calcUploadPercentage($currentFileSize) {
 	return ($currentlyUploadedSize / $totalSize);
 }
 
-//foreach($_FILES['uploadFile'] as $keyOuter => $valueOuter) {
-	/*print('uploadFileKey: ' . $key);
-	print('uploadFileValue: ');
-	print_r($value);*/
-
 /*
 	Get total size of files to be uploaded
 */
@@ -162,7 +157,27 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
 //}
 			
 			//echo "UPLOAD DIRECTORY: " . $localFile;
-	
+
+    /*
+     * Now need to either add entry to last_updated or, if this county has an entry, change the last_updated date to today
+     */
+    $checkUpdated = "SELECT * from last_updated WHERE county='{$_POST['county']}';";
+
+    $updateStatement = '';
+    $today = date('Y/m/d');
+    $result = mysqli_query($link, $checkUpdated);
+    if($result && $result->num_rows > 0) {
+        $updateStatement = "UPDATE last_updated SET date='{$today}';";
+    }
+    else {
+        $updateStatement = "INSERT INTO last_updated VALUES ('{$_POST['county']}', '{$today}');";
+    }
+
+    $updateStatementResult = mysqli_query($link, $updateStatement);
+    if($updateStatementResult)
+        ;
+    else
+        print("Error saving last_updated:" . $updateStatementResult->error);
 	mysqli_close($link);
 	
 ?>
