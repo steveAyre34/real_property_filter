@@ -19,7 +19,6 @@ if($result = mysqli_query($link, $selectStatement)) {
     }
 }
 
-
 ?>
 
 <html>
@@ -31,12 +30,12 @@ if($result = mysqli_query($link, $selectStatement)) {
 
     <body>
     <h1>General Purpose Filter</h1>
-    <form id="gen_purpose" target="_blank">
+    <form id="gen_purpose">
         <input type="hidden" name="county" value="<?php echo $county ?>"/>
         <input type="submit" value="Go" formmethod="GET" formaction="select.php"/>
     </form>
     <h1>Saved Queries for <?php echo $county ?></h1>
-        <form id="saved" target="_blank">
+        <form id="saved">
             <input type="hidden" name="county" value="<?php echo $county ?>"/>
             <input type="hidden" name="saved" value="1"/>
         <?php if(!empty($savedQueryFiles)) { ?>
@@ -54,7 +53,7 @@ if($result = mysqli_query($link, $selectStatement)) {
             <input type="submit" value="Go" formmethod="POST" formaction="createTemplate.php"/>
         <?php  } ?>
         </form>
-        <form id="create" target="_blank">
+        <form id="create">
             <h1>Create New Query</h1>
             <input type="hidden" name="county" value="<?php echo $county ?>"/>
             <input type="hidden" name="saved" value="0"/>

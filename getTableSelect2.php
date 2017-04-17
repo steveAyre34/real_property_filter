@@ -8,15 +8,16 @@
     require("connection.php");
     require_once("Field.php");
     session_start();
+
     /*
-     * There are three ways to search on a field: multiselect checkbox, min/max input boxes, and a simple checkbox for
-     * has/has not relationships (for example, check the box if you want to search on properties that "have AC").
-     * In order to keep the filter dynamic that means we will need to check each field name for certain keywords in order
-     * to determine which HTML element should be generated to allow the user to search by that category. The following
-     * three global arrays contain the keywords for each of those scenarios based on an analysis of the database fields
-     * and how they were searchable in the old RP2 filter. Contains wildcard expressions. Any field not in one of these
-     * two arrays will generate a multiselect checkbox menu.
-     */
+    * There are three ways to search on a field: multiselect checkbox, min/max input boxes, and a simple checkbox for
+    * has/has not relationships (for example, check the box if you want to search on properties that "have AC").
+    * In order to keep the filter dynamic that means we will need to check each field name for certain keywords in order
+    * to determine which HTML element should be generated to allow the user to search by that category. The following
+    * three global arrays contain the keywords for each of those scenarios based on an analysis of the database fields
+    * and how they were searchable in the old RP2 filter. Contains wildcard expressions. Any field not in one of these
+    * two arrays will generate a multiselect checkbox menu.
+    */
     $minMax = [
         '/amt/',
         '/adj/',
@@ -53,20 +54,7 @@
     $gridCount = 0;
 
 
-/*
- * Class to hold county codes, type and meaning
- */
-    /*class Code {
-        public $type;
-        public $code;
-        public $meaning;
 
-        public function __construct($type, $code, $meaning) {
-            $this->type = $type;
-            $this->code = $code;
-            $this->meaning = $meaning;
-        }
-    }*/
 
     /*
      * Now need to get the fields for the table being requested
