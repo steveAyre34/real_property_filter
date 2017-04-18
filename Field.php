@@ -24,7 +24,7 @@ class Field
 
     public function __construct($field, $table, $conn, $minMax, $checkbox) {
         $this->fieldName = $field;
-        $this->fullFieldName = $table . "." . $field;
+        $this->fullFieldName = $table . "||" . $field;
         $this->generateType = -1;
 
         /*

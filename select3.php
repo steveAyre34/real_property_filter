@@ -9,7 +9,6 @@
     require_once("Field.php");
     $county = $_POST['county'];
     session_start();
-    print_r($_POST);
     $_SESSION['county'] = $_POST['county'];
     $_SESSION['saved'] = $_POST['saved'];
     $_SESSION['query_name'] = $_POST['query_name'];
@@ -65,7 +64,7 @@
                     </div>
                 <?php			}
             } ?>
-<button type="submit" id="filterButton">Create</button>
+<button type="submit" id="createButton">Create</button>
 </form>
 </body>
 </html>

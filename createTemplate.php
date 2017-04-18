@@ -7,6 +7,7 @@
  */
     require_once("Field.php");
     include("connection.php");
+    include("select_logic.php");
     session_start();
 
     /*
@@ -44,7 +45,7 @@
 
     $cache_ext = '.php';
     $cache_folder = "views/" . $_SESSION['county'] . "/";
-    $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $_SERVER['QUERY_STRING'];
+    $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SESSION['query_name'] . $_SERVER['QUERY_STRING'];
     $cache_file = '';//$cache_folder.md5($dynamic_url) . $cache_ext;
     $ignore_pages = array('', '');
     $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
@@ -53,7 +54,6 @@
     $saved = $_POST['saved'];
 
     $template_fields = array();
-    $gridCount = 0;
 
 
     //Get the codes for this county so their meanings can be displayed where necessary
@@ -163,7 +163,7 @@
 
                 foreach($templateFields as $template_list) {
                     //Get table name from full field name
-                    $table = explode(".", $template_list);
+                    $table = explode("||", $template_list);
 
                     //Table name will always be first element prior to the period in the full field name
                     $field = str_replace('\'', '', $table[1]);
@@ -209,7 +209,7 @@
 
         foreach($_POST['template_list'] as $template_list) {
             //Get table name from full field name
-            $table = explode(".", $template_list);
+            $table = explode("||", $template_list);
             //Table name will always be first element prior to the period in the full field name
             $table = $table[0];
 
@@ -233,20 +233,134 @@
         <link rel="stylesheet" href="jquery.multiselect.css"/>
     </head>
     <body>
-        <?php foreach($template_fields as $fields) {
-            if($gridCount == 0) {
-                echo "<tr>";
-            }
-            if($gridCount < 3) {
-                echo "<td width='360px'>{$fields->fieldName}<br></td></tr>";
-            }
-            ?>
-
-
-        <?php } ?>
-
+        <form id="query_form">
+            <input type="hidden" name="county" value="<?php echo $county ?>"/>
+            <div class="ui-accordion">
+                <div class="ui-accordion-header">
+                    <h2>Checkboxes</h2>
+                </div>
+                <div class="ui-accordion-content">
+                    <table>
+                    <td>
+                        <?php
+                        $gridCount = 0;
+                        foreach($template_fields as $fields) {
+                            if($gridCount == 0) {
+                                echo "<tr>";
+                            }
+                            if($gridCount < 3) {
+                                echo "<td width='360px'>";
+                            }
+                            if($fields->generateType == 2) {
+                        ?>
+                                <span><input type="checkbox" name="<?php echo $fields->fullFieldName ?>[]" value="<?php echo $fields->fieldName ?>"><?php echo $fields->fullFieldName ?></span>
+                            </td>
+                        <?php
+                                if($gridCount == 2) {
+                                    echo "</tr>";
+                                    $gridCount = 0;
+                                }
+                                else {
+                                    ++$gridCount;
+                                }
+                            }
+                        } ?>
+                    </table>
+                </div>
+            </div>
+            <div class="ui-accordion">
+                <div class="ui-accordion-header">
+                    <h2>Min/Max Categories</h2>
+                </div>
+                <div class="ui-accordion-content">
+                    <table>
+                    <?php
+                    $gridCount = 0;
+                    foreach($template_fields as $fields) {
+                            if($gridCount == 0) {
+                                echo "<tr>";
+                            }
+                            if($gridCount < 3) {
+                                echo "<td width='360px'>";
+                            }
+                            if($fields->generateType == 0) { ?>
+                            <div id="<?php echo $fields->fullFieldName ?>" class="ui-accordion">
+                                <div id="accordion-header" class="ui-accordion-header">
+                                    <h4><?php echo $fields->fullFieldName ?></h4>
+                                </div>
+                                <div id="accordion-content" class="ui-accordion-content">
+                                        <i>At least </i><input type="text" name="<?php echo $fields->fullFieldName ?>_min"><br><br>
+                                        <i>At most </i><input type="text" name="<?php echo $fields->fullFieldName ?>_max">
+                                    <?php } ?>
+                                </div>
+                            </div>
+                    <?php
+                        if($gridCount == 2) {
+                            echo "</tr>";
+                            $gridCount = 0;
+                        }
+                        else {
+                            ++$gridCount;
+                        }
+                    } ?>
+                    </table>
+                </div>
+            </div>
+            <div class="ui-accordion">
+                <div class="ui-accordion-header">
+                    <h2>Select Menus</h2>
+                </div>
+                <div class="ui-accordion-content">
+                    <table>
+                        <?php
+                        $gridCount = 0;
+                        foreach($template_fields as $fields) {
+                            $table = explode("||", $fields->fullFieldName);
+                            $table = $table[0];
+                            echo $table . "<br>";
+                            if($gridCount == 0) {
+                                echo "<tr>";
+                            }
+                            if($gridCount < 3) {
+                                echo "<td width='360px'>";
+                            }
+                            if($fields->generateType == 1) {
+                                echo "<h4>{$fields->fullFieldName}</h4>";
+                                print(makeSelectionList($link, $county, $fields->fieldName, $table, $fields->fieldName, $fields->fieldName));
+                            }
+                            echo "</td>";
+                            if($gridCount == 2) {
+                                echo "</tr>";
+                                $gridCount = 0;
+                            }
+                            else {
+                                ++$gridCount;
+                            }
+                        }
+                        ?>
+                    </table>
+                    <!--(hopefully) temporary hack to increase height of accordion content-->
+                    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                </div>
+            </div>
+            <input type="submit" value="Go" formmethod="POST" formaction="do_filter.php"/><br>
+        </form>
     </body>
 </html>
+
+<script type="text/javascript">
+    $(".ui-accordion").accordion({
+        collapsible: true,
+        heightStyle: "content",
+        active: false
+    });
+
+    $(".multiple_checkbox").multiselect({
+        columns: 1,
+        search: true,
+        selectAll: true
+    })
+</script>
 
 <?php
 if(!is_dir($cache_folder)) {
@@ -259,3 +373,4 @@ if(!$ignore) {
 }
 ob_end_flush();
 ?>
+

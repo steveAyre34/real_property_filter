@@ -91,20 +91,9 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 	while($codes = mysqli_fetch_array($codesResult)) {
 		array_push($decoded_fields, $codes['type']);
 	}
-	
-	//reset time limit so we do not timeout on long requests
-	set_time_limit(30);
+
 	$html = "";
-	//$length = $width - 4;
-	/*$width = ' style="width: ' . $width . 'ex;"';
-	$label = makeCheckbox('cols[]', $name, $label);
-	//$exc = makeCheckbox('exclude[]', $name, '(Exclude)');
-	//$file = makeCheckbox('file[]', $name, '(Include Field in Output)');
-	$file = "";
-	$html .= "<table>";
-	$html .= "<tr {$width}>";
-	$html .= '<div class=".multiple_checkbox">' . $label . '&nbsp;&nbsp;' . $file . '</div>';
-	$html .= "</tr><tr>";*/
+
 	$sql = 'SELECT ' . $field . ', COUNT(*) FROM ' . $table . ' GROUP BY ' . $field . ' ORDER BY ' . $field;
 	if(in_array($field, $decoded_fields)){
 		$sql = "SELECT {$table}.{$field}, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.{$field} WHERE codes.type = '{$field}' GROUP BY codes.code ORDER BY codes.meaning ";
@@ -115,58 +104,18 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 	}
 	$result = mysqli_query($link, $sql);
 	if(!$result){
-		print("Error retrieving selection criteria for " . $table . "." . $field);
+		print("Error retrieving selection criteria for " . $table . "||" . $field);
 		printf("Error: %s\n", mysqli_error($link));
 		print("<BR>" . $sql . "<BR><BR>");
 	}
 	$num_rows = mysqli_num_rows($result);
-	//temp debug
-	#if($field == 'swis_code'){
-	#	print $sql;
-	#}
-	if($num_rows > 1){		
-		//$html .= '<select name="' . $name . '[]" class="dcinput" multiple="multiple" size="8"' . $width . '>';
-		$html .= '<select name="' . $table . '_' . $name . '[]" multiple class="multiple_checkbox id="' . $name . '>';
-		/* function compare($a, $b)
-		{
-		// Assuming you're sorting on bar field
-		return strcmp($a[0], $b[0]);
-		}
-		for($m = 0; $m < $num_rows ; $m++){
-			$row = mysql_fetch_array($result);
-			$row = str_replace('"', "", $row);
-			$a[$m] = $row;
-		}
-		usort($a,"compare");
-		for ($i = 0; $i < count($a); $i++){
-			//$row = mysqli_fetch_array($result);
-			//$row = str_replace('"', "", $row); //getting rid of the quotes surrounding the text
-			// echo("<script>console.log('".{$row}."');</script>");
-			if($i[1] == '1' || $i[1] == '2'){  //removing zip code with just 1 or 2 counts
-				continue;
-			}
-			
-			if(in_array($field, $decoded_fields)){
-				$id = $i[0];
-				$meaning = $i[1];
-				$count = $i[2];
-			} else {
-				$id = $i[0];
-				$meaning = '';
-				$count = $i[1];
-			}
-			
-			
-			$txt = fmtListItem($id, $meaning, $count, $length);
-			#$txt = $id . ' : ' . $meaning . ' - ' . $count;
-			$html .= '<option value="'. $id .'">'. $txt .'</option>';
-		} */
-		
+
+	if($num_rows > 1){
+		$html .= '<select name="' . $table . '||' . $name . '[]" multiple class="multiple_checkbox" id="' . $name . '">';
 		
 		for ($i = 0; $i < $num_rows; $i++){
 			$row = mysqli_fetch_array($result);
 			$row = str_replace('"', "", $row); //getting rid of the quotes surrounding the text
-			//echo "<script>console.log('".$row[0]."');</script>";
 			if($row[1] == '1' || $row[1] == '2'){  //removing zip code with just 1 or 2 counts
 				continue;
 			}
@@ -187,7 +136,6 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 				//Town outside village
 				//Change TOV to town
 				if(strpos($meaning, 'TOV') != FALSE) {
-					echo '<script>console.log("'.strpos($meaning, 'TOV').'");</script>';
 					$meaning = substr($meaning, 0, strpos($meaning, 'TOV'));
 					$meaning .= 'Town)';
 				}
@@ -197,7 +145,6 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 					$meaning .= ' - Village)';
 				}
 			}
-			//$txt = fmtListItem($id, $meaning, $count, $length);
 			$txt = $id . ' : ' . $meaning . ' (' . $count . ')';
 			$html .= '<option value="'. $id .'">'. $txt .'</option>';
 		}
@@ -208,16 +155,14 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 			$row = mysqli_fetch_array($result);
 			$id = $row[0];
 			if(!empty($id)){
-				$html .= '<em>' . /*fmtListItem(*/$id/*, -1)*/ . ' records</em>';
+				$html .= '<em>' . $id . ' records</em>';
 			} else {
 				$html .= '<em>none found</em>';
 			}
 		} else {
-			$html .= '<em>none found</em>';
-		}
-		$html .= '<input type="hidden" name="'. $name .'[]" value="-1" />';
+            $html .= '<em>none found</em>';
+        }
 	}
-	//$html .= '</table>';
 	return $html;
 }
 
