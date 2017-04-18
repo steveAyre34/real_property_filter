@@ -10,7 +10,7 @@
     $county = $_POST['county'];
     session_start();
     $_SESSION['county'] = $_POST['county'];
-    $_SESSION['saved'] = $_POST['saved'];
+    $saved = $_POST['saved'];
     $_SESSION['query_name'] = $_POST['query_name'];
 
 
@@ -22,6 +22,45 @@
         $tables[] = ucwords(trim(preg_replace('/' . $county . '_/', ' ', $name)));
     }
 
+    //Get the codes for this county so their meanings can be displayed where necessary
+    //$codes = array();
+    $codeTypes = array();
+    $query = "SELECT DISTINCT type FROM codes WHERE county='" . ucfirst($county) . "' OR county='all';";
+    if($result = mysqli_query($link, $query)) {
+        while($row = $result->fetch_assoc()) {
+            if(!in_array($row['type'], $codeTypes)) {
+                array_push($codeTypes, $row['type']);
+            }
+        }
+    }
+
+    /*
+     * Check if the county has any definition tables (has def in the name)
+     * If it does, get all distinct values from fields with 'code' in the name
+     * Will have to manually exclude muni_code
+     */
+    $definitionCodes = array();
+    $query = "SHOW TABLES LIKE '%def%'";
+    if($result = mysqli_query($link, $query)) {
+        while($row = $result->fetch_assoc()) {
+            foreach($row as $key => $value) {
+                //Only need the def file for specified county
+                if(strpos($value, $county) == 0) {
+                    $innerQuery = "SHOW COLUMNS IN " . $value . " LIKE '%code%';";
+                    if($innerResult = mysqli_query($link, $innerQuery)) {
+                        while($innerRow = $innerResult->fetch_assoc()) {
+                            if($innerRow['Field'] != "muni_code" && !in_array($innerRow['Field'], $definitionCodes)) {
+                                array_push($definitionCodes, $innerRow['Field']);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    $_SESSION['codeTypes'] = $codeTypes;
+    $_SESSION['definitionCodes'] = $definitionCodes;
     /*
     * Creates a master list of duplicate categories already displayed for this county
     * This way we don't pull duplicate search categories across files
@@ -44,7 +83,8 @@
 
 	<body>
 		<form id="filter_form" action="createTemplate.php" method="POST">
-			<input name="county" type="hidden" value="<?php echo $_GET['county'] ?>"/>
+			<input name="county" type="hidden" value="<?php echo $county ?>"/>
+            <input name="saved" type="hidden" value="<?php echo $saved ?>"/>
 			<div id="Owner" class="ui-accordion ui-state-disabled">
 				<div id="accordion-header_Owner" class="ui-accordion-header">
 					<h4>Owner</h4>

@@ -1,8 +1,13 @@
 <?php
 	require("connection.php");
 	session_start();
-	
-	$filterStatement = "SELECT COUNT(" . $_SESSION['county'] . "_owner.owner_id) FROM " . $_SESSION['county'] . "_owner, ";
+	print("SESSION: ");
+	print_r($_SESSION);
+	echo "<br>";
+	print("POST: ");
+	print_r($_POST);
+
+	/*$filterStatement = "SELECT COUNT(" . $_SESSION['county'] . "_owner.owner_id) FROM " . $_SESSION['county'] . "_owner, ";
 	$tablesAddedToStatement = array();
 	array_push($tablesAddedToStatement, "owner");
 
@@ -101,5 +106,5 @@
 	if(!$filterResult) {
 		print("Error: " . mysqli_error($link));
 	}
-	session_destroy();
+	session_destroy();*/
 ?>	

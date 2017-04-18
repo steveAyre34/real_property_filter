@@ -45,62 +45,30 @@
 
     $cache_ext = '.php';
     $cache_folder = "views/" . $_SESSION['county'] . "/";
-    $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SESSION['query_name'] . $_SERVER['QUERY_STRING'];
+
     $cache_file = '';//$cache_folder.md5($dynamic_url) . $cache_ext;
     $ignore_pages = array('', '');
-    $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
-    $county = $_SESSION['county'];
-    $queryName = $_SESSION['query_name'];
     $saved = $_POST['saved'];
+    echo "<script type='text/javascript'>
+                console.log(\"{$saved}\");
+                </script>";
 
     $template_fields = array();
 
 
-    //Get the codes for this county so their meanings can be displayed where necessary
-    //$codes = array();
-    $codeTypes = array();
-    $query = "SELECT DISTINCT type FROM codes WHERE county='" . ucfirst($county) . "' OR county='all';";
-    if($result = mysqli_query($link, $query)) {
-        while($row = $result->fetch_assoc()) {
-            if(!in_array($row['type'], $codeTypes)) {
-                array_push($codeTypes, $row['type']);
-            }
-        }
-    }
 
-    /*
-     * Check if the county has any definition tables (has def in the name)
-     * If it does, get all distinct values from fields with 'code' in the name
-     * Will have to manually exclude muni_code
-     */
-    $definitionCodes = array();
-    $query = "SHOW TABLES LIKE '%def%'";
-    if($result = mysqli_query($link, $query)) {
-        while($row = $result->fetch_assoc()) {
-            foreach($row as $key => $value) {
-                //Only need the def file for specified county
-                if(strpos($value, $county) == 0) {
-                    $innerQuery = "SHOW COLUMNS IN " . $value . " LIKE '%code%';";
-                    if($innerResult = mysqli_query($link, $innerQuery)) {
-                        while($innerRow = $innerResult->fetch_assoc()) {
-                            if($innerRow['Field'] != "muni_code" && !in_array($innerRow['Field'], $definitionCodes)) {
-                                array_push($definitionCodes, $innerRow['Field']);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    $_SESSION['codeTypes'] = $codeTypes;
-    $_SESSION['definitionCodes'] = $definitionCodes;
 
     /*
      * Block to handle saved queries
      * A query marked as saved can still be a 'new' query if it doesn't have an entry in saved_queries
      */
     if($saved == 1) {
+        $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SESSION['query_name'] . $_SERVER['QUERY_STRING'];
+        $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
+        $county = $_SESSION['county'];
+        $queryName = $_SESSION['query_name'];
+
+
         /*
          * Check saved queries to see if this is a previously saved query being used, or a new query that needs to be
          * saved for later
@@ -187,7 +155,13 @@
     }
     //Entry in saved_queries does not exist so we are creating a new page from scratch
     else if($saved == 0) {
+        $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SESSION['query_name'] . $_SERVER['QUERY_STRING'];
+        $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
         $today = date("Y/m/d");
+        $county = $_SESSION['county'];
+        $queryName = $_SESSION['query_name'];
+        $saved = $_SESSION['saved'];
+
         //Need to concatenate template fields into one string so it can be inserted into database
         $templateFieldsString = '';
         foreach ($_POST['template_list'] as $temp) {
@@ -253,7 +227,7 @@
                             }
                             if($fields->generateType == 2) {
                         ?>
-                                <span><input type="checkbox" name="<?php echo $fields->fullFieldName ?>[]" value="<?php echo $fields->fieldName ?>"><?php echo $fields->fullFieldName ?></span>
+                                <span><input type="checkbox" name="<?php echo $fields->fullFieldName ?>[]" value="<?php echo $fields->fieldName ?>"><?php echo $fields->fieldName ?></span>
                             </td>
                         <?php
                                 if($gridCount == 2) {
@@ -286,7 +260,7 @@
                             if($fields->generateType == 0) { ?>
                             <div id="<?php echo $fields->fullFieldName ?>" class="ui-accordion">
                                 <div id="accordion-header" class="ui-accordion-header">
-                                    <h4><?php echo $fields->fullFieldName ?></h4>
+                                    <h4><?php echo $fields->fieldName ?></h4>
                                 </div>
                                 <div id="accordion-content" class="ui-accordion-content">
                                         <i>At least </i><input type="text" name="<?php echo $fields->fullFieldName ?>_min"><br><br>
@@ -317,7 +291,6 @@
                         foreach($template_fields as $fields) {
                             $table = explode("||", $fields->fullFieldName);
                             $table = $table[0];
-                            echo $table . "<br>";
                             if($gridCount == 0) {
                                 echo "<tr>";
                             }
@@ -325,7 +298,7 @@
                                 echo "<td width='360px'>";
                             }
                             if($fields->generateType == 1) {
-                                echo "<h4>{$fields->fullFieldName}</h4>";
+                                echo "<h4>{$fields->fieldName}</h4>";
                                 print(makeSelectionList($link, $county, $fields->fieldName, $table, $fields->fieldName, $fields->fieldName));
                             }
                             echo "</td>";

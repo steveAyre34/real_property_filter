@@ -6,7 +6,10 @@
  * Time: 9:33 AM
  */
 include("connection.php");
+
+session_start();
 $county = $_GET['county'];
+$_SESSION['county'] = $county;
 
 //Get all saved queries that exist for this county
 $selectStatement = "SELECT name, cache_file FROM saved_queries WHERE county='" . $_GET['county'] . "';";
