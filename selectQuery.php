@@ -5,23 +5,54 @@
  * Date: 4/14/2017
  * Time: 9:33 AM
  */
-include("connection.php");
+    include("connection.php");
 
-session_start();
-$county = $_GET['county'];
-$_SESSION['county'] = $county;
+    session_start();
+    $county = $_GET['county'];
+    $_SESSION['county'] = $county;
 
-//Get all saved queries that exist for this county
-$selectStatement = "SELECT name, cache_file FROM saved_queries WHERE county='" . $_GET['county'] . "';";
-$savedQueryNames = array();
-$savedQueryFiles = array();
-if($result = mysqli_query($link, $selectStatement)) {
-    while($row = $result->fetch_assoc()) {
-        array_push($savedQueryNames, $row['name']);
-        array_push($savedQueryFiles, $row['cache_file']);
+    //Get the date of last import for this county
+    $importDateStatement = "SELECT date FROM last_updated WHERE county='{$county}';";
+    $importDateResult = mysqli_query($link, $importDateStatement);
+    if($importDateResult && $importDateResult->num_rows == 1) {
+        $row = $importDateResult->fetch_assoc();
+        $last_updated = $row['date'];
     }
-}
 
+    //Get all saved queries that exist for this county
+    $selectStatement = "SELECT name, cache_file FROM saved_queries WHERE county='{$county}' ";
+    $selectStatement .= "AND last_cached > '{$last_updated}';";
+    $savedQueryNames = array();
+    $savedQueryFiles = array();
+    if($result = mysqli_query($link, $selectStatement)) {
+        while($row = $result->fetch_assoc()) {
+            array_push($savedQueryNames, $row['name']);
+            array_push($savedQueryFiles, $row['cache_file']);
+        }
+    }
+
+    //Get names of all tables for chosen county
+    $showTables = "SHOW TABLES LIKE '" . $county . "%';";
+    $result = mysqli_query($link, $showTables);
+    while($row = mysqli_fetch_array($result)) {
+        $name = $row[0];
+        $tables[] = ucwords(trim(preg_replace('/' . $county . '_/', ' ', $name)));
+    }
+
+    //Get the codes for this county so their meanings can be displayed where necessary
+    //$codes = array();
+    $codeTypes = array();
+    $query = "SELECT DISTINCT type FROM codes WHERE county='" . ucfirst($county) . "' OR county='all';";
+    if($result = mysqli_query($link, $query)) {
+        while($row = $result->fetch_assoc()) {
+            if(!in_array($row['type'], $codeTypes)) {
+                array_push($codeTypes, $row['type']);
+            }
+        }
+    }
+
+    $_SESSION['codeTypes'] = $codeTypes;
+    $_SESSION['definitionCodes'] = $definitionCodes;
 ?>
 
 <html>
@@ -42,10 +73,10 @@ if($result = mysqli_query($link, $selectStatement)) {
             <input type="hidden" name="county" value="<?php echo $county ?>"/>
             <input type="hidden" name="saved" value="1"/>
         <?php if(!empty($savedQueryFiles)) { ?>
-            <select name='saved_queries[]' multiple='multiple' class='selectMenu[]'>
+            <select name='query_name' multiple='multiple' class='selectMenu[]'>
                 <?php
-                for ($i = 0; $i < sizeOf($savedQueryFiles); ++$i) {
-                    print("<option value='{$savedQueryFiles[$i]}'>{$savedQueryNames[$i]}</option>");
+                for ($i = 0; $i < sizeOf($savedQueryNames); ++$i) {
+                    print("<option value='{$savedQueryNames[$i]}'>{$savedQueryNames[$i]}</option>");
                 }
                 }
              else

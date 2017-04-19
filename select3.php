@@ -11,7 +11,7 @@
     session_start();
     $_SESSION['county'] = $_POST['county'];
     $saved = $_POST['saved'];
-    $_SESSION['query_name'] = $_POST['query_name'];
+    $query_name = $_POST['query_name'];
 
 
     //Get names of all tables for chosen county
@@ -59,6 +59,7 @@
         }
     }
 
+
     $_SESSION['codeTypes'] = $codeTypes;
     $_SESSION['definitionCodes'] = $definitionCodes;
     /*
@@ -85,6 +86,7 @@
 		<form id="filter_form" action="createTemplate.php" method="POST">
 			<input name="county" type="hidden" value="<?php echo $county ?>"/>
             <input name="saved" type="hidden" value="<?php echo $saved ?>"/>
+            <input name="query_name" type="hidden" value="<?php echo $query_name ?>"/>
 			<div id="Owner" class="ui-accordion ui-state-disabled">
 				<div id="accordion-header_Owner" class="ui-accordion-header">
 					<h4>Owner</h4>

@@ -1,7 +1,7 @@
 <?php
 include("connection.php");
 require_once('common.php');
-
+session_start();
 //functions to create selection criteria form elements for the Real Property Data Filter
 	
 /********
@@ -85,12 +85,37 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 							
 	);*/
 	//Get any codes in the database
-	$decoded_fields = array();	
-	$codesQuery = "SELECT DISTINCT type FROM codes ORDER BY type";
+	$decoded_fields = $_SESSION['codeTypes'];
+	/*$codesQuery = "SELECT DISTINCT type FROM codes ORDER BY type";
 	$codesResult = mysqli_query($link, $codesQuery);
 	while($codes = mysqli_fetch_array($codesResult)) {
 		array_push($decoded_fields, $codes['type']);
-	}
+	}*/
+
+    /*
+     * Check if the county has any definition tables (has def in the name)
+     * If it does, get all distinct values from fields with 'code' in the name
+     * Will have to manually exclude muni_code
+     */
+    $definitionCodes = $_SESSION['definitionCodes'];
+    /*$query = "SHOW TABLES LIKE '%def%'";
+    if($result = mysqli_query($link, $query)) {
+        while($row = $result->fetch_assoc()) {
+            foreach($row as $key => $value) {
+                //Only need the def file for specified county
+                if(strpos($value, $county) == 0) {
+                    $innerQuery = "SHOW COLUMNS IN " . $value . " LIKE '%code%';";
+                    if($innerResult = mysqli_query($link, $innerQuery)) {
+                        while($innerRow = $innerResult->fetch_assoc()) {
+                            if($innerRow['Field'] != "muni_code" && !in_array($innerRow['Field'], $definitionCodes)) {
+                                array_push($definitionCodes, $innerRow['Field']);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }*/
 
 	$html = "";
 

@@ -1,51 +1,93 @@
 <?php
 	require("connection.php");
-	session_start();
-	print("SESSION: ");
-	print_r($_SESSION);
-	echo "<br>";
-	print("POST: ");
+	print("POST:");
 	print_r($_POST);
+	echo "<br><br><br>";
+	$county = $_POST['county'];
 
-	/*$filterStatement = "SELECT COUNT(" . $_SESSION['county'] . "_owner.owner_id) FROM " . $_SESSION['county'] . "_owner, ";
+	$filterStatement = "SELECT COUNT({$county}_owner.owner_id) FROM {$county}_owner ";
 	$tablesAddedToStatement = array();
-	array_push($tablesAddedToStatement, "owner");
+	array_push($tablesAddedToStatement, "{$county}_owner");
 
-	//Add all table names necessary besides owner into select statement
+	/*
+	 * First need to get all tables necessary for the filter statement (besides owner, obviously)
+	 * Table name(s) is/are contained within each $_POST key
+	 * Add joins
+	 */
 	foreach($_POST as $postKey => $postValue) {
-		if($postKey != "county") {
-			print("POST KEY: {$postKey}, POST VALUE:<br>");
-			print_r($postValue);
-			echo "<br>";
-			$separatePostValue = explode('||', $postKey);
-			print('SEPARATE POST VALUE: ');
-			echo "<br>";
-			print_r($separatePostValue);
-			if(array_search($separatePostValue[0], $tablesAddedToStatement) == false && $separatePostValue[0] != "owner") {
-				//print("POST VALUE 0: {$separatePostValue[0]}");
-				//echo "<br>";
-				foreach($postValue as $selectMenuValue) {
-					if(array_search($separatePostValue[0], $tablesAddedToStatement) == false){
-						$filterStatementAppend = $separatePostValue[0] . ", ";
-						$filterStatement .= $filterStatementAppend;
-						array_push($tablesAddedToStatement, $separatePostValue[0]);
-						break;
-					}
-				}
-			}	
+		if($postKey != 'county') {
+			/*
+			 * First separate 'countyName_tableName||fieldName' to get just 'countyName_tableName'
+			 */
+			$table = explode("||", $postKey);
+			$table = $table[0];
+			if($table != "${county}_owner" && !in_array($table, $tablesAddedToStatement) && strpos($table, 'def') === FALSE) {
+                //$filterStatement .= "{$table}, ";
+                array_push($tablesAddedToStatement, $table);
+
+                /*
+                 * Check if current table contains owner_id
+                 */
+                //$hasOwnerId = 0;
+                $checkForOwnerIdStatement = "SHOW COLUMNS IN {$table} LIKE 'owner_id';";
+                $checkForOwnerIdResult = mysqli_query($link, $checkForOwnerIdStatement);
+
+                //Table contains owner_id, so join with county_owner on owner_id
+                if ($checkForOwnerIdResult && $checkForOwnerIdResult->num_rows == 1) {
+                    $filterStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id), ";
+                }
+                else {
+                    //Table doesn't contain owner_id so make sure it contains muni_code and parcel_id
+                    //If so join with county_owner on those two fields
+                    $checkForMuniCodeStatement = "SHOW COLUMNS IN {$table} LIKE 'muni_code';";
+                    $checkForParcelIdStatement = "SHOW COLUMNS IN {$table} LIKE 'parcel_id';";
+                    $checkForMuniCodeResult = mysqli_query($link, $checkForMuniCodeStatement);
+                    $checkForParcelIdResult = mysqli_query($link, $checkForParcelIdStatement);
+
+                    if (($checkForMuniCodeResult && $checkForParcelIdResult) && ($checkForMuniCodeResult->num_rows == 1 && $checkForParcelIdResult->num_rows == 1)) {
+                        $filterStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id), ";
+                    }
+                }
+            }
 		}
 	}
-	//Remove trailing ', ' (comma space)
+	//Remove trailing comma space (', ')
 	$filterStatement = substr($filterStatement, 0, -2);
+	print("TABLES ADDED: ");
+	print_r($tablesAddedToStatement);
+	echo "<br>";
+	print("FILTER STATEMENT (no where): {$filterStatement}<br>");
+	/*
+	 * Construct the where clauses
+	 *
+
 	$filterStatement .= " WHERE ";
 
-	//Now add where clauses
 	foreach($_POST as $postKey => $postValue) {
+		if($postKey != 'county') {
+			//Replace '||' with '.' so that full field name reflects correctly MYSQL syntax (tableName.fieldName)
+			$fullField = str_replace('||', '.', $postKey);
+
+			//Get the table name for the current field
+			$table = explode('_', explode('||', $postKey)[0])[1];
+			if($table != 'owner') {
+				/*
+				 * Check if this table contains owner_id
+				 * If so, join with owner on owner_id
+				 *
+
+			}
+		}*/
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//Now add where clauses
+	/*foreach($_POST as $postKey => $postValue) {
 		if($postKey != "county") {
 			$separatePostValue = explode('||', $postKey);
 			if($separatePostValue[0] != "owner" && $separatePostValue[0] != "spec_dist" && $separatePostValue[0] != "specdist_def") {
                 //Need to check if current table has ownerID so we know how to construct WHERE clause
-                $checkForOwnerId = "SHOW COLUMNS IN {$_SESSION['county']}_{$separatePostValue[0]} LIKE 'owner_id';";
+                $checkForOwnerId = "SHOW COLUMNS IN {{$county}_{$separatePostValue[0]} LIKE 'owner_id';";
                 $checkForOwnerIdResult = mysqli_query($link, $checkForOwnerId);
                 //Assume table does not have ownerId
                 $hasOwnerId = 0;
@@ -55,18 +97,18 @@
 
 				$filterStatement .= "(";
 				foreach($postValue as $selectMenuValue) {
-					$whereClause = "(" . $_SESSION['county'] . "_" . $separatePostValue[0] . "." . $separatePostValue[1] . "='" . $selectMenuValue . "'";
+					$whereClause = "({$county}_{$separatePostValue[0]}.{$separatePostValue[1]}='{$selectMenuValue}'";
 					$whereClause .= ") AND ";
 					//If this table has owner_id, match with owner by ownerID and muni_code
 					if($hasOwnerId == 1) {
-						$whereClause .= "(" . $_SESSION['county'] . "_owner.owner_id=" . $_SESSION['county'] . "_" . $separatePostValue[1] . ".owner_id) AND ";
-						$whereClause .= "(" . $_SESSION['county'] . "_owner.muni_code=" . $_SESSION['county'] . "_" . $separatePostValue[1] . ".muni_code)";
+						$whereClause .= "({$county}_owner.owner_id={$county}_{$separatePostValue[1]}.owner_id) AND ";
+						$whereClause .= "({$county}_owner.muni_code={$county}_{$separatePostValue[1]}.muni_code)";
 					}
 					//This table does not have owner_id
                     //Match by muni_code and parcel_id
 					else {
-                        $whereClause .= "(" . $_SESSION['county'] . "_owner.muni_code=" . $_SESSION['county'] . "_". $separatePostValue[0] . ".muni_code) AND ";
-                        $whereClause .= "(" . $_SESSION['county'] . "_owner.parcel_id=" . $_SESSION['county'] . "_" . $separatePostValue[0] . ".parcel_id)";
+                        $whereClause .= "({$county}_owner.muni_code={$county}_{$separatePostValue[0]}.muni_code) AND ";
+                        $whereClause .= "({$county}_owner.parcel_id={$county}_{$separatePostValue[0]}.parcel_id)";
                     }
 					$filterStatement .= $whereClause;
 					$filterStatement .= ") OR (";
@@ -76,7 +118,7 @@
 			else if($separatePostValue[0] == "owner") {
 				$filterStatement .= "(";
 				foreach($postValue as $selectMenuValue) {
-					$whereClause = $_SESSION['county'] . "_owner." . $separatePostValue[1] . "='" . $selectMenuValue . "'";
+					$whereClause = "{$county}_owner.{$separatePostValue[1]}='{$selectMenuValue}'";
 					$filterStatement .= $whereClause;
 					$filterStatement .= " OR ";
 				}
@@ -105,6 +147,5 @@
 	}
 	if(!$filterResult) {
 		print("Error: " . mysqli_error($link));
-	}
-	session_destroy();*/
+	}*/
 ?>	

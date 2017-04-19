@@ -16,9 +16,7 @@
 	else {
 	
 		require("connection.php");
-		//include("select2.php");
 		session_start();
-		
 		
 		/*
 		* Class to hold field names along with values for the field's dropdown select menu

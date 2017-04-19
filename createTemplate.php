@@ -8,7 +8,7 @@
     require_once("Field.php");
     include("connection.php");
     include("select_logic.php");
-    session_start();
+    //session_start();
 
     /*
     * There are three ways to search on a field: multiselect checkbox, min/max input boxes, and a simple checkbox for
@@ -44,124 +44,48 @@
     $checkbox = ['/pct/', '/percent/'];
 
     $cache_ext = '.php';
-    $cache_folder = "views/" . $_SESSION['county'] . "/";
+    $cache_folder = "views/" . $_POST['county'] . "/";
 
-    $cache_file = '';//$cache_folder.md5($dynamic_url) . $cache_ext;
+    $cache_file = '';
     $ignore_pages = array('', '');
     $saved = $_POST['saved'];
-    echo "<script type='text/javascript'>
-                console.log(\"{$saved}\");
-                </script>";
+    $county = $_POST['county'];
+    $queryName = $_POST['query_name'];
+
 
     $template_fields = array();
 
-
-
+    $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $queryName . $_SERVER['QUERY_STRING'];
+    $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
 
     /*
      * Block to handle saved queries
      * A query marked as saved can still be a 'new' query if it doesn't have an entry in saved_queries
      */
     if($saved == 1) {
-        $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SESSION['query_name'] . $_SERVER['QUERY_STRING'];
-        $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
-        $county = $_SESSION['county'];
-        $queryName = $_SESSION['query_name'];
 
 
-        /*
-         * Check saved queries to see if this is a previously saved query being used, or a new query that needs to be
-         * saved for later
-         */
-        $checkStatement = "SELECT * FROM saved_queries WHERE name='{$queryName}' AND county='{$county}';";
-        $saveQueryStatement = '';
+            //Get cached filename from saved_queries (includes file extension so no need to append)
+            $cachedFilenameStatement = "SELECT cache_file FROM saved_queries WHERE name='{$queryName}' AND county='{$county}';";
 
-        $result = mysqli_query($link, $checkStatement);
-        //Entry in saved_queries exists
-        if($result && $result->num_rows > 0) {
-            $cacheUpdatedStatement = "SELECT last_cached FROM saved_queries WHERE name='{$queryName}' AND county='{$county}';";
 
-            $cacheUpdatedResult = mysqli_query($link, $cacheUpdatedStatement);
-            $cacheUpdated = 0;
-            if($cacheUpdatedResult && $cacheUpdatedResult->num_rows > 0) {
-                $row = $cacheUpdatedResult->fetch_assoc();
-                $cacheUpdated = $row['last_cached'];
-            }
-            //Get the date of the last import for current county
-            $lastUpdatedStatement = "SELECT date FROM last_updated WHERE county='{$county}';";
-            $lastUpdatedResult = mysqli_query($link, $lastUpdatedStatement);
-            $lastUpdated = 0;
-            if($lastUpdatedResult && $lastUpdatedResult->num_rows > 0) {
-                $row = $lastUpdatedResult->fetch_assoc();
-                $lastUpdated = $row['date'];
+            $cachedFilenameResult = mysqli_query($link, $cachedFilenameStatement);
+            if($cachedFilenameResult && $cachedFilenameResult->num_rows > 0) {
+                $row = $cachedFilenameResult->fetch_assoc();
+                $cache_file = $row['cache_file'];
             }
 
-            //Cached page is up-to-date
-            //So we just load the cache file stored in saved_queries
-            if(strtotime($cacheUpdated) > strtotime($lastUpdated)) {
-                //Get cached filename from saved_queries (includes file extension so no need to append)
-                $cachedFilenameStatement = "SELECT cache_file FROM saved_queries WHERE name='{$queryName}' AND county='{$county}';";
-                $cachedFilenameResult = mysqli_query($link, $cachedFilenameStatement);
-                if($cachedFilenameResult && $cachedFilenameResult->num_rows > 0) {
-                    $row = $cachedFilenameResult->fetch_assoc();
-                    $cache_file = $row['cache_file'];
-                }
-
-                //Load cached page
-                if(!$ignore && file_exists($cache_file)) {
-                    ob_start('ob_gzhandler');
-                    readfile($cache_file);
-                    ob_end_flush();
-                    exit();
-                }
+            //Load cached page
+            if(!$ignore && file_exists($cache_file)) {
+                ob_start('ob_gzhandler');
+                readfile($cache_file);
+                ob_end_flush();
+                exit();
             }
-            //Cached page is not up-to-date
-            //Create new cached page using the filter categories stored in saved_queries
-            else {
-                $filterCategoryStatement = "SELECT filter_categories FROM saved_queries WHERE name='{$queryName}' AND county='{$county}';";
-                $filterCategoryResult = mysqli_query($link, $filterCategoryStatement);
-                if($filterCategoryResult && $filterCategoryResult->num_rows > 0) {
-                    $row = $filterCategoryResult->fetch_assoc();
-                    $filterCategoryString = $row['filter_categories'];
-                }
-
-                //Filter categories are stored as one string separated by ", " (comma, space)
-                //So we will separate them into an array of categories
-                $templateFields = explode(", ", $filterCategoryString);
-
-                foreach($templateFields as $template_list) {
-                    //Get table name from full field name
-                    $table = explode("||", $template_list);
-
-                    //Table name will always be first element prior to the period in the full field name
-                    $field = str_replace('\'', '', $table[1]);
-                    $table = $table[0];
-                    for($i = 0; $i < sizeof($template_list); ++$i) {
-                        array_push($template_fields, new Field($field, $table, $link, $minMax, $checkbox));
-                    }
-
-                }
-
-                //Create new cached page name
-                $cache_file = $cache_folder . md5($dynamic_url) . $cache_ext;
-
-                //Update last_cached to today's date and cache_file to new filename
-                $today = date('Y/m/d');
-                $updateLastCachedStatement = "UPDATE saved_queries SET last_cached='{$today}', cache_file='{$cache_file}' WHERE name='{$queryName}' ";
-                $updateLastCachedStatement .= "AND county='{$county}';";
-                mysqli_query($link, $updateLastCachedStatement);
-            }
-        }
     }
     //Entry in saved_queries does not exist so we are creating a new page from scratch
     else if($saved == 0) {
-        $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . $_SESSION['query_name'] . $_SERVER['QUERY_STRING'];
-        $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
         $today = date("Y/m/d");
-        $county = $_SESSION['county'];
-        $queryName = $_SESSION['query_name'];
-        $saved = $_SESSION['saved'];
-
         //Need to concatenate template fields into one string so it can be inserted into database
         $templateFieldsString = '';
         foreach ($_POST['template_list'] as $temp) {
@@ -197,6 +121,8 @@
             }
         }
     }
+
+
 ?>
 <html>
     <head>
@@ -227,7 +153,7 @@
                             }
                             if($fields->generateType == 2) {
                         ?>
-                                <span><input type="checkbox" name="<?php echo $fields->fullFieldName ?>[]" value="<?php echo $fields->fieldName ?>"><?php echo $fields->fieldName ?></span>
+                                <span><input type="checkbox" name="<?php echo $fields->fullFieldName ?>[]" value="<?php $fields->fieldName ?>"><?php echo $fields->fieldName ?></span>
                             </td>
                         <?php
                                 if($gridCount == 2) {
@@ -264,7 +190,7 @@
                                 </div>
                                 <div id="accordion-content" class="ui-accordion-content">
                                         <i>At least </i><input type="text" name="<?php echo $fields->fullFieldName ?>_min"><br><br>
-                                        <i>At most </i><input type="text" name="<?php echo $fields->fullFieldName ?>_max">
+                                        <i>At most </i><input type="text" name="<?php echo $fields->fullFieldName?>_max">
                                     <?php } ?>
                                 </div>
                             </div>
@@ -336,14 +262,16 @@
 </script>
 
 <?php
-if(!is_dir($cache_folder)) {
-    mkdir($cache_folder);
-}
-if(!$ignore) {
-    $fp = fopen($cache_file, 'w');
-    fwrite($fp, ob_get_contents());
-    fclose($fp);
-}
-ob_end_flush();
+    if($saved == 0) {
+        if (!is_dir($cache_folder)) {
+            mkdir($cache_folder);
+        }
+        if (!$ignore) {
+            $fp = fopen($cache_file, 'w');
+            fwrite($fp, ob_get_contents());
+            fclose($fp);
+        }
+        ob_end_flush();
+    }
 ?>
 
