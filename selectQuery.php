@@ -52,7 +52,7 @@
     }
 
     $_SESSION['codeTypes'] = $codeTypes;
-    $_SESSION['definitionCodes'] = $definitionCodes;
+    //$_SESSION['definitionCodes'] = $definitionCodes;
 ?>
 
 <html>
