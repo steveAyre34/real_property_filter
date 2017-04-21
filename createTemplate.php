@@ -258,7 +258,7 @@
         columns: 1,
         search: true,
         selectAll: true
-    })
+    });
 </script>
 
 <?php

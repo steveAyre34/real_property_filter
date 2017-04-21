@@ -1,12 +1,38 @@
 <?php
 	require("connection.php");
-	/*print("POST:");
-	print_r($_POST);
-	echo "<br><br><br>";*/
-	$county = $_POST['county'];
 
-	$filterStatement = "SELECT COUNT({$county}_owner.owner_id) FROM {$county}_owner ";
+	$county = $_POST['county'];
+	$owner = $county . '_owner';
+	/*
+	 * Array that contains the field names of the standard fields to be exported
+	 * This way if user is filtering by a standard field, it's not appended again to the export
+	 * i.e. if user searches by zip code, then zip code column won't appear in export file twice
+	 */
+	$standardColumns = [
+		"owner_id",
+		"secondary_name",
+		"owner_first_name",
+		"owner_init_name",
+		"owner_last_name",
+		"owner_name_suffix",
+		"owner_secondary_name",
+		"concatenated_address_1",
+		"concatenated_address_2",
+		"mail_city",
+		"owner_mail_state",
+		"mail_zip",
+		"mail_country"
+	];
+
+	$filterStatement = "SELECT {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
+	$filterStatement .= "{$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
+	$filterStatement .=   "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
+	$filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
+	$filterStatement .=	"{$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, ";
+	$filterStatement .=   "{$owner}.mail_country AS Country, {$owner}.owner_id AS ID, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3";
+	$filterStatement .= " FROM {$owner} ";
 	$tablesAddedToStatement = array();
+	$fullFieldNames = array();
 	array_push($tablesAddedToStatement, "{$county}_owner");
 
 	/*
@@ -52,10 +78,6 @@
 	}
 	//Remove trailing space to be neat because I feel like it
 	$filterStatement = substr($filterStatement, 0, -1);
-	/*print("TABLES ADDED: ");
-	print_r($tablesAddedToStatement);
-	echo "<br>";
-	print("FILTER STATEMENT (no where): {$filterStatement}<br>");*/
 
 	/*
 	 * Construct the where clauses
@@ -65,6 +87,11 @@
 
 	foreach($_POST as $postKey => $postValue) {
         $fullField = str_replace('||', '.', $postKey);
+        $fieldName = explode('.', $fullField);
+		if($postKey != 'county') {
+            $fieldName = $fieldName[1];
+            array_push($fullFieldNames, $fieldName);
+        }
 
 		if(!empty($postValue) && $postKey != 'county') {
 			//Multiple values selected for this field
@@ -78,7 +105,6 @@
 				//Remove trailing ' OR ' (space OR space = 4 characters)
 				$filterStatement = substr($filterStatement, 0, -4);
 				$filterStatement .= ") AND ";
-				//$filterStatement .= ") AND ";
 			}
 			else {
             	if(!empty($postValue[0])) {
@@ -107,35 +133,161 @@
 	$filterStatement = substr($filterStatement, 0, -5);
 	$filterStatement .= ");";
 
-	print("FILTER STATEMENT (where): {$filterStatement}<br>");
+	//print("FILTER STATEMENT (where): {$filterStatement}<br>");
 
-	//Remove trailing ' and ' (space and space)
-	/*$filterStatement = substr($filterStatement, 0, -7);
-	
-	//Add trailing semicolon
-	$filterStatement .= ";";
-	echo "<br><br>";
-	echo $filterStatement;
-	echo "<br>";
-	print_r($_POST);
-	echo "<br>";*/
-	$filterQuery = mysqli_query($link, $filterStatement);
-	/*$filterResult = mysqli_fetch_assoc($filterQuery);
-	print("Filter Result: ");
-	foreach($filterResult as $resultKey => $resultValue) {
-		print($resultValue . "<br>");
-	}
-	if(!$filterResult) {
-		print("Error: " . mysqli_error($link));
-	}*/
-	if($filterQuery && $filterQuery->num_rows > 0) {
+	//$filterQuery = mysqli_query($link, $filterStatement);
+
+	/*if($filterQuery && $filterQuery->num_rows > 0) {
 		while($row = mysqli_fetch_assoc($filterQuery)) {
 			//print_r($row);
-			print("Count = " . $row["COUNT({$county}_owner.owner_id)"]);
+			print("Count = " . $row["count"]);
 			echo "<br>";
 		}
 	}
 	else {
 		print("Error: " . mysqli_error($link));
 	}
-?>	
+
+	$filterQuery = mysqli_query($link, $filterStatement);*/
+	/*if($filterQuery && $filterQuery->num_rows > 0) {
+   	 	while($row = mysqli_fetch_assoc($filterQuery)) {
+        	echo "<tr>";
+			echo "<td></td>";
+			echo "<td>" . $row["CompanyName"] . "</td>";
+			echo "<td>" . $row["FirstName"] . "</td>";
+			echo "<td>" . $row["MiddleInitial"] . "</td>";
+			echo "<td>" . $row["LastName"] . "</td>";
+			echo "<td>" . $row["Suffix"] . "</td>";
+			echo "<td>" . $row["SecondaryName"] . "</td>";
+			echo "<td>" . $row["AddressLine1"] . "</td>";
+			echo "<td>" . $row["AddressLine2"] . "</td>";
+			echo "<td>" . $row["City"] . "</td>";
+			echo "<td>" . $row["State"] . "</td>";
+			echo "<td>" . $row["Zip"] . "</td>";
+			echo "<td>" . $row["Country"] . "</td>";
+			echo "<td>" . $row["ID"] . "</td>";
+			echo "</tr>";
+		}
+	}
+	$results = array();
+	if($filterQuery && $filterQuery->num_rows > 0) {
+		while($row = mysqli_fetch_assoc($filterQuery)) {
+			array_push($results, $row);
+		}
+	}*/
+	/*if($_SERVER['REQUEST_METHOD'] === 'GET'){
+		$_GET['filterStatement'] = $filterStatement;
+	}*/
+?>
+
+<html>
+	<head>
+		<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+		<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
+		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
+		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+	</head>
+	<body>
+		<table id="results" class="resultsTable">
+			<thead>
+				<tr>
+					<!--Headers for the standard export fields-->
+					<th>Actions</th>
+					<th>Company Name</th>
+					<th>First Name</th>
+					<th>Middle Initial</th>
+					<th>Last Name</th>
+					<th>Suffix</th>
+					<th>Secondary Name</th>
+					<th>Address Line 1</th>
+					<th>Address Line 2</th>
+					<th>City</th>
+					<th>State</th>
+					<th>Zip Code (+4)</th>
+					<th>Country</th>
+					<th>CRRT</th>
+					<th>DP3</th>
+					<!--Now headers for any selected fields that aren't a standard export field
+					<foreach($fullFieldNames as $fields) {
+   		 					if (!in_array($fields, $standardColumns)) {
+        						print("<th>{$fields}</th>");
+    						}
+					} ?>-->
+				</tr>
+			</thead>
+			<tbody>
+				<!--hp foreach($results as $results) {
+					echo "<tr>";
+					echo "<td></td>";
+					echo "<td>" . $results["CompanyName"] . "</td>";
+					echo "<td>" . $results["FirstName"] . "</td>";
+					echo "<td>" . $results["MiddleInitial"] . "</td>";
+					echo "<td>" . $results["LastName"] . "</td>";
+					echo "<td>" . $results["Suffix"] . "</td>";
+					echo "<td>" . $results["SecondaryName"] . "</td>";
+					echo "<td>" . $results["AddressLine1"] . "</td>";
+					echo "<td>" . $results["AddressLine2"] . "</td>";
+					echo "<td>" . $results["City"] . "</td>";
+					echo "<td>" . $results["State"] . "</td>";
+					echo "<td>" . $results["Zip"] . "</td>";
+					echo "<td>" . $results["Country"] . "</td>";
+					echo "<td>" . $results["ID"] . "</td>";
+					echo "</tr>";
+				} ?>-->
+			</tbody>
+		</table>
+	</body>
+</html>
+
+<script type="text/javascript">
+	/*$('#results').DataTable({
+		"processing": true,
+		"serverSide": true,
+		"ajax" : {
+		    url : "get_results.php",
+			type: "GET",
+			data: {filterStatement: "php echo $filterStatement ?>"}
+		},
+		"columns": [
+			{ data:	'CompanyName' },
+			{ data: 'FirstName' },
+			{ data: 'MiddleInitial' },
+			{ data: 'LastName' },
+			{ data: 'Suffix' },
+			{ data: 'SecondaryName' },
+			{ data: 'AddressLine1' },
+			{ data: 'AddressLine2' },
+			{ data: 'City' },
+			{ data: 'State' },
+			{ data: 'Zip' },
+			{ data: 'Country' },
+			{ data: 'ID' }
+		]
+	});*/
+	$("#results").DataTable({
+        "ajax": {
+            url: "get_results.php",
+            type: "GET",
+            data: {filterStatement: "<?php echo $filterStatement ?>", fields: "<?php json_encode($fullFieldNames)?>"}
+        },
+		"aoColumns": [
+			 { "mData": "Actions" },
+			 { "mData": 'CompanyName' },
+			 { "mData": 'FirstName' },
+			 { "mData": 'MiddleInitial' },
+			 { "mData": 'LastName' },
+			 { "mData": 'Suffix' },
+			 { "mData": 'SecondaryName' },
+			 { "mData": 'AddressLine1' },
+			 { "mData": 'AddressLine2' },
+			 { "mData": 'City' },
+			 { "mData": 'State' },
+			 { "mData": 'Zip' },
+			 { "mData": 'Country' },
+			 { "mData": 'ID' },
+			 { "mData": 'CRRT' },
+			 { "mData": 'DP3' }
+		 ]
+	});
+</script>

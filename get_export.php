@@ -8,12 +8,12 @@
 include("connection.php");
 $county = $_GET['county'];
 $owner = $county . '_owner';
-$query =    "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
+$query =    "SELECT {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
 $query .=   "{$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
 $query .=   "{$owner}.secondary_name AS SecondaryName, ";
 $query .=	"{$owner}.concatenated_address_1 as AddressLine1, {$owner}.concatenated_address_2 as AddressLine2, ";
 $query .=	"{$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, ";
-$query .=   "{$owner}.mail_country AS Country";
+$query .=   "{$owner}.mail_country AS Country, {$owner}.owner_id AS ID";
 
 $query .= " FROM {$owner} GROUP BY {$owner}.owner_id, {$owner}.muni_code;";
 
