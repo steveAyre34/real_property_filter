@@ -153,7 +153,7 @@
                             }
                             if($fields->generateType == 2) {
                         ?>
-                                <span><input type="checkbox" name="<?php echo $fields->fullFieldName ?>_check" value="<?php $fields->fieldName ?>"><?php echo $fields->fieldName ?></span>
+                                <span><input type="checkbox" name="<?php echo $fields->fullFieldName ?>_checkbox" value="<?php $fields->fieldName ?>"><?php echo $fields->fieldName ?></span>
                             </td>
                         <?php
                                 if($gridCount == 2) {

@@ -29,10 +29,33 @@
 	$filterStatement .=   "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
 	$filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
 	$filterStatement .=	"{$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, ";
-	$filterStatement .=   "{$owner}.mail_country AS Country, {$owner}.owner_id AS ID, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3";
+	$filterStatement .=   "{$owner}.mail_country AS Country, {$owner}.owner_id AS ID, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
+
+	/*
+	 * Now add the user-selected query fields to select statement
+	 */
+	foreach($_POST as $postKey => $postValue) {
+	    if($postKey != 'county') {
+            $key = str_replace("||", ".", $postKey);
+	        //If field name ends in 'checkbox', remove '_checkbox'
+            if(substr($postKey, -8) == 'checkbox')
+                $key = substr($postKey, 0, -9);
+
+            //If field name ends in 'min' or 'max', remove '_min' or '_max' accordingly
+            else if(substr($postKey, -3) == 'min' || substr($postKey, -3) == 'max')
+                $key = substr($postKey, 0, -4);
+
+            //Get field alias
+            //$alias = explode(".", $key);
+            //$alias = $key[1];
+            $filterStatement .= "{$key}, ";
+        }
+    }
+    $filterStatement = substr($filterStatement, 0, -2);
 	$filterStatement .= " FROM {$owner} ";
 	$tablesAddedToStatement = array();
 	$fullFieldNames = array();
+	//$fullFieldValues = array();
 	array_push($tablesAddedToStatement, "{$county}_owner");
 
 	/*
@@ -41,8 +64,8 @@
 	 * Add joins
 	 */
 	foreach($_POST as $postKey => $postValue) {
-		if($postKey != 'county' && (!empty($postValue) || substr($postKey, -5 == 'check'))) {
-			/*
+		if($postKey != 'county' && (!empty($postValue) || substr($postKey, -8) == 'checkbox')) {
+		    /*
 			 * First separate 'countyName_tableName||fieldName' to get just 'countyName_tableName'
 			 */
 			$table = explode("||", $postKey);
@@ -123,8 +146,8 @@
 		}
 		//Checkbox values won't have a post value but will have a key name containing 'check'
         else {
-            if (substr($fullField, -5) == 'check') {
-                $filterStatement .= "(" . substr($fullField, 0, -6) . ">'0') AND ";
+            if (substr($fullField, -8) == 'checkbox') {
+                $filterStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
             }
         }
 	}
@@ -206,14 +229,15 @@
 					<th>State</th>
 					<th>Zip Code (+4)</th>
 					<th>Country</th>
+                    <th>ID</th>
 					<th>CRRT</th>
 					<th>DP3</th>
-					<!--Now headers for any selected fields that aren't a standard export field
-					<foreach($fullFieldNames as $fields) {
+					<!--Now headers for any selected fields that aren't a standard export field -->
+					<?php foreach($fullFieldNames as $fields) {
    		 					if (!in_array($fields, $standardColumns)) {
         						print("<th>{$fields}</th>");
     						}
-					} ?>-->
+					} ?>
 				</tr>
 			</thead>
 			<tbody>
@@ -241,15 +265,40 @@
 </html>
 
 <script type="text/javascript">
-	/*$('#results').DataTable({
+    var fields = JSON.stringify(<?php echo json_encode($fullFieldNames)?>);
+    var fieldsParse = JSON.parse(fields);
+    var data = [
+        'Actions',
+        'CompanyName',
+        'FirstName',
+        'MiddleInitial',
+        'LastName',
+        'Suffix',
+        'SecondaryName',
+        'AddressLine1',
+        'AddressLine2',
+        'City',
+        'State',
+        'Zip',
+        'Country',
+        'ID',
+        'CRRT',
+        'DP3'
+    ];
+
+    for(i = 0; i < fieldsParse.length; ++i) {
+        data.push(fieldsParse[i]);
+    }
+	$('#results').DataTable({
 		"processing": true,
-		"serverSide": true,
+		//"serverSide": true,
 		"ajax" : {
 		    url : "get_results.php",
 			type: "GET",
-			data: {filterStatement: "php echo $filterStatement ?>"}
+			data: {filterStatement: "<?php echo $filterStatement ?>", fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)}
 		},
-		"columns": [
+		"columns": data/*[
+            { data: 'Actions' },
 			{ data:	'CompanyName' },
 			{ data: 'FirstName' },
 			{ data: 'MiddleInitial' },
@@ -262,15 +311,33 @@
 			{ data: 'State' },
 			{ data: 'Zip' },
 			{ data: 'Country' },
-			{ data: 'ID' }
-		]
-	});*/
-	$("#results").DataTable({
+			{ data: 'ID' },
+            { data: 'CRRT' },
+            { data: 'DP3' }
+		]*/
+	});
+	/*$.ajax({
+        type: 'GET',
+        dataType: 'json',
+        url: 'get_results.php',
+        data: {
+            filterStatement: "<?php echo $filterStatement?>",
+            fields: JSON.stringify(<?php echo json_encode($fullFieldNames)?>)
+        },
+        success: function(d) {
+            $('#results').DataTable({
+               // dom: "Bfrtip",
+                data: d.data,
+                columns: d.columns
+            });
+        }
+    });*/
+	/*$("#results").DataTable({
         "ajax": {
             url: "get_results.php",
             type: "GET",
-            data: {filterStatement: "<?php echo $filterStatement ?>", fields: "<?php json_encode($fullFieldNames)?>"}
-        },
+            data: {filterStatement: "<php echo $filterStatement ?>", fields: "<php json_encode($fullFieldNames)?>"}
+        }/*,
 		"aoColumns": [
 			 { "mData": "Actions" },
 			 { "mData": 'CompanyName' },
@@ -288,6 +355,6 @@
 			 { "mData": 'ID' },
 			 { "mData": 'CRRT' },
 			 { "mData": 'DP3' }
-		 ]
-	});
+		 ]*/
+
 </script>
