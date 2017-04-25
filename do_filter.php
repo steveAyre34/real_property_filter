@@ -265,7 +265,14 @@
 </html>
 
 <script type="text/javascript">
-    /*var fields = JSON.stringify(<?php echo json_encode($fullFieldNames)?>);
+    /*$('#results').DataTable({
+        dom: "Bfrtip",
+        "ajax": {
+            url: 'get_results.php',
+            type:
+        }
+    })*/
+    /*var fields = JSON.stringify(<php echo json_encode($fullFieldNames)?>);
     var fieldsParse = JSON.parse(fields);
     var data = [
         'Actions',
@@ -286,18 +293,63 @@
         'DP3'
     ];
 
+
     for(i = 0; i < fieldsParse.length; ++i) {
         data.push(fieldsParse[i]);
     }*/
+    var columns = [
+        { data: 'Actions' },
+        { data: 'CompanyName' },
+        { data: 'FirstName' },
+        { data: 'MiddleInitial' },
+        { data: 'LastName' },
+        { data: 'Suffix' },
+        { data: 'SecondaryName'},
+        { data: 'AddressLine1' },
+        { data: 'AddressLine2' },
+        { data: 'City' },
+        { data: 'State' },
+        { data: 'Zip' },
+        { data: 'Country' },
+        { data: 'ID' },
+        { data: 'CRRT' },
+        { data: 'DP3' }
+    ];
+
+    <?php foreach($fullFieldNames as $fields) { ?>
+        columns.push({ data: '<?php echo $fields ?>' });
+        <?php } ?>
+    console.log(columns);
+    /*var columns;
+    function getPromise() {
+        var deferred = $.Deferred();
+        var dataUrl = 'get_results.php';
+        $.getJSON(dataUrl, function(jsondata) {
+            setTimeout(function() {
+                deferred.resolve(jsondata);
+            }, 0);
+        }).fail(function( jqxhr, textStatus, error ) {
+            // ********* FAILED
+            var err = textStatus + ", " + error;
+            console.log( "Request Failed: " + err );
+        });
+        return deferred.promise();
+    }
+    // Get the columns
+    getPromise().done(function(jsondata) {
+        columns = jsondata.columns;
+        console.log(columns);
+    });*/
 	$('#results').DataTable({
-		"processing": true,
+		//"processing": true,
 		//"serverSide": true,
 		"ajax" : {
 		    url : "get_results.php",
 			type: "GET",
 			data: {filterStatement: "<?php echo $filterStatement ?>", fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)}
-		}
-		/*"columns": data/*[
+		},
+		columns: columns
+        /*[
             { data: 'Actions' },
 			{ data:	'CompanyName' },
 			{ data: 'FirstName' },
@@ -313,7 +365,8 @@
 			{ data: 'Country' },
 			{ data: 'ID' },
             { data: 'CRRT' },
-            { data: 'DP3' }
+            { data: 'DP3' },
+            { data: 'sch_code' }
 		]*/
 	});
 	/*$.ajax({

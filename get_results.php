@@ -15,6 +15,7 @@ $fields = json_decode($_GET['fields']);
 
 //$results = array();
 $results = array();
+$return = array();
 if($filterQuery && $filterQuery->num_rows > 0) {
     while($row = mysqli_fetch_assoc($filterQuery)) {
         array_push($results, $row);
@@ -25,15 +26,18 @@ if($filterQuery && $filterQuery->num_rows > 0) {
 }*/
 //echo json_encode($results['data']);
 //print_r($results['data']);
-$data['data'] = array();
-$data['columns']['title'] = array();
-$data['columns']['data'] = array();
+$return['data'] = array();
+$return['columns'] = array();
+
+/*$data['columns'] = array();
+$data['columns'] = array("title" => "field");
+$data['columns']['data'] = array();*/
 
 for($i = 0; $i < sizeOf($results); ++$i) {
     $row = array();
 
     //Handle standard export fields first
-    $row['Actions'] = "<input type='button' value='Action'>";
+    $row['Actions'] = json_encode("<input type='button' value='Action'/>");
 
     /*
      * Filter out company names
@@ -67,22 +71,40 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     //Now add user-selected query fields
     foreach($fields as $field) {
         $row["{$field}"] = $results[$i]["{$field}"];
-        if(!in_array($field, $data['columns']['title'])) {
+        /*if(!in_array($field, $data['columns']['title'])) {
             array_push($data['columns']['title'], $field);
             array_push($data['columns']['data'], $field);
-        }
+        }*/
     }
-    $data['columns'] = json_encode(array_combine($data['columns']['title'], $data['columns']['data']));
+    //$data['columns'] = json_encode(array_combine($data['columns']['title'], $data['columns']['data']));
     //Check all fields for unnecessary quotation marks
     foreach($row as $key => $value) {
         if(strpos($value, '"') !== FALSE) {
             $row[$key] = str_replace('"', '', $value);
         }
     }
-    array_push($data['data'], $row);
+    array_push($return['data'], $row);
 }
+//$data['data'] = json_encode($data['data']);
+//Now need to get all the column names so they can be returned and used to build the DataTables result
+$columns = array(
+    ["title" => "Actions", "data" => "Actions"],
+    ["title" => "CompanyName", "data" => "CompanyName"], ["title" => "FirstName","data" => "FirstName"],
+    ["title" => "MiddleInitial", "data" => "MiddleInitial"], ["title" => "LastName", "data" => "LastName"],
+    ["title" => "Suffix", "data" => "Suffix"], ["title" => "SecondaryName", "data" => "SecondaryName"],
+    ["title" => "AddressLine1", "data" => "AddressLine1"], ["title" => "AddressLine2", "data" => "AddressLine2"],
+    ["title" => "City", "data" => "City"], ["title" => "State", "data" => "State"], ["title" => "Zip", "data" => "Zip"],
+    ["title" => "Country", "data" => "Country"], ["title" => "ID", "data" => "ID"], ["title" => "CRRT", "data" => "CRRT"],
+    ["title" => "DP3", "data" => "DP3"]
+);
 
-echo json_encode($data);
+/*foreach($fields as $field) {
+    array_push($columns, ["title" => "{$field}", "data" => "{$field}"]);
+}
+$return['columns'] = $columns;
+/*echo json_encode($return['data']);
+echo json_encode($return['columns']);*/
+echo json_encode($return);
 /*if($filterQuery && $filterQuery->num_rows > 0) {
         while($row = mysqli_fetch_assoc($filterQuery)) {
         echo "<tr>";
