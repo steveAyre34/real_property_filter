@@ -9,11 +9,9 @@ require("connection.php");
 $filterStatement = $_GET['filterStatement'];
 $filterQuery = mysqli_query($link, $filterStatement);
 $fields = json_decode($_GET['fields']);
-//print($_GET['filterStatement'] . "<br>");
-//print_r($fields);
-//echo "<br>";
 
-//$results = array();
+
+
 $results = array();
 $return = array();
 if($filterQuery && $filterQuery->num_rows > 0) {
@@ -21,17 +19,9 @@ if($filterQuery && $filterQuery->num_rows > 0) {
         array_push($results, $row);
     }
 }
-/*else {
-    print("Error: " . mysqli_error($link));
-}*/
-//echo json_encode($results['data']);
-//print_r($results['data']);
+
 $return['data'] = array();
 $return['columns'] = array();
-
-/*$data['columns'] = array();
-$data['columns'] = array("title" => "field");
-$data['columns']['data'] = array();*/
 
 for($i = 0; $i < sizeOf($results); ++$i) {
     $row = array();
@@ -71,12 +61,8 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     //Now add user-selected query fields
     foreach($fields as $field) {
         $row["{$field}"] = $results[$i]["{$field}"];
-        /*if(!in_array($field, $data['columns']['title'])) {
-            array_push($data['columns']['title'], $field);
-            array_push($data['columns']['data'], $field);
-        }*/
     }
-    //$data['columns'] = json_encode(array_combine($data['columns']['title'], $data['columns']['data']));
+
     //Check all fields for unnecessary quotation marks
     foreach($row as $key => $value) {
         if(strpos($value, '"') !== FALSE) {
@@ -85,7 +71,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     }
     array_push($return['data'], $row);
 }
-//$data['data'] = json_encode($data['data']);
+
 //Now need to get all the column names so they can be returned and used to build the DataTables result
 $columns = array(
     ["title" => "Actions", "data" => "Actions"],
@@ -98,31 +84,5 @@ $columns = array(
     ["title" => "DP3", "data" => "DP3"]
 );
 
-/*foreach($fields as $field) {
-    array_push($columns, ["title" => "{$field}", "data" => "{$field}"]);
-}
-$return['columns'] = $columns;
-/*echo json_encode($return['data']);
-echo json_encode($return['columns']);*/
 echo json_encode($return);
-/*if($filterQuery && $filterQuery->num_rows > 0) {
-        while($row = mysqli_fetch_assoc($filterQuery)) {
-        echo "<tr>";
-        echo "<td></td>";
-        echo "<td>" . $row["CompanyName"] . "</td>";
-        echo "<td>" . $row["FirstName"] . "</td>";
-        echo "<td>" . $row["MiddleInitial"] . "</td>";
-        echo "<td>" . $row["LastName"] . "</td>";
-        echo "<td>" . $row["Suffix"] . "</td>";
-        echo "<td>" . $row["SecondaryName"] . "</td>";
-        echo "<td>" . $row["AddressLine1"] . "</td>";
-        echo "<td>" . $row["AddressLine2"] . "</td>";
-        echo "<td>" . $row["City"] . "</td>";
-        echo "<td>" . $row["State"] . "</td>";
-        echo "<td>" . $row["Zip"] . "</td>";
-        echo "<td>" . $row["Country"] . "</td>";
-        echo "<td>" . $row["ID"] . "</td>";
-        echo "</tr>";
-    }
-}*/
 ?>

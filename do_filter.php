@@ -1,8 +1,17 @@
 <?php
 	require("connection.php");
-
+    session_start();
 	$county = $_POST['county'];
 	$owner = $county . '_owner';
+	if(!empty($_SESSION['codeTypes']))
+	    $codeTypes = $_SESSION['codeTypes'];
+	else
+	    $codeTypes = array();
+
+	if(!empty($_SESSION['definitionCodes']))
+	    $definitionCodes = $_SESSION['definitionCodes'];
+    else
+        $definitionCodes = array();
 	/*
 	 * Array that contains the field names of the standard fields to be exported
 	 * This way if user is filtering by a standard field, it's not appended again to the export
@@ -45,9 +54,10 @@
             else if(substr($postKey, -3) == 'min' || substr($postKey, -3) == 'max')
                 $key = substr($postKey, 0, -4);
 
-            //Get field alias
-            //$alias = explode(".", $key);
-            //$alias = $key[1];
+            /*
+             * Now check if key is a code or a definition
+             * If so change key added to filter statement so that we are selecting the code/definition meaning instead of the code/def number
+             */
             $filterStatement .= "{$key}, ";
         }
     }
@@ -55,7 +65,6 @@
 	$filterStatement .= " FROM {$owner} ";
 	$tablesAddedToStatement = array();
 	$fullFieldNames = array();
-	//$fullFieldValues = array();
 	array_push($tablesAddedToStatement, "{$county}_owner");
 
 	/*
@@ -154,53 +163,15 @@
 
 	//Remove trailing ' AND ' (space AND space = 5 characters)
 	$filterStatement = substr($filterStatement, 0, -5);
-	$filterStatement .= ");";
+	$filterStatement .= ")";
 
-	//print("FILTER STATEMENT (where): {$filterStatement}<br>");
+	//Create deduped and householded statements for possible later use
+    $dedupedStatement = "{$filterStatement} GROUP BY ID;";
+    $householdedStatement = "{$filterStatement} GROUP BY CONCAT(AddressLine1, \", \", City, \", \", State, \" \", Zip);";
 
-	//$filterQuery = mysqli_query($link, $filterStatement);
-
-	/*if($filterQuery && $filterQuery->num_rows > 0) {
-		while($row = mysqli_fetch_assoc($filterQuery)) {
-			//print_r($row);
-			print("Count = " . $row["count"]);
-			echo "<br>";
-		}
-	}
-	else {
-		print("Error: " . mysqli_error($link));
-	}
-
-	$filterQuery = mysqli_query($link, $filterStatement);*/
-	/*if($filterQuery && $filterQuery->num_rows > 0) {
-   	 	while($row = mysqli_fetch_assoc($filterQuery)) {
-        	echo "<tr>";
-			echo "<td></td>";
-			echo "<td>" . $row["CompanyName"] . "</td>";
-			echo "<td>" . $row["FirstName"] . "</td>";
-			echo "<td>" . $row["MiddleInitial"] . "</td>";
-			echo "<td>" . $row["LastName"] . "</td>";
-			echo "<td>" . $row["Suffix"] . "</td>";
-			echo "<td>" . $row["SecondaryName"] . "</td>";
-			echo "<td>" . $row["AddressLine1"] . "</td>";
-			echo "<td>" . $row["AddressLine2"] . "</td>";
-			echo "<td>" . $row["City"] . "</td>";
-			echo "<td>" . $row["State"] . "</td>";
-			echo "<td>" . $row["Zip"] . "</td>";
-			echo "<td>" . $row["Country"] . "</td>";
-			echo "<td>" . $row["ID"] . "</td>";
-			echo "</tr>";
-		}
-	}
-	$results = array();
-	if($filterQuery && $filterQuery->num_rows > 0) {
-		while($row = mysqli_fetch_assoc($filterQuery)) {
-			array_push($results, $row);
-		}
-	}*/
-	/*if($_SERVER['REQUEST_METHOD'] === 'GET'){
-		$_GET['filterStatement'] = $filterStatement;
-	}*/
+    echo $dedupedStatement . "<br>";
+    echo $householdedStatement . "<br>";
+	session_destroy();
 ?>
 
 <html>
@@ -241,62 +212,13 @@
 				</tr>
 			</thead>
 			<tbody>
-				<!--hp foreach($results as $results) {
-					echo "<tr>";
-					echo "<td></td>";
-					echo "<td>" . $results["CompanyName"] . "</td>";
-					echo "<td>" . $results["FirstName"] . "</td>";
-					echo "<td>" . $results["MiddleInitial"] . "</td>";
-					echo "<td>" . $results["LastName"] . "</td>";
-					echo "<td>" . $results["Suffix"] . "</td>";
-					echo "<td>" . $results["SecondaryName"] . "</td>";
-					echo "<td>" . $results["AddressLine1"] . "</td>";
-					echo "<td>" . $results["AddressLine2"] . "</td>";
-					echo "<td>" . $results["City"] . "</td>";
-					echo "<td>" . $results["State"] . "</td>";
-					echo "<td>" . $results["Zip"] . "</td>";
-					echo "<td>" . $results["Country"] . "</td>";
-					echo "<td>" . $results["ID"] . "</td>";
-					echo "</tr>";
-				} ?>-->
 			</tbody>
 		</table>
+        <button onclick="dedupeResults()">Dedupe</button>
 	</body>
 </html>
 
 <script type="text/javascript">
-    /*$('#results').DataTable({
-        dom: "Bfrtip",
-        "ajax": {
-            url: 'get_results.php',
-            type:
-        }
-    })*/
-    /*var fields = JSON.stringify(<php echo json_encode($fullFieldNames)?>);
-    var fieldsParse = JSON.parse(fields);
-    var data = [
-        'Actions',
-        'CompanyName',
-        'FirstName',
-        'MiddleInitial',
-        'LastName',
-        'Suffix',
-        'SecondaryName',
-        'AddressLine1',
-        'AddressLine2',
-        'City',
-        'State',
-        'Zip',
-        'Country',
-        'ID',
-        'CRRT',
-        'DP3'
-    ];
-
-
-    for(i = 0; i < fieldsParse.length; ++i) {
-        data.push(fieldsParse[i]);
-    }*/
     var columns = [
         { data: 'Actions' },
         { data: 'CompanyName' },
@@ -319,27 +241,7 @@
     <?php foreach($fullFieldNames as $fields) { ?>
         columns.push({ data: '<?php echo $fields ?>' });
         <?php } ?>
-    console.log(columns);
-    /*var columns;
-    function getPromise() {
-        var deferred = $.Deferred();
-        var dataUrl = 'get_results.php';
-        $.getJSON(dataUrl, function(jsondata) {
-            setTimeout(function() {
-                deferred.resolve(jsondata);
-            }, 0);
-        }).fail(function( jqxhr, textStatus, error ) {
-            // ********* FAILED
-            var err = textStatus + ", " + error;
-            console.log( "Request Failed: " + err );
-        });
-        return deferred.promise();
-    }
-    // Get the columns
-    getPromise().done(function(jsondata) {
-        columns = jsondata.columns;
-        console.log(columns);
-    });*/
+
 	$('#results').DataTable({
 		//"processing": true,
 		//"serverSide": true,
@@ -349,65 +251,23 @@
 			data: {filterStatement: "<?php echo $filterStatement ?>", fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)}
 		},
 		columns: columns
-        /*[
-            { data: 'Actions' },
-			{ data:	'CompanyName' },
-			{ data: 'FirstName' },
-			{ data: 'MiddleInitial' },
-			{ data: 'LastName' },
-			{ data: 'Suffix' },
-			{ data: 'SecondaryName' },
-			{ data: 'AddressLine1' },
-			{ data: 'AddressLine2' },
-			{ data: 'City' },
-			{ data: 'State' },
-			{ data: 'Zip' },
-			{ data: 'Country' },
-			{ data: 'ID' },
-            { data: 'CRRT' },
-            { data: 'DP3' },
-            { data: 'sch_code' }
-		]*/
 	});
-	/*$.ajax({
-        type: 'GET',
-        dataType: 'json',
-        url: 'get_results.php',
-        data: {
-            filterStatement: "<?php echo $filterStatement?>",
-            fields: JSON.stringify(<?php echo json_encode($fullFieldNames)?>)
-        },
-        success: function(d) {
-            $('#results').DataTable({
-               // dom: "Bfrtip",
-                data: d.data,
-                columns: d.columns
-            });
-        }
-    });*/
-	/*$("#results").DataTable({
-        "ajax": {
-            url: "get_results.php",
-            type: "GET",
-            data: {filterStatement: "<php echo $filterStatement ?>", fields: "<php json_encode($fullFieldNames)?>"}
-        }/*,
-		"aoColumns": [
-			 { "mData": "Actions" },
-			 { "mData": 'CompanyName' },
-			 { "mData": 'FirstName' },
-			 { "mData": 'MiddleInitial' },
-			 { "mData": 'LastName' },
-			 { "mData": 'Suffix' },
-			 { "mData": 'SecondaryName' },
-			 { "mData": 'AddressLine1' },
-			 { "mData": 'AddressLine2' },
-			 { "mData": 'City' },
-			 { "mData": 'State' },
-			 { "mData": 'Zip' },
-			 { "mData": 'Country' },
-			 { "mData": 'ID' },
-			 { "mData": 'CRRT' },
-			 { "mData": 'DP3' }
-		 ]*/
 
+	function dedupeResults() {
+	    console.log("Dedupe");
+        //$(#results').clear();
+        //$('#results').clear().draw();
+        $('#results').DataTable().destroy();
+        $('#results').DataTable({
+            ajax: {
+                url: "get_results.php",
+                type: "GET",
+                data: function(d) {
+                    d.filterStatement = "<?php echo $dedupedStatement ?>",
+                    d.fields = JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
+                },
+            },
+            columns: columns
+        });
+    }
 </script>
