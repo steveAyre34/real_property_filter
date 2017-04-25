@@ -265,7 +265,7 @@
 </html>
 
 <script type="text/javascript">
-    var fields = JSON.stringify(<?php echo json_encode($fullFieldNames)?>);
+    /*var fields = JSON.stringify(<?php echo json_encode($fullFieldNames)?>);
     var fieldsParse = JSON.parse(fields);
     var data = [
         'Actions',
@@ -288,7 +288,7 @@
 
     for(i = 0; i < fieldsParse.length; ++i) {
         data.push(fieldsParse[i]);
-    }
+    }*/
 	$('#results').DataTable({
 		"processing": true,
 		//"serverSide": true,
@@ -296,8 +296,8 @@
 		    url : "get_results.php",
 			type: "GET",
 			data: {filterStatement: "<?php echo $filterStatement ?>", fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)}
-		},
-		"columns": data/*[
+		}
+		/*"columns": data/*[
             { data: 'Actions' },
 			{ data:	'CompanyName' },
 			{ data: 'FirstName' },

@@ -26,6 +26,8 @@ if($filterQuery && $filterQuery->num_rows > 0) {
 //echo json_encode($results['data']);
 //print_r($results['data']);
 $data['data'] = array();
+$data['columns']['title'] = array();
+$data['columns']['data'] = array();
 
 for($i = 0; $i < sizeOf($results); ++$i) {
     $row = array();
@@ -65,9 +67,12 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     //Now add user-selected query fields
     foreach($fields as $field) {
         $row["{$field}"] = $results[$i]["{$field}"];
-        print("{$field}<br>");
+        if(!in_array($field, $data['columns']['title'])) {
+            array_push($data['columns']['title'], $field);
+            array_push($data['columns']['data'], $field);
+        }
     }
-
+    $data['columns'] = json_encode(array_combine($data['columns']['title'], $data['columns']['data']));
     //Check all fields for unnecessary quotation marks
     foreach($row as $key => $value) {
         if(strpos($value, '"') !== FALSE) {
