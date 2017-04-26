@@ -42,14 +42,29 @@
 		"mail_country"
 	];
 
-	$filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
-	$filterStatement .= "{$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
-	$filterStatement .=   "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
-	$filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
-	$filterStatement .=	"{$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, ";
-	$filterStatement .=   "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
 
-	$dedupedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT, ";
+	/*
+	 * For some reason only Dutchess County stores the mailing address city and zip as 'owner_mail_city' and 'owner_mail_zip'
+	 * All other counties (that I have data available for as of now) store city and zip as 'mail_city', 'mail_zip'
+	 */
+	if($county == 'dutchess') {
+        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
+        $filterStatement .= "{$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
+        $filterStatement .= "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
+        $filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
+        $filterStatement .= "{$owner}.owner_mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.owner_mail_zip AS Zip, ";
+        $filterStatement .= "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
+    }
+    else {
+        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
+        $filterStatement .= "{$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
+        $filterStatement .= "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
+        $filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
+        $filterStatement .= "{$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, ";
+        $filterStatement .= "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
+    }
+
+	$dedupedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT, {$owner}.parcel_id AS parcelID, {$owner}.owner_type AS type, ";
 	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT, ";
 
 	/*
@@ -230,7 +245,7 @@
     //$householdedStatement .= ");";
 
 	//Create deduped and householded statements for possible later use
-    $dedupedStatement = "{$dedupedStatement}) GROUP BY ID;";
+    $dedupedStatement = "{$dedupedStatement}) GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
     $householdedStatement = "{$householdedStatement}) GROUP BY CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
 
     /*echo $filterStatement . "<br>";
@@ -244,15 +259,22 @@
 		<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
 		<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
 		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.3.1/js/dataTables.buttons.min.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.3.1/js/buttons.html5.min.js"></script>
+        <script src='pdfmake-master/pdfmake-master/build/pdfmake.min.js'></script>
+        <script src='pdfmake-master/pdfmake-master/build/vfs_fonts.js'></script>
+        <script src='jszip/Stuk-jszip-ab3829a/dist/jszip.min.js'></script>
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
 		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"/>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.3.1/css/buttons.dataTables.min.css"/>
+        <link rel="stylesheet" type="text/css" href="common.css"/>
 	</head>
 	<body>
 		<table id="results" class="resultsTable">
 			<thead>
 				<tr>
 					<!--Headers for the standard export fields-->
-					<th>Actions</th>
 					<th>Company Name</th>
 					<th>First Name</th>
 					<th>Middle Initial</th>
@@ -285,7 +307,6 @@
 
 <script type="text/javascript">
     var columns = [
-        { data: 'Actions' },
         { data: 'CompanyName' },
         { data: 'FirstName' },
         { data: 'MiddleInitial' },
@@ -322,7 +343,13 @@
 			type: "GET",
 			data: {filterStatement: "<?php echo $filterStatement ?>", fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)}
 		},
-		columns: columns
+		columns: columns,
+        dom: 'Bfrtip',
+        buttons: [
+            { extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
+            { extend: 'excelHtml5', title: '<?php echo $county ?>_export' },
+            { extend: 'csvHtml5', title: '<?php echo $county ?>_export' },
+            { extend: 'pdfHtml5', title: '<?php echo $county ?>_export' }]
 	});
 
 	function dedupeResults() {
@@ -337,7 +364,9 @@
                     //dedupe: true
                 }
             },
-            columns: columns
+            columns: columns,
+            dom: 'Bfrtip',
+            buttons: [{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}}, 'excelHtml5', 'csvHtml5', 'pdfHtml5']
         });
     }
 
@@ -353,7 +382,9 @@
                     //household: true
                 }
             },
-            columns: columns
+            columns: columns,
+            dom: 'Bfrtip',
+            buttons: [{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}}, 'excelHtml5', 'csvHtml5', 'pdfHtml5']
         });
     }
 </script>

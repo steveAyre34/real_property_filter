@@ -21,7 +21,7 @@
 
     //Get all saved queries that exist for this county
     $selectStatement = "SELECT name, cache_file FROM saved_queries WHERE county='{$county}' ";
-    $selectStatement .= "AND last_cached > '{$last_updated}';";
+    $selectStatement .= "AND last_cached >= '{$last_updated}';";
     $savedQueryNames = array();
     $savedQueryFiles = array();
     if($result = mysqli_query($link, $selectStatement)) {

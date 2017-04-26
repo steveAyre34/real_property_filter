@@ -19,17 +19,13 @@
 <body>
 <h1>Welcome to the New York State Real Property Data Filter</h1>
 
-<h4>Please Select A County:</h4>
+<h4>Please Select A County</h4>
 <form id="form">
 <select class="selectMenu" name="county" id="chosenCounty">
 <?php
 	foreach($counties as $c) {
 	  $disabled = "";
-	  if (!in_array($c, $counties_available)) {
-		$disabled = "disabled"; 
-		
-	  ?><option value='<?php echo $c ?>' <?php echo $disabled ?>><?php echo ucwords($c) ?></option><?php  }
-	  else {
+	  if (in_array($c, $counties_available)) {
 		  ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
 	<?php }} ?>
 </select>

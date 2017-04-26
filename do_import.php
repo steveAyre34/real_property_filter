@@ -1,9 +1,3 @@
-<html>
-	<head>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-	</head>
-	
-</html>
 <?php
 /**
 	This is the server side of a file importer that can be used for the Real Property or Board of Elections File Uploads.
@@ -12,12 +6,8 @@
 		This importer checks if this is the case.
 */
 require("connection.php");
-//header('Content-Type: text/event-stream');
-//require("createHeaders.php");
-//require("import.php");
 
 session_start();
-//mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, 5000);
 $totalSize = 0;
 $currentlyUploadedSize = 0;
 
@@ -71,92 +61,51 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']);  ++$i) {
 }
 
 for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
-	$filename = $_FILES['uploadFile']['name'][$i];
-	$tempPath = $_FILES['uploadFile']['tmp_name'][$i];
-	$filesize = $_FILES['uploadFile']['size'][$i];
-	$databaseTable = $_POST['county'] . '_' . $filename;
-	$databaseTable = substr($databaseTable, 0, -4);
+    $filename = $_FILES['uploadFile']['name'][$i];
+    $tempPath = $_FILES['uploadFile']['tmp_name'][$i];
+    $filesize = $_FILES['uploadFile']['size'][$i];
+    $databaseTable = $_POST['county'] . '_' . $filename;
+    $databaseTable = substr($databaseTable, 0, -4);
 
-		
-	/*****************
-		Move files into 'data' directory within application 
-	*****************/
-	$upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
-	copy(($_FILES['uploadFile']['tmp_name'][$i]), $upload_dir . $_FILES['uploadFile']['name'][$i]);
-	$localFile = $upload_dir . $_FILES['uploadFile']['name'][$i];
-		
-	//Open file to be uploaded ('countyName_fileName.txt')
-	$importFile = fopen(realpath($localFile), "r") or die("Unable to open file.");
 
-	//Check if file has existing table and drop if so 
-	$checkTable = mysqli_query($link, "SHOW TABLES LIKE '" . $databaseTable . "';");
-	if(mysqli_num_rows($checkTable) > 0) {
-		$getDatabaseTable = mysqli_query($link, "DROP TABLE " . $databaseTable);
-	}
+    /*****************
+     * Move files into 'data' directory within application
+     *****************/
+    $upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
+    copy(($_FILES['uploadFile']['tmp_name'][$i]), $upload_dir . $_FILES['uploadFile']['name'][$i]);
+    $localFile = $upload_dir . $_FILES['uploadFile']['name'][$i];
 
-	//Retrieves header layout from first line of file to be uploaded (each field is delimited with a tab)
-	$fileHeaders = fgets($importFile);
-	$fileHeaders = explode("\t", $fileHeaders);	
-			
-	//Create corresponding table based on file headers 
-	$createTableStatement = createTable($fileHeaders, $databaseTable);
-	$checkTable = mysqli_query($link, $createTableStatement);
-	if(!$checkTable) {
-		print "Error creating " . $databaseTable . ".";
-	}
-			
-	//Create the load data local infile statement
-	$loadStatement = createLoadStatement($fileHeaders, $localFile, $databaseTable);
-	/*echo "<br><br><br>";
-	print "LOAD STATEMENT: " . $loadStatement;
-	echo "<br><br><br>";*/
-				
-	$failedCount = mysqli_query($link, $loadStatement);
-	$checkUpload = "SELECT COUNT(primaryID) FROM " . $databaseTable;
-	$uploadCount = mysqli_query($link, $checkUpload) or die(mysqli_error());
-	$uploadCounter = mysqli_fetch_assoc($uploadCount);
-	/*if($failedCount == true) {
-		//print $uploadCounter['COUNT(primaryID)'] . " records added successfully to " . $databaseTable . "<br>";
-		$return = calcUploadPercentage($filesize);
-		echo $return . PHP_EOL;
-		ob_flush();
-		flush();
-	}*/
-	/*else {
-		print "Records not added successfully.<br>";
-	}*/
-}
-	/*foreach($value as $v) {
-		foreach($v as $key => $vs) {
-			print "Key: " . $key . "<br>";
-			print "Value: " . $vs . "<br>";
-		}
-	}
-	echo 'End outer <br>';*/
-	/*foreach($value as $file) {
-		print_r($file);
-		echo ' end outer <br>';
-		/*foreach($file as $key => $innerValue) {
-			
-			print "Key: " . $key . "<br>";
-			print "Inner value: " . $file[$key] . "<br>";
-			//print_r($key);
-			echo "END FILE KEY<br>"; 
-			//print_r($fileValue);
-			
-			//echo $FILES['name'][0];
-			//echo realpath($FILES['tmp_name'][0]);
-			//print_r($FILES);
-			//File name will not have county name included
-			//Prepend county name based on value chosen from dropdown menus	
-			/*$databaseTable = $_POST['county'] . '_' . $file[$key];
-			echo 'database table: ' . $databaseTable . '<br>';
-			echo "<br><br><br>";
-		}*/
-	//}
-//}
-			
-			//echo "UPLOAD DIRECTORY: " . $localFile;
+    //Open file to be uploaded ('countyName_fileName.txt')
+    $importFile = fopen(realpath($localFile), "r") or die("Unable to open file.");
+
+    //Check if file has existing table and drop if so
+    $checkTable = mysqli_query($link, "SHOW TABLES LIKE '" . $databaseTable . "';");
+    if (mysqli_num_rows($checkTable) > 0) {
+        $getDatabaseTable = mysqli_query($link, "DROP TABLE " . $databaseTable);
+    }
+
+    //Retrieves header layout from first line of file to be uploaded (each field is delimited with a tab)
+    $fileHeaders = fgets($importFile);
+    $fileHeaders = explode("\t", $fileHeaders);
+
+    //Create corresponding table based on file headers
+    $createTableStatement = createTable($fileHeaders, $databaseTable);
+    $checkTable = mysqli_query($link, $createTableStatement);
+    if (!$checkTable) {
+        print "Error creating " . $databaseTable . ".";
+    }
+
+    //Create the load data local infile statement
+    $loadStatement = createLoadStatement($fileHeaders, $localFile, $databaseTable);
+    /*echo "<br><br><br>";
+    print "LOAD STATEMENT: " . $loadStatement;
+    echo "<br><br><br>";*/
+
+    $failedCount = mysqli_query($link, $loadStatement);
+    $checkUpload = "SELECT COUNT(primaryID) FROM " . $databaseTable;
+    $uploadCount = mysqli_query($link, $checkUpload) or die(mysqli_error($link));
+    $uploadCounter = mysqli_fetch_assoc($uploadCount);
+
 
     /*
      * Now need to either add entry to last_updated or, if this county has an entry, change the last_updated date to today
@@ -166,33 +115,21 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
     $updateStatement = '';
     $today = date('Y/m/d');
     $result = mysqli_query($link, $checkUpdated);
-    if($result && $result->num_rows > 0) {
+    if ($result && $result->num_rows > 0) {
         $updateStatement = "UPDATE last_updated SET date='{$today}';";
-    }
-    else {
+    } else {
         $updateStatement = "INSERT INTO last_updated VALUES ('{$_POST['county']}', '{$today}');";
     }
 
     $updateStatementResult = mysqli_query($link, $updateStatement);
-    if($updateStatementResult)
+    if ($updateStatementResult)
         ;
     else
         print("Error saving last_updated:" . $updateStatementResult->error);
-	mysqli_close($link);
-	
+}
+//mysqli_close($link);
+
+echo "<script type='text/javascript'>
+            window.location.href=\"index.php\";
+            </script>";
 ?>
-
-<!--<script type="text/javascript">
-	$(document).ready(function() {
-			swal({
-			title: "Please be patient!",
-			text: "Some counties can contain multiple hundreds of thousands of records - it may take a few minutes!",
-			type: "warning",
-			showCancelButton: true,
-			showConfirmButton: false,
-			showLoaderOnConfirm: true,
-			allowOutsideClick: false	
-		})
-	});
-</script>-->
-

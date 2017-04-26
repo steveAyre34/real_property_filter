@@ -76,9 +76,11 @@
 	<head>
         <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
         <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+        <script src="jquery.multiselect.js"></script>
         <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
         <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
-        <!--<link rel="stylesheet" href="common.css"/>-->
+        <link rel="stylesheet" href="jquery.multiselect.css"/>
+        <link rel="stylesheet" href="common.css"/>
 		<!--<link rel="stylesheet" type="text/css" href="filter.css">-->
 	</head>
 
@@ -106,7 +108,7 @@
                     </div>
                 <?php			}
             } ?>
-<button type="submit" id="createButton">Create</button>
+<button class="ui-button" type="submit" id="createButton">Create</button>
 </form>
 </body>
 </html>

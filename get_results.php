@@ -51,7 +51,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     $row = array();
 
     //Handle standard export fields first
-    $row['Actions'] = json_encode("<input type='button' value='Action'/>");
+    //$row['Actions'] = json_encode("<input type='button' value='Action'/>");
 
     /*
      * Filter out company names
@@ -83,42 +83,45 @@ for($i = 0; $i < sizeOf($results); ++$i) {
 
     //Now add user-selected query fields
     foreach($fields as $field) {
-        $row["{$field}"] = $results[$i]["{$field}"];
-        if(substr($field, -3) == 'min' || substr($field, -3) == 'max')
-            $field = substr($field, 0, -4);
-        else if(substr($field, -8) == 'checkbox')
-            $field = substr($field, 0, -9);
+        if(!empty($results[$i]["{$field}"])) {
+            $row["{$field}"] = $results[$i]["{$field}"];
+            if(substr($field, -3) == 'min' || substr($field, -3) == 'max')
+                $field = substr($field, 0, -4);
+            else if(substr($field, -8) == 'checkbox')
+                $field = substr($field, 0, -9);
 
-        if(!in_array($field, $datatablesFields))
-            array_push($datatablesFields, $field);
+            if(!in_array($field, $datatablesFields))
+                array_push($datatablesFields, $field);
 
-        /*
-         * If the current field is a code then substitute it with it's meaning (i.e., substitute SWIS code for SWIS label)
-         */
-        if(!empty($codeTypes) && in_array($field, $codeTypes)) {
-            $getCodeMeaningStatement = "SELECT meaning FROM codes WHERE type='{$field}' AND code='{$results[$i][$field]}';";
-            $getCodeMeaningResult = mysqli_query($link, $getCodeMeaningStatement);
-            if($getCodeMeaningResult && $getCodeMeaningResult->num_rows > 0) {
-                $innerRow = mysqli_fetch_assoc($getCodeMeaningResult);
-                $row["{$field}"] = $innerRow['meaning'];
+
+            /*
+             * If the current field is a code then substitute it with it's meaning (i.e., substitute SWIS code for SWIS label)
+             */
+            if(!empty($codeTypes) && in_array($field, $codeTypes)) {
+                $getCodeMeaningStatement = "SELECT meaning FROM codes WHERE type='{$field}' AND code='{$results[$i][$field]}';";
+                $getCodeMeaningResult = mysqli_query($link, $getCodeMeaningStatement);
+                if($getCodeMeaningResult && $getCodeMeaningResult->num_rows > 0) {
+                    $innerRow = mysqli_fetch_assoc($getCodeMeaningResult);
+                    $row["{$field}"] = $innerRow['meaning'];
+                }
             }
-        }
-        /*
-         * If the current field is a definition then do the same thing we did with codes
-         */
-        else if(!empty($definitionCodes) && in_array($field, $definitionCodes)) {
-            $query = "SHOW TABLES LIKE '%def%'";
-            if($result = mysqli_query($link, $query)) {
-                while($innerRow = $result->fetch_assoc()) {
-                    foreach($innerRow as $key => $value) {
-                        //Only need the def file for specified county
-                        if(strpos($value, $county) == 0) {
-                            $innerQuery = "SHOW COLUMNS IN " . $value . " LIKE '%code%';";
-                            if($innerResult = mysqli_query($link, $innerQuery)) {
-                                while($innerRowTwo = $innerResult->fetch_assoc()) {
-                                    if($innerRowTwo['Field'] != "muni_code" && !in_array($innerRowTwo['Field'], $definitionCodes)) {
-                                        $row["{$field}"] = $innerRowTwo['Field'];
-                                        break;
+            /*
+             * If the current field is a definition then do the same thing we did with codes
+             */
+            else if(!empty($definitionCodes) && in_array($field, $definitionCodes)) {
+                $query = "SHOW TABLES LIKE '%def%'";
+                if($result = mysqli_query($link, $query)) {
+                    while($innerRow = $result->fetch_assoc()) {
+                        foreach($innerRow as $key => $value) {
+                            //Only need the def file for specified county
+                            if(strpos($value, $county) == 0) {
+                                $innerQuery = "SHOW COLUMNS IN " . $value . " LIKE '%code%';";
+                                if($innerResult = mysqli_query($link, $innerQuery)) {
+                                    while($innerRowTwo = $innerResult->fetch_assoc()) {
+                                        if($innerRowTwo['Field'] != "muni_code" && !in_array($innerRowTwo['Field'], $definitionCodes)) {
+                                            $row["{$field}"] = $innerRowTwo['Field'];
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -126,9 +129,18 @@ for($i = 0; $i < sizeOf($results); ++$i) {
                     }
                 }
             }
+            else {
+                $row["{$field}"] = $results[$i]["{$field}"];
+            }
         }
         else {
-            $row["{$field}"] = $results[$i]["{$field}"];
+            if(substr($field, -3) == 'min' || substr($field, -3) == 'max')
+                $field = substr($field, 0, -4);
+            else if(substr($field, -8) == 'checkbox')
+                $field = substr($field, 0, -9);
+
+            if(!in_array($field, $datatablesFields))
+                array_push($datatablesFields, $field);
         }
     }
 

@@ -22,20 +22,25 @@
 <head>
 	<title>Find Records</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-	<link rel="stylesheet" href="main.css" type="text/css" />
-	<script src="forms.js" type="text/javascript"></script>
-	<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
-	<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
+	<!--<link rel="stylesheet" href="main.css" type="text/css" />-->
+	<!--<script src="forms.js" type="text/javascript"></script>-->
+    <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="jquery.multiselect.js"></script>
+    <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
+    <link rel="stylesheet" href="jquery.multiselect.css"/>
+    <link rel="stylesheet" href="common.css"/>
 	<script src="jquery.multiselect.js"></script>
-	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+	<!--<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">-->
 	<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
 </head>
 
 <body>
 	<form name="frm_fields" action="get_export.php" method="post">
 			<h1>Real Property Data Filter for <?= $county ?> county:</h1>
-			<input type="submit" class="button" value="Get Counts!"  style="height:75px;width:540px;background-color:#FA8072;font-size:20px" />
-            <input type="reset" value="Reset Criteria" style="height:75px;width:540px;background-color:#FA8072;font-size:20px"/>	
+        <button type="submit" class="ui-button gen-filter-buttons">Get Counts!</button>
+        <button type="reset" class="ui-button gen-filter-buttons" value="Reset Criteria">Reset Criteria</button>
 
 			<div id="assessmentInformation" class="ui-accordion majorSection">
 				<div id="accordion-header_assessmentInformation" class="ui-accordion-header">
@@ -48,22 +53,22 @@
                     <table><tr><td width="540px">
                         <div id="total_av" class="ui-accordion minorSection">
                             <div id="accordion-header_total_av" class="ui-accordion-header">
-                                <b>Total Assessment</b>
+                                <h4>Total Assessment</h4>
                             </div>
                             <div id="accordion-content_total_av" class="ui-accordion-content">
-                                <i>At least </i><input type="text" name="<?php echo $table ?>.total_av_min"><i> Dollars</i><br><br>
-                                <i>At most </i><input type="text" name="<?php echo $table ?>.total_av_max"><i> Dollars</i>
+                                At least <input type="text" class="inputText" name="<?php echo $table ?>||total_av_min"> Dollars<br><br>
+                                At most <input type="text" class="inputText" name="<?php echo $table ?>||total_av_max"> Dollars
                             </div>
                         </div>
                     </td>
                     <td width="540px">
                         <div id="land_av" class="ui-accordion minorSection">
                             <div id="accordion-header_land_av" class="ui-accordion-header">
-                                <b>Land Assessment</b>
+                                <h4>Land Assessment</h4>
                             </div>
                             <div id="accordion-content_land_av" class="ui-accordion-content">
-                                <i>At least </i><input type="text" name="<?php echo $table ?>.land_av_min"><i> Dollars</i><br><br>
-                                <i>At most </i><input type="text" name="<?php echo $table ?>.land_av_max"><i> Dollars</i>
+                                At least <input type="text" class="inputText" name="<?php echo $table ?>||land_av_min"> Dollars<br><br>
+                                At most <input type="text" class="inputText" name="<?php echo $table ?>||land_av_max"> Dollars
                             </div>
                         </div>
                     </td></tr></table>
@@ -80,7 +85,7 @@
                 <table>
                     <tr>
                         <td width="360px">
-                            <b>SWIS Code</b>
+                            <h4>SWIS Code</h4>
                             <?php
                                 print(makeSelectionList($link, $county, 'swis', $table, 'SWIS', 'swis'));
                             ?>
@@ -90,7 +95,7 @@
                             $table = $county . '_assessment';
                         ?>
                         <td width="360px">
-                            <b>School Code</b>
+                            <h4>School Code</h4>
                             <?php
                                 print(makeSelectionList($link, $county, 'sch_code', $table, 'School Code', 'sch_code'));
                             ?>
@@ -100,7 +105,7 @@
                             $table = $county . '_parcel';
                         ?>
                         <td width="360px">
-                            <b>ZIP Code</b>
+                            <h4>ZIP Code</h4>
                             <?php
                                 print(makeSelectionList($link, $county, 'loc_zip', $table, 'ZIP Code', 'loc_zip'));
                             ?>
@@ -136,33 +141,33 @@
                         <td width="360px">
                             <div id="full_market_value" class="ui-accordion minorSection">
                                 <div id="accordion-header_full_market_value" class="ui-accordion-header">
-                                    <b>Market Value</b>
+                                    <h4>Market Value</h4>
                                 </div>
                                 <div id="accordion-content_full_market_value" class="ui-accordion-content">
-                                    <p style="font-size:12px"><i>At least </i><input type="text" name="<?php echo $table ?>.full_market_value_min"><i> Dollars</i></p>
-                                    <p style="font-size:12px"><i>At most </i><input type="text" name="<?php echo $table ?>.full_market_value_max"><i> Dollars</i></p>
+                                    At least <input type="text" class="inputText" name="<?php echo $table ?>||full_market_value_min"> Dollars
+                                    At most <input type="text" class="inputText" name="<?php echo $table ?>||full_market_value_max"> Dollars
                                 </div>
                             </div>
                         </td>
                         <td width="360px">
                             <div id="acres" class="ui-accordion minorSection">
                                 <div id="accordion-header_acres" class="ui-accordion-header">
-                                    <b>Acreage</b>
+                                    <h4>Acreage</h4>
                                 </div>
                                 <div id="accordion-content_acres" class="ui-accordion-content">
-                                    <p style="font-size:12px"><i>At least </i><input type="text" name="<?php echo $table ?>.acres_min"><i> Acres</i></p>
-                                    <p style="font-size:12px"><i>At most </i><input type="text" name="<?php echo $table ?>.acres_max"><i> Acres</i></p>
+                                    At least <input type="text" class="inputText" name="<?php echo $table ?>||acres_min"> Acres
+                                    At most <input type="text" class="inputText" name="<?php echo $table ?>||acres_max"> Acres
                                 </div>
                             </div>
                         </td>
                         <td width="360px">
                             <div id="sqft" class="ui-accordion minorSection">
                                 <div id="accordion-header_sqft" class="ui-accordion-header">
-                                    <b>Square Feet</b>
+                                    <h4>Square Feet</h4>
                                 </div>
                                 <div id="accordion-content_sqft" class="ui-accordion-content">
-                                    <p style="font-size:12px"><i>At least </i><input type="text" name="<?php echo $table ?>.sqft_min"><i> Square Feet</i></p>
-                                    <p style="font-size:12px"><i>At most </i><input type="text" name="<?php echo $table ?>.sqft_max"><i> Square Feet</i></p>
+                                    At least <input type="text" class="inputText" name="<?php echo $table ?>||sqft_min"> Square Feet
+                                    At most <input type="text" class="inputText" name="<?php echo $table ?>||sqft_max"> Square Feet
                                 </div>
                             </div>
                         </td>
@@ -171,33 +176,33 @@
                         <td width="360px">
                             <div id="unit_price" class="ui-accordion minorSection">
                                 <div id="accordion-header_unit_price" class="ui-accordion-header">
-                                    <b>Unit Price</b>
+                                    <h4>Unit Price</h4>
                                 </div>
                                 <div id="accordion-content_unit_price" class="ui-accordion-content">
-                                    <p style="font-size:10px"><i>At least </i><input type="text name=<?php echo $table ?>.unit_price_min"><i> Square Footage</i></p>
-                                    <p style="font-size:10px"><i>At most </i><input type="text name=<?php echo $table ?>.unit_price_max"><i> Square Footage</i></p>
+                                    At least <input type="text" class="inputText" name=<?php echo $table ?>||unit_price_min"> Square Footage
+                                    At most <input type="text" class="inputText" name=<?php echo $table ?>||unit_price_max"> Square Footage
                                 </div>
                             </div>
                         </td>
                         <td width="360px">
                             <div id="land_value" class="ui-accordion minorSection">
                                 <div id="accordion-header_land_value" class="ui-accordion-header">
-                                    <b>Land Value</b>
+                                    <h4>Land Value</h4>
                                 </div>
                                 <div id="accordion-content_land_value" class="ui-accordion-content">
-                                    <p style="font-size:12px"><i>At least </i><input type="text name=<?php echo $table ?>.land_value_min"><i> Dollars</i></p>
-                                    <p style="font-size:12px"><i>At most </i><input type="text name=<?php echo $table ?>.land_value_max"><i> Dollars</i></p>
+                                    At least <input type="text" class="inputText" name=<?php echo $table ?>||land_value_min"><i> Dollars</i></p>
+                                   At most <input type="text" class="inputText" name=<?php echo $table ?>||land_value_max"><i> Dollars</i></p>
                                 </div>
                             </div>
                         </td>
                         <td width="360px">
                             <div id="wf_feet" class="ui-accordion minorSection">
                                 <div id="accordion-header_wf_feet" class="ui-accordion-header">
-                                    <b>Waterfront Feet</b>
+                                    <h4>Waterfront Feet</h4>
                                 </div>
                                 <div id="accordion-content_wf_feet" class="ui-accordion-content">
-                                    <p style="font-size:14px"><i>At least </i><input type="text name=<?php echo $table ?>.wf_feet_min"><i> Feet</i></p>
-                                    <p style="font-size:14px"><i>At most </i><input type="text name=<?php echo $table ?>.wf_feet_max"><i> Feet</i></p>
+                                    At least <input type="text" class="inputText" name=<?php echo $table ?>||wf_feet_min"> Feet
+                                    At most <input type="text" class="inputText" name=<?php echo $table ?>||wf_feet_max"> Feet
                                 </div>
                             </div>
                         </td>
@@ -205,19 +210,19 @@
                     <br>
                     <tr>
                         <td width="360px">
-                            <b>Land Type</b>
+                            <h4>Land Type</h4>
                             <?php
                             print(makeSelectionList($link, $county, 'land_type', $table, 'Land Type', 'land_type'));
                             ?>
                         </td>
                         <td width="360px">
-                            <b>Waterfront Type</b>
+                            <h4>Waterfront Type</h4>
                             <?php
                             print(makeSelectionList($link, $county, 'waterfront_type', $table, 'Waterfront Type', 'waterfront_type'));
                             ?>
                         </td>
                         <td width="360px">
-                            <b>Soil Rating</b>
+                            <h4>Soil Rating</h4>
                             <?php
                             print(makeSelectionList($link, $county, 'soil_rating', $table, 'Soil Rating', 'soil_rating'));
                             ?>
@@ -228,7 +233,7 @@
                 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
             </div>
         </div>
-        <div id="siteInformation majorSection" class="ui-accordion">
+        <div id="siteInformation" class="ui-accordion majorSection">
             <div id="accordion-header_siteInformation" class="ui-accordion-header">
                 <h2>Section 4: Site Information</h2>
             </div>
@@ -236,10 +241,43 @@
                 <?php
                 $table = $county . '_site';
                 ?>
+                <table>
+                    <tr>
+                        <td>
+                            <!--<div id="prop_class_group" class="ui-accordion minorSection">
+                                <div id="accordion-header_prop_class_group" class="ui-accordion-header">
+                                    <h4>Property Class (Groups)</h4>
+                                </div>
+                                <div id="accordion-content_prop_class_group" class="ui-accordion-content">
+                                    Content
+                                </div>
+                            </div>-->
+                            <div id="prop_class_group" class="ui-accordion minorSection">
+                                <div id="accordion-header_prop_class_group" class="ui-accordion-header">
+                                    <h4>Property Class (Group)</h4>
+                                </div>
+                                <div id="accordion-content_prop_class_group" class="ui-accordion-content">
+                                    Content
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="360px">
+                            <h4>Property Class (Individual)</h4>
+                            <?php
+                            print(makeSelectionList($link, $county, 'prop_class', $table, 'Property Class', 'prop_class'));
+                            ?>
+                        </td>
+                    </tr>
+                </table>
+                <!--(hopefully) temporary hack to increase height of accordion content-->
+                <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+            </div>
 
 			
 			<?php
-			$table = $county . '_site';
+			/*$table = $county . '_site';
 			print('<table><tr><td>');
 			print(makeCheckBox('prop_groups[]', 'all_res', 'All Residential Properties (200 series)'));
 			print('</td><td>');
@@ -279,7 +317,7 @@
 			print(makeSelectionList($link, $county, 'utilities', $table, 'Utilities', 'utilities', $default_width)); 
 			print('</td><td>');
 			print(makeSelectionList($link, $county, 'nbhd_rating', $table, 'Nghbrd Rating', 'nbhd_rating', $default_width)); 
-			print("</td></tr></table>\n");
+			print("</td></tr></table>\n");*/
 			?>
         </div>
 			<br/>
@@ -447,7 +485,8 @@
 	$(".minorSection").accordion({
         collapsible: true,
         active: false,
-        heightStyle: "content"
+        heightStyle: "content",
+        autoWidth: false
     });
 
 	$(".multiple_checkbox").multiselect({

@@ -10,6 +10,66 @@ body {
 .selectMenu {
     background-color: #eee;
     font-family: Verdana, Arial, sans-serif;
-    font-size: 1em;
+    font-size: 0.75em;
+    color: #045;
+}
+
+.majorSection .ui-accordion-content h4 {
+    color: #000066;
+}
+* .majorSection .ms-options-wrap {
+    font-size: 0.75em;
+}
+
+.ui-accordion {
+    width: 90%;
+}
+.ui-accordion .ui-accordion-header .ui-accordion-content h1 {
+    color: #000066;
+}
+
+.ui-accordion .ui-accordion-header .ui-accordion-content h2 {
+    color: #000066;
+}
+
+.ui-accordion .ui-accordion-header .ui-accordion-content h3 {
+    color: #000066;
+}
+
+.ui-accordion .ui-accordion-header .ui-accordion-content h4 {
+    color: #000066;
+}
+
+* .majorSection .inputText {
+    width: 10vh;
+}
+
+.gen-filter-buttons {
+    background: #f4df42;
+    color: #000066;
+    width: 45%;
+    font-weight: bold;
+    height: 10vh;
+    font-size: 2em;
+    border-radius: 1em;
+}
+
+* .minorSection .ui-accordion-header h4 {
+    color: white;
+}
+* .minorSection .ui-accordion-content {
+    font-size: 0.75em;
+    color: #000066;
+    font-style: italic;
+}
+
+.ui-accordion .majorSection .ui-accordion-content {
+    color: #000066;
+}
+
+* .majorSection .selectMenu {
+    background-color: #eee;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 0.75em;
     color: #045;
 }
