@@ -16,6 +16,18 @@ if(!empty($_GET['dedupe']))
 if(!empty($_GET['household']))
     $household = true;
 
+if(!empty($_SESSION['codeTypes'])) {
+    $codeTypes = $_SESSION['codeTypes'];
+}
+else
+    $codeTypes = array();
+
+if(!empty($_SESSION['defintionCodes'])) {
+    $definitionCodes = $_SESSION['definitionCodes'];
+}
+else
+    $definitionCodes = array();
+
 $filterStatement = $_GET['filterStatement'];
 $filterQuery = mysqli_query($link, $filterStatement);
 $fields = json_decode($_GET['fields']);
@@ -80,7 +92,44 @@ for($i = 0; $i < sizeOf($results); ++$i) {
         if(!in_array($field, $datatablesFields))
             array_push($datatablesFields, $field);
 
-        $row["{$field}"] = $results[$i]["{$field}"];
+        /*
+         * If the current field is a code then substitute it with it's meaning (i.e., substitute SWIS code for SWIS label)
+         */
+        if(!empty($codeTypes) && in_array($field, $codeTypes)) {
+            $getCodeMeaningStatement = "SELECT meaning FROM codes WHERE type='{$field}' AND code='{$results[$i][$field]}';";
+            $getCodeMeaningResult = mysqli_query($link, $getCodeMeaningStatement);
+            if($getCodeMeaningResult && $getCodeMeaningResult->num_rows > 0) {
+                $innerRow = mysqli_fetch_assoc($getCodeMeaningResult);
+                $row["{$field}"] = $innerRow['meaning'];
+            }
+        }
+        /*
+         * If the current field is a definition then do the same thing we did with codes
+         */
+        else if(!empty($definitionCodes) && in_array($field, $definitionCodes)) {
+            $query = "SHOW TABLES LIKE '%def%'";
+            if($result = mysqli_query($link, $query)) {
+                while($innerRow = $result->fetch_assoc()) {
+                    foreach($innerRow as $key => $value) {
+                        //Only need the def file for specified county
+                        if(strpos($value, $county) == 0) {
+                            $innerQuery = "SHOW COLUMNS IN " . $value . " LIKE '%code%';";
+                            if($innerResult = mysqli_query($link, $innerQuery)) {
+                                while($innerRowTwo = $innerResult->fetch_assoc()) {
+                                    if($innerRowTwo['Field'] != "muni_code" && !in_array($innerRowTwo['Field'], $definitionCodes)) {
+                                        $row["{$field}"] = $innerRowTwo['Field'];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            $row["{$field}"] = $results[$i]["{$field}"];
+        }
     }
 
     //Check all fields for unnecessary quotation marks

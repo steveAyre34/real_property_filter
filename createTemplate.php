@@ -133,6 +133,7 @@
         <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
         <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
         <link rel="stylesheet" href="jquery.multiselect.css"/>
+        <link rel="stylesheet" href="common.css"/>
     </head>
     <body>
         <form id="query_form" method="POST" action="do_filter.php">

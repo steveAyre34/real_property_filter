@@ -1,38 +1,22 @@
-<?php	
-	require('common.php');
-   // session_start();
-
+<?php
+/**
+ * Created by PhpStorm.
+ * User: yarn23
+ * Date: 4/26/17
+ * Time: 12:42 AM
+ */
 ?>
-
-<!DOCTYPE html>
-
 <html>
 <head>
-<title>Welcome to the New York State Real Property Data Filter</title>
-<!--<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">-->
-<meta content="text/html;charset=utf-8" http-equiv-"Content-Type">
-<meta content="utf-8" http-equiv="encoding">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
+    <link rel="stylesheet" href="common.css"/>
 </head>
-
-<body bgcolor="#b3d5ff">
-<h1>Welcome to the New York State Real Property Data Filter</h1>
-
-<p><strong>Please Select A County:</strong></p>
-<form id="form">
-<select name="county" id="chosenCounty">
-<?php
-	foreach($counties as $c) {
-	  $disabled = "";
-	  if (!in_array($c, $counties_available)) {
-		$disabled = "disabled"; 
-		
-	  ?><option value='<?php echo $c ?>' <?php echo $disabled ?>><?php echo ucwords($c) ?></option><?php  }
-	  else {
-		  ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
-	<?php }} ?>
-</select>
-<input type="submit" value="Go" formmethod="GET" formaction="selectQuery.php"/><br>
-<input type="submit" value="Import" formmethod="GET" formaction="importChooseCounty.php"/>
-<input type="submit" value="Export" formmethod="GET" formaction="get_export.php"/>
-</form>
+<body>
+    <h1>Welcome to the NYS Mailing Information Filter!</h1>
+    <h3>Choose your filter</h3>
+    <button class="ui-button" type="submit" onclick="window.location.href='indexRP.php'" style="width:25%; height:20%;font-size:1.5em;">Real Property</button>
+    <button class="ui-button" type="submit" style="width:25%; height:20%;font-size:1.5em;">BOE (Under Construction)</button>
+    <button class="ui-button" type="submit" style="width:50%; height:20%;font-size: 1.5em;">Both (Under Construction)</button>

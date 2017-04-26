@@ -74,12 +74,12 @@
 ?>
 <html>
 	<head>
-		<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
-		<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
-		<script src="jquery.multiselect.js"></script>
-		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-		<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
-		<link rel="stylesheet" type="text/css" href="filter.css">
+        <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+        <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
+        <!--<link rel="stylesheet" href="common.css"/>-->
+		<!--<link rel="stylesheet" type="text/css" href="filter.css">-->
 	</head>
 
 	<body>
@@ -99,7 +99,7 @@
                 if($value != "Owner") {?>
                     <div id="<?php echo $value ?>" class="ui-accordion ui-state-disabled">
                         <div id="accordion-header_<?php echo $value ?>" class="ui-accordion-header">
-                            <h4><?php echo $value ?></h4>
+                            <?php echo $value ?>
                         </div>
                         <div id="accordion-content_<?php echo $value ?>" class="ui-accordion-content">
                         </div>

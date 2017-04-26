@@ -11,8 +11,9 @@
 	if(!empty($_POST['household']))
 	    $household = true;*/
 
-	if(!empty($_SESSION['codeTypes']))
-	    $codeTypes = $_SESSION['codeTypes'];
+	if(!empty($_SESSION['codeTypes'])) {
+        $codeTypes = $_SESSION['codeTypes'];
+    }
 	else
 	    $codeTypes = array();
 
@@ -191,10 +192,6 @@
             	if(!empty($postValue[0])) {
                     //Field is a min field
                     if (substr($fullField, -3) == 'min') {
-                        /*echo "<script type='text/javascript'>
-                                    console.log(\"Value: {$postValue[0]}\");
-                                    </script>";*/
-                       // print("POST VALUE: {$postValue[0]} <br>");
                         $filterStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
                         $dedupedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
                         $householdedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
@@ -236,9 +233,9 @@
     $dedupedStatement = "{$dedupedStatement}) GROUP BY ID;";
     $householdedStatement = "{$householdedStatement}) GROUP BY CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
 
-    echo $filterStatement . "<br>";
+    /*echo $filterStatement . "<br>";
     echo $dedupedStatement . "<br>";
-    echo $householdedStatement . "<br>";
+    echo $householdedStatement . "<br>";*/
 	//session_destroy();
 ?>
 

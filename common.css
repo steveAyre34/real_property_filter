@@ -1,0 +1,15 @@
+h1, h2, h3, h4{
+    color: white;
+    font-family: Verdana, Arial, sans-serif;
+}
+
+body {
+    background-color: #3068d1;
+}
+
+.selectMenu {
+    background-color: #eee;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 1em;
+    color: #045;
+}

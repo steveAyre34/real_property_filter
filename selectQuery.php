@@ -57,23 +57,25 @@
 
 <html>
     <head>
-        <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
-        <script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
-        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
+        <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+        <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
+        <link rel="stylesheet" href="common.css"/>
     </head>
 
     <body>
     <h1>General Purpose Filter</h1>
     <form id="gen_purpose">
         <input type="hidden" name="county" value="<?php echo $county ?>"/>
-        <input type="submit" value="Go" formmethod="GET" formaction="select.php"/>
+        <input type="submit" class="ui-button" value="Go" formmethod="GET" formaction="select.php"/>
     </form>
     <h1>Saved Queries for <?php echo $county ?></h1>
         <form id="saved">
             <input type="hidden" name="county" value="<?php echo $county ?>"/>
             <input type="hidden" name="saved" value="1"/>
         <?php if(!empty($savedQueryFiles)) { ?>
-            <select name='query_name' multiple='multiple' class='selectMenu[]'>
+            <select class="selectMenu" name='query_name' multiple='multiple' class='selectMenu[]'>
                 <?php
                 for ($i = 0; $i < sizeOf($savedQueryNames); ++$i) {
                     print("<option value='{$savedQueryNames[$i]}'>{$savedQueryNames[$i]}</option>");
@@ -82,9 +84,9 @@
              else
                  print("<h4>No saved queries for this county.</h4>");
             ?>
-        </select>
+        </select><br>
         <?php if(!empty($savedQueryFiles)) { ?>
-            <input type="submit" value="Go" formmethod="POST" formaction="createTemplate.php"/>
+            <input class="ui-button" style="width:10.7%;" type="submit" value="Go" formmethod="POST" formaction="createTemplate.php"/>
         <?php  } ?>
         </form>
         <form id="create">
@@ -92,7 +94,7 @@
             <input type="hidden" name="county" value="<?php echo $county ?>"/>
             <input type="hidden" name="saved" value="0"/>
             <input type="text" name="query_name" placeholder="Name your query"/>
-            <input type="submit" value="Next" formmethod="POST" formaction="select3.php"/>
+            <input class="ui-button" type="submit" value="Next" formmethod="POST" formaction="select3.php"/>
         </form>
     </body>
 </html>
