@@ -5,10 +5,22 @@
  * Date: 4/21/2017
  * Time: 11:20 AM
  */
+//session_destroy();
+session_start();
 require("connection.php");
+$dedupe = false;
+$household = false;
+
+if(!empty($_GET['dedupe']))
+    $dedupe = true;
+if(!empty($_GET['household']))
+    $household = true;
+
 $filterStatement = $_GET['filterStatement'];
 $filterQuery = mysqli_query($link, $filterStatement);
 $fields = json_decode($_GET['fields']);
+$datatablesFields = ['Actions', 'CompanyName', 'FirstName', 'MiddleInitial', 'LastName', 'Suffix', 'SecondaryName',
+                        'AddressLine1', 'AddressLine2', 'City', 'State', 'Zip', 'Country', 'CRRT', 'DP3'];
 
 
 
@@ -34,7 +46,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
      * Even though there is a secondary name category company names are stored in last name field
      * If first name and middle initial then last name is displayed as company name
      */
-    if($results[$i]['CompanyName'] == '' && $results[$i]['FirstName'] == '' && $results[$i]['MiddleInitial'] == '') {
+    if($results[$i]['FirstName'] == '' && $results[$i]['MiddleInitial'] == '') {
         $row['CompanyName'] = $results[$i]['LastName'];
         $row['FirstName'] = '';
         $row['MiddleInitial'] = '';
@@ -54,12 +66,20 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     $row['State'] = $results[$i]['State'];
     $row['Zip'] = $results[$i]['Zip'];
     $row['Country'] = $results[$i]['Country'];
-    $row['ID'] = $results[$i]['ID'];
     $row['CRRT'] = $results[$i]['CRRT'];
     $row['DP3'] = $results[$i]['DP3'];
 
     //Now add user-selected query fields
     foreach($fields as $field) {
+        $row["{$field}"] = $results[$i]["{$field}"];
+        if(substr($field, -3) == 'min' || substr($field, -3) == 'max')
+            $field = substr($field, 0, -4);
+        else if(substr($field, -8) == 'checkbox')
+            $field = substr($field, 0, -9);
+
+        if(!in_array($field, $datatablesFields))
+            array_push($datatablesFields, $field);
+
         $row["{$field}"] = $results[$i]["{$field}"];
     }
 
@@ -71,18 +91,6 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     }
     array_push($return['data'], $row);
 }
-
-//Now need to get all the column names so they can be returned and used to build the DataTables result
-$columns = array(
-    ["title" => "Actions", "data" => "Actions"],
-    ["title" => "CompanyName", "data" => "CompanyName"], ["title" => "FirstName","data" => "FirstName"],
-    ["title" => "MiddleInitial", "data" => "MiddleInitial"], ["title" => "LastName", "data" => "LastName"],
-    ["title" => "Suffix", "data" => "Suffix"], ["title" => "SecondaryName", "data" => "SecondaryName"],
-    ["title" => "AddressLine1", "data" => "AddressLine1"], ["title" => "AddressLine2", "data" => "AddressLine2"],
-    ["title" => "City", "data" => "City"], ["title" => "State", "data" => "State"], ["title" => "Zip", "data" => "Zip"],
-    ["title" => "Country", "data" => "Country"], ["title" => "ID", "data" => "ID"], ["title" => "CRRT", "data" => "CRRT"],
-    ["title" => "DP3", "data" => "DP3"]
-);
-
+//$_SESSION['datatablesFields'] = $datatablesFields;
 echo json_encode($return);
 ?>

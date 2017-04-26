@@ -1,8 +1,16 @@
 <?php
 	require("connection.php");
     session_start();
+
 	$county = $_POST['county'];
 	$owner = $county . '_owner';
+    /*$dedupe = false;
+	$household = false;*/
+	/*if(!empty($_POST['dedupe']))
+	    $dedupe = true;
+	if(!empty($_POST['household']))
+	    $household = true;*/
+
 	if(!empty($_SESSION['codeTypes']))
 	    $codeTypes = $_SESSION['codeTypes'];
 	else
@@ -33,12 +41,15 @@
 		"mail_country"
 	];
 
-	$filterStatement = "SELECT {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
+	$filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
 	$filterStatement .= "{$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
 	$filterStatement .=   "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
 	$filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
 	$filterStatement .=	"{$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, ";
-	$filterStatement .=   "{$owner}.mail_country AS Country, {$owner}.owner_id AS ID, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
+	$filterStatement .=   "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
+
+	$dedupedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT, ";
+	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT, ";
 
 	/*
 	 * Now add the user-selected query fields to select statement
@@ -47,22 +58,40 @@
 	    if($postKey != 'county') {
             $key = str_replace("||", ".", $postKey);
 	        //If field name ends in 'checkbox', remove '_checkbox'
-            if(substr($postKey, -8) == 'checkbox')
-                $key = substr($postKey, 0, -9);
+            if(substr($postKey, -8) == 'checkbox') {
+                $key = substr($key, 0, -9);
+                $filterStatement .= "{$key}, ";
+                $dedupedStatement .= "{$key}, ";
+                $householdedStatement .= "{$key}, ";
+            }
 
             //If field name ends in 'min' or 'max', remove '_min' or '_max' accordingly
-            else if(substr($postKey, -3) == 'min' || substr($postKey, -3) == 'max')
-                $key = substr($postKey, 0, -4);
-
+            else if((substr($postKey, -3) == 'min' || substr($postKey, -3) == 'max') && !empty($postValue)) {
+                $key = substr($key, 0, -4);
+                $filterStatement .= "{$key}, ";
+                $dedupedStatement .= "{$key}, ";
+                $householdedStatement .= "{$key}, ";
+            }
+            else if(!empty($postValue)) {
+                $filterStatement .= "{$key}, ";
+                $dedupedStatement .= "{$key}, ";
+                $householdedStatement .= "{$key}, ";
+            }
             /*
              * Now check if key is a code or a definition
              * If so change key added to filter statement so that we are selecting the code/definition meaning instead of the code/def number
              */
-            $filterStatement .= "{$key}, ";
+            //$filterStatement .= "{$key}, ";
         }
     }
     $filterStatement = substr($filterStatement, 0, -2);
+	$dedupedStatement = substr($dedupedStatement, 0, -2);
+	$householdedStatement = substr($householdedStatement, 0, -2);
+
 	$filterStatement .= " FROM {$owner} ";
+	$dedupedStatement .= " FROM {$owner} ";
+	$householdedStatement .= " FROM {$owner} ";
+
 	$tablesAddedToStatement = array();
 	$fullFieldNames = array();
 	array_push($tablesAddedToStatement, "{$county}_owner");
@@ -92,6 +121,12 @@
                 if ($checkForOwnerIdResult && $checkForOwnerIdResult->num_rows == 1) {
                     $filterStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
                     $filterStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";
+
+                    $dedupedStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
+                    $dedupedStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";
+
+                    $householdedStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
+                    $householdedStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";
                 }
                 else {
                     //Table doesn't contain owner_id so make sure it contains muni_code and parcel_id
@@ -103,6 +138,8 @@
 
                     if (($checkForMuniCodeResult && $checkForParcelIdResult) && ($checkForMuniCodeResult->num_rows == 1 && $checkForParcelIdResult->num_rows == 1)) {
                         $filterStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
+                        $dedupedStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
+                        $householdedStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
                     }
                 }
             }
@@ -110,12 +147,16 @@
 	}
 	//Remove trailing space to be neat because I feel like it
 	$filterStatement = substr($filterStatement, 0, -1);
+	$dedupedStatement = substr($dedupedStatement, 0, -1);
+	$householdedStatement = substr($householdedStatement, 0, -1);
 
 	/*
 	 * Construct the where clauses
 	 */
 
 	$filterStatement .= " WHERE(";
+	$dedupedStatement .= " WHERE(";
+	$householdedStatement .= " WHERE(";
 
 	foreach($_POST as $postKey => $postValue) {
         $fullField = str_replace('||', '.', $postKey);
@@ -132,23 +173,41 @@
 				foreach($postValue as $value) {
 					if($value != '') {
                         $filterStatement .= "{$fullField}='{$value}' OR ";
+                        $dedupedStatement .= "{$fullField}='{$value}' OR ";
+                        $householdedStatement .= "{$fullField}='{$value}' OR ";
                     }
 				}
 				//Remove trailing ' OR ' (space OR space = 4 characters)
 				$filterStatement = substr($filterStatement, 0, -4);
 				$filterStatement .= ") AND ";
+
+                $dedupedStatement = substr($dedupedStatement, 0, -4);
+                $dedupedStatement .= ") AND ";
+
+                $householdedStatement = substr($householdedStatement, 0, -4);
+                $householdedStatement .= ") AND ";
 			}
 			else {
             	if(!empty($postValue[0])) {
                     //Field is a min field
                     if (substr($fullField, -3) == 'min') {
+                        /*echo "<script type='text/javascript'>
+                                    console.log(\"Value: {$postValue[0]}\");
+                                    </script>";*/
+                       // print("POST VALUE: {$postValue[0]} <br>");
                         $filterStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
+                        $dedupedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
+                        $householdedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
                     }
                     else if (substr($fullField, -3) == 'max') {
                         $filterStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
+                        $dedupedStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
+                        $householdedStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
                     }
                     else {
                         $filterStatement .= "({$fullField}='{$postValue[0]}') AND ";
+                        $dedupedStatement .= "({$fullField}='{$postValue[0]}') AND ";
+                        $householdedStatement .= "({$fullField}='{$postValue[0]}') AND ";
                     }
                 }
             }
@@ -157,21 +216,30 @@
         else {
             if (substr($fullField, -8) == 'checkbox') {
                 $filterStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
+                $dedupedStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
+                $householdedStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
             }
         }
 	}
 
 	//Remove trailing ' AND ' (space AND space = 5 characters)
 	$filterStatement = substr($filterStatement, 0, -5);
-	$filterStatement .= ")";
+	$filterStatement .= ");";
+
+    $dedupedStatement = substr($dedupedStatement, 0, -5);
+    //$dedupedStatement .= ");";
+
+    $householdedStatement = substr($householdedStatement, 0, -5);
+    //$householdedStatement .= ");";
 
 	//Create deduped and householded statements for possible later use
-    $dedupedStatement = "{$filterStatement} GROUP BY ID;";
-    $householdedStatement = "{$filterStatement} GROUP BY CONCAT(AddressLine1, \", \", City, \", \", State, \" \", Zip);";
+    $dedupedStatement = "{$dedupedStatement}) GROUP BY ID;";
+    $householdedStatement = "{$householdedStatement}) GROUP BY CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
 
+    echo $filterStatement . "<br>";
     echo $dedupedStatement . "<br>";
     echo $householdedStatement . "<br>";
-	session_destroy();
+	//session_destroy();
 ?>
 
 <html>
@@ -200,7 +268,6 @@
 					<th>State</th>
 					<th>Zip Code (+4)</th>
 					<th>Country</th>
-                    <th>ID</th>
 					<th>CRRT</th>
 					<th>DP3</th>
 					<!--Now headers for any selected fields that aren't a standard export field -->
@@ -215,6 +282,7 @@
 			</tbody>
 		</table>
         <button onclick="dedupeResults()">Dedupe</button>
+        <button onclick="householdResults()">Household</button>
 	</body>
 </html>
 
@@ -233,14 +301,21 @@
         { data: 'State' },
         { data: 'Zip' },
         { data: 'Country' },
-        { data: 'ID' },
         { data: 'CRRT' },
         { data: 'DP3' }
     ];
 
-    <?php foreach($fullFieldNames as $fields) { ?>
-        columns.push({ data: '<?php echo $fields ?>' });
-        <?php } ?>
+    <?php foreach($fullFieldNames as $fields) {
+        if(substr($fields, -3) == 'min' || substr($fields, -3) == 'max') {?>
+            columns.push({ data: '<?php echo substr($fields, 0,-4) ?>' });
+        <?php }
+        else if(substr($fields, -8) == 'checkbox') {
+        ?>
+            columns.push({ data: '<?php echo substr($fields, 0,-9) ?>' });
+        <?php }
+        else { ?>
+            columns.push({ data: '<?php echo $fields ?>' });
+        <?php }} ?>
 
 	$('#results').DataTable({
 		//"processing": true,
@@ -254,18 +329,32 @@
 	});
 
 	function dedupeResults() {
-	    console.log("Dedupe");
-        //$(#results').clear();
-        //$('#results').clear().draw();
         $('#results').DataTable().destroy();
         $('#results').DataTable({
             ajax: {
                 url: "get_results.php",
                 type: "GET",
-                data: function(d) {
-                    d.filterStatement = "<?php echo $dedupedStatement ?>",
-                    d.fields = JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
-                },
+                data: {
+                    filterStatement: "<?php echo $dedupedStatement ?>",
+                    fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
+                    //dedupe: true
+                }
+            },
+            columns: columns
+        });
+    }
+
+    function householdResults() {
+	    $('#results').DataTable().destroy();
+	    $('#results').DataTable({
+            ajax: {
+                url: "get_results.php",
+                type: "GET",
+                data: {
+                    filterStatement: "<?php echo $householdedStatement ?>",
+                    fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
+                    //household: true
+                }
             },
             columns: columns
         });

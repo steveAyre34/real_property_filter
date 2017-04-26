@@ -1,6 +1,10 @@
 .ms-options-wrap,
 .ms-options-wrap * {
     box-sizing: border-box;
+    background-color: #eee;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 1em;
+    color: #045;
 }
 
 .ms-options-wrap > button:focus,
@@ -118,3 +122,4 @@
     clip: rect(1px 1px 1px 1px);
     clip: rect(1px, 1px, 1px, 1px);
 }
+

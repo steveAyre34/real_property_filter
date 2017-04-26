@@ -171,7 +171,7 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 				}
 			}
 			$txt = $id . ' : ' . $meaning . ' (' . $count . ')';
-			$html .= '<option value="'. $id .'">'. $txt .'</option>';
+			$html .= '<option class="ms-options-wrap" value="'. $id .'"> '. $txt .'</option>';
 		}
 		
 		$html .= '</select>';

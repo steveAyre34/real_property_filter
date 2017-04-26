@@ -4,10 +4,12 @@ sweetalert-master/*
 *.npmignore
 *.json
 data/*
-jquery-*
 *.sql
 sweetalert*
 ProposalScreenshots/index.php
 views/*
 .idea/*
 public/*
+.idea/
+jquery-ui-1.12.1.custom/
+views/

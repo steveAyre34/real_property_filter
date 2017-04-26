@@ -126,14 +126,16 @@
 ?>
 <html>
     <head>
-        <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
-        <script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
+        <!--<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>-->
+        <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+        <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
         <script src="jquery.multiselect.js"></script>
-        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
         <link rel="stylesheet" href="jquery.multiselect.css"/>
     </head>
     <body>
-        <form id="query_form">
+        <form id="query_form" method="POST" action="do_filter.php">
             <input type="hidden" name="county" value="<?php echo $county ?>"/>
             <div class="ui-accordion">
                 <div class="ui-accordion-header">
@@ -164,7 +166,8 @@
                                     ++$gridCount;
                                 }
                             }
-                        } ?>
+                        }
+                        $gridCount = 0; ?>
                     </table>
                 </div>
             </div>
@@ -196,13 +199,16 @@
                             </div>
                     <?php
                         if($gridCount == 2) {
-                            echo "</tr>";
+                            echo "</td></tr>";
                             $gridCount = 0;
                         }
                         else {
+                            echo "</td>";
                             ++$gridCount;
                         }
-                    } ?>
+                    }
+                    $gridCount = 0;
+                    ?>
                     </table>
                 </div>
             </div>
@@ -236,13 +242,14 @@
                                 ++$gridCount;
                             }
                         }
+                        $gridCount = 0;
                         ?>
                     </table>
                     <!--(hopefully) temporary hack to increase height of accordion content-->
                     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
                 </div>
             </div>
-            <input type="submit" value="Go" formmethod="POST" formaction="do_filter.php"/><br>
+            <button type="submit">Go</button><br>
         </form>
     </body>
 </html>
