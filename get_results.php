@@ -100,6 +100,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     $row['Country'] = $results[$i]['Country'];
     $row['CRRT'] = $results[$i]['CRRT'];
     $row['DP3'] = $results[$i]['DP3'];
+    $row['SWIS'] = $results[$i]['SWIS'];
 
     //Now add user-selected query fields
     foreach($fields as $field) {

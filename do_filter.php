@@ -63,7 +63,7 @@
         $filterStatement .= "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
         $filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
         $filterStatement .= "{$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, ";
-        $filterStatement .= "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
+        $filterStatement .= "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, {$county}_assessment.swis AS SWIS, ";
     }
 
 	$dedupedStatement = $filterStatement . "{$owner}.parcel_id AS parcelID, {$owner}.owner_type AS type, ";
@@ -119,7 +119,7 @@
 	$householdedStatement = substr($householdedStatement, 0, -2);
 
 	if($codes) {
-        $filterStatement .= " FROM codes, {$owner} ";
+        $filterStatement .= " FROM codes JOIN {$county}_assessment AS smerge ON (codes.code={$county}_assessment.swis), {$owner} ";
         $dedupedStatement .= " FROM codes, {$owner} ";
         $householdedStatement .= " FROM codes, {$owner} ";
     }
@@ -192,7 +192,7 @@
 	/*
 	 * Construct the where clauses
 	 */
-	$filterStatement .= " WHERE(";
+	$filterStatement .= " WHERE((codes.code={$county}_assessment.swis AND codes.type='swis') AND " ;
 	$dedupedStatement .= " WHERE(";
 	$householdedStatement .= " WHERE(";
 
@@ -205,7 +205,7 @@
         }
 
         if(in_array($fieldName, $codeTypes)) {
-		    $filterStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+		    $filterStatement .= "((codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
             $dedupedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
             $householdedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
         }
@@ -275,9 +275,9 @@
     $dedupedStatement = "{$dedupedStatement}) GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
     $householdedStatement = "{$householdedStatement}) GROUP BY CONCAT(LastName, AddressLine1, ', ', City, ', ', State, ' ', Zip);";
 
-    /*echo $filterStatement . "<br>";
+    echo $filterStatement . "<br>";
     echo $dedupedStatement . "<br>";
-    echo $householdedStatement . "<br>";*/
+    echo $householdedStatement . "<br>";
 	//session_destroy();
 ?>
 
@@ -316,6 +316,7 @@
 					<th>Country</th>
 					<th>CRRT</th>
 					<th>DP3</th>
+                    <th>SWIS</th>
 					<!--Now headers for any selected fields that aren't a standard export field -->
 					<?php foreach($fullFieldNames as $fields) {
    		 					if (!in_array($fields, $standardColumns)) {
@@ -347,7 +348,8 @@
         { data: 'Zip' },
         { data: 'Country' },
         { data: 'CRRT' },
-        { data: 'DP3' }
+        { data: 'DP3' },
+        { data: 'SWIS' }
     ];
 
     <?php foreach($fullFieldNames as $fields) {
