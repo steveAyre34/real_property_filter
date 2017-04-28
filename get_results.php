@@ -51,7 +51,6 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     $row = array();
 
     //Handle standard export fields first
-    //$row['Actions'] = json_encode("<input type='button' value='Action'/>");
 
     /*
      * Filter out company names
@@ -65,10 +64,19 @@ for($i = 0; $i < sizeOf($results); ++$i) {
         $row['LastName'] = '';
     }
     else {
-        $row['CompanyName'] = $results[$i]['CompanyName'];
-        $row['FirstName'] = $results[$i]['FirstName'];
-        $row['MiddleInitial'] = $results[$i]['MiddleInitial'];
-        $row['LastName'] = $results[$i]['LastName'];
+        //If this is a household query, change last name to 'The <LastName> Family'
+        if(!empty($results[$i]['ID_COUNT_HOUSEHOLD']) && $results[$i]['ID_COUNT_HOUSEHOLD'] > 1) {
+            $row['CompanyName'] = $results[$i]['CompanyName'];
+            $row['FirstName'] = '';
+            $row['MiddleInitial'] = '';
+            $row['LastName'] = 'The ' . $results[$i]['LastName'] . ' Family';
+        }
+        else {
+            $row['CompanyName'] = $results[$i]['CompanyName'];
+            $row['FirstName'] = $results[$i]['FirstName'];
+            $row['MiddleInitial'] = $results[$i]['MiddleInitial'];
+            $row['LastName'] = $results[$i]['LastName'];
+        }
     }
     $row['Suffix'] = $results[$i]['Suffix'];
     $row['SecondaryName'] = $results[$i]['SecondaryName'];

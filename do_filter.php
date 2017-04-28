@@ -64,8 +64,8 @@
         $filterStatement .= "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
     }
 
-	$dedupedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT, {$owner}.parcel_id AS parcelID, {$owner}.owner_type AS type, ";
-	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT, ";
+	$dedupedStatement = $filterStatement . "{$owner}.parcel_id AS parcelID, {$owner}.owner_type AS type, ";
+	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT_HOUSEHOLD, ";
 
 	/*
 	 * Now add the user-selected query fields to select statement
@@ -97,7 +97,17 @@
              * Now check if key is a code or a definition
              * If so change key added to filter statement so that we are selecting the code/definition meaning instead of the code/def number
              */
-            //$filterStatement .= "{$key}, ";
+            $field = explode('.', $key);
+            $field = $field[1];
+
+            if(in_array($field, $codeTypes)) {
+                $getCodeMeaningStatement = "SELECT meaning FROM codes WHERE type='{$field}' AND code='{$results[$i][$field]}';";
+                $getCodeMeaningResult = mysqli_query($link, $getCodeMeaningStatement);
+                if($getCodeMeaningResult && $getCodeMeaningResult->num_rows > 0) {
+                    $innerRow = mysqli_fetch_assoc($getCodeMeaningResult);
+                    $row["{$field}"] = $innerRow['meaning'];
+                }
+            }
         }
     }
     $filterStatement = substr($filterStatement, 0, -2);
@@ -246,7 +256,7 @@
 
 	//Create deduped and householded statements for possible later use
     $dedupedStatement = "{$dedupedStatement}) GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
-    $householdedStatement = "{$householdedStatement}) GROUP BY CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
+    $householdedStatement = "{$householdedStatement}) GROUP BY CONCAT(LastName, AddressLine1, ', ', City, ', ', State, ' ', Zip);";
 
     /*echo $filterStatement . "<br>";
     echo $dedupedStatement . "<br>";
