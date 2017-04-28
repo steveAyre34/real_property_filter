@@ -136,7 +136,7 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 	$num_rows = mysqli_num_rows($result);
 
 	if($num_rows > 1){
-		$html .= '<select name="' . $table . '||' . $name . '[]" multiple class="multiple_checkbox" id="' . $name . '">';
+		$html .= '<select name="' . $table . '||' . $name . '[]" multiple class="multiple_checkbox selectMenu" id="' . $name . '">';
 		
 		for ($i = 0; $i < $num_rows; $i++){
 			$row = mysqli_fetch_array($result);

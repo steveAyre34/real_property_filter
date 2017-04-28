@@ -22,8 +22,6 @@
 <head>
 	<title>Find Records</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-	<!--<link rel="stylesheet" href="main.css" type="text/css" />-->
-	<!--<script src="forms.js" type="text/javascript"></script>-->
     <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
     <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
     <script src="jquery.multiselect.js"></script>
@@ -32,7 +30,6 @@
     <link rel="stylesheet" href="jquery.multiselect.css"/>
     <link rel="stylesheet" href="common.css"/>
 	<script src="jquery.multiselect.js"></script>
-	<!--<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">-->
 	<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
 </head>
 
@@ -50,18 +47,22 @@
                     <?php
                         $table = $county . '_class';
                     ?>
-                    <table><tr><td width="540px">
+                    <div class="ui-tabs">
+                        <ul>
+                    <!--<table><tr><td style="width:50vw;">
                         <div id="total_av" class="ui-accordion minorSection">
-                            <div id="accordion-header_total_av" class="ui-accordion-header">
-                                <h4>Total Assessment</h4>
-                            </div>
-                            <div id="accordion-content_total_av" class="ui-accordion-content">
+                            <div id="accordion-header_total_av" class="ui-accordion-header">-->
+                            <li><a href="#total_av">Total Assessment</a></li>
+                        </ul>
+                            <!--</div>
+                            <div id="accordion-content_total_av" class="ui-accordion-content">-->
+                            <div id="total_av">
                                 At least <input type="text" class="inputText" name="<?php echo $table ?>||total_av_min"> Dollars<br><br>
                                 At most <input type="text" class="inputText" name="<?php echo $table ?>||total_av_max"> Dollars
                             </div>
                         </div>
                     </td>
-                    <td width="540px">
+                    <td style="width:50vw;">
                         <div id="land_av" class="ui-accordion minorSection">
                             <div id="accordion-header_land_av" class="ui-accordion-header">
                                 <h4>Land Assessment</h4>
@@ -74,7 +75,7 @@
                     </td></tr></table>
 				</div>
 			</div>
-        <div id="parcelInformation" class="ui-accordion majorSection">
+        <div id="parcelInformation" class="ui-accordion majorSection" style="height:auto;">
             <div id="accordion-header_parcelInformation" class="ui-accordion-header">
                 <h2>Section 2: Parcel (Location) Information</h2>
             </div>
@@ -84,7 +85,7 @@
                 ?>
                 <table>
                     <tr>
-                        <td width="360px">
+                        <td style="width:33vw">
                             <h4>SWIS Code</h4>
                             <?php
                                 print(makeSelectionList($link, $county, 'swis', $table, 'SWIS', 'swis'));
@@ -94,7 +95,7 @@
                         <?php
                             $table = $county . '_assessment';
                         ?>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <h4>School Code</h4>
                             <?php
                                 print(makeSelectionList($link, $county, 'sch_code', $table, 'School Code', 'sch_code'));
@@ -104,7 +105,7 @@
                         <?php
                             $table = $county . '_parcel';
                         ?>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <h4>ZIP Code</h4>
                             <?php
                                 print(makeSelectionList($link, $county, 'loc_zip', $table, 'ZIP Code', 'loc_zip'));
@@ -138,7 +139,7 @@
                 ?>
                 <table>
                     <tr>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <div id="full_market_value" class="ui-accordion minorSection">
                                 <div id="accordion-header_full_market_value" class="ui-accordion-header">
                                     <h4>Market Value</h4>
@@ -149,7 +150,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <div id="acres" class="ui-accordion minorSection">
                                 <div id="accordion-header_acres" class="ui-accordion-header">
                                     <h4>Acreage</h4>
@@ -160,7 +161,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <div id="sqft" class="ui-accordion minorSection">
                                 <div id="accordion-header_sqft" class="ui-accordion-header">
                                     <h4>Square Feet</h4>
@@ -173,7 +174,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <div id="unit_price" class="ui-accordion minorSection">
                                 <div id="accordion-header_unit_price" class="ui-accordion-header">
                                     <h4>Unit Price</h4>
@@ -184,7 +185,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <div id="land_value" class="ui-accordion minorSection">
                                 <div id="accordion-header_land_value" class="ui-accordion-header">
                                     <h4>Land Value</h4>
@@ -195,7 +196,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <div id="wf_feet" class="ui-accordion minorSection">
                                 <div id="accordion-header_wf_feet" class="ui-accordion-header">
                                     <h4>Waterfront Feet</h4>
@@ -209,19 +210,19 @@
                     </tr>
                     <br>
                     <tr>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <h4>Land Type</h4>
                             <?php
                             print(makeSelectionList($link, $county, 'land_type', $table, 'Land Type', 'land_type'));
                             ?>
                         </td>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <h4>Waterfront Type</h4>
                             <?php
                             print(makeSelectionList($link, $county, 'waterfront_type', $table, 'Waterfront Type', 'waterfront_type'));
                             ?>
                         </td>
-                        <td width="360px">
+                        <td style="width:33vw;">
                             <h4>Soil Rating</h4>
                             <?php
                             print(makeSelectionList($link, $county, 'soil_rating', $table, 'Soil Rating', 'soil_rating'));
@@ -243,31 +244,183 @@
                 ?>
                 <table>
                     <tr>
-                        <td>
-                            <!--<div id="prop_class_group" class="ui-accordion minorSection">
-                                <div id="accordion-header_prop_class_group" class="ui-accordion-header">
-                                    <h4>Property Class (Groups)</h4>
-                                </div>
-                                <div id="accordion-content_prop_class_group" class="ui-accordion-content">
-                                    Content
-                                </div>
-                            </div>-->
-                            <div id="prop_class_group" class="ui-accordion minorSection">
-                                <div id="accordion-header_prop_class_group" class="ui-accordion-header">
-                                    <h4>Property Class (Group)</h4>
-                                </div>
-                                <div id="accordion-content_prop_class_group" class="ui-accordion-content">
-                                    Content
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="360px">
-                            <h4>Property Class (Individual)</h4>
-                            <?php
-                            print(makeSelectionList($link, $county, 'prop_class', $table, 'Property Class', 'prop_class'));
-                            ?>
+                        <div class="ui-tabs ui-tabs-panel">
+                            <h2 style="color:#000066;">Property Classes</h2>
+                        </div>
+                            <table><tr>
+                                    <?php
+                                    /*
+                                     * Generate select menus for each property class (100, 200, etc.)
+                                     */
+                                    print("<td style='width:33vw;'>");
+
+                                    //Agricultural (100 Series)
+                                    print("<h4>Agricultural Properties (100 Series)<br><br></h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '1%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+
+                                    //Residential (200 Series)
+                                    print("<td style='width:33vw;'>");
+                                    print("<h4>Residential Properties (200 Series)<br><br></h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '2%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+
+                                    //Vancant Properties (300 Series)
+                                    //Check old filter for category name
+                                    print("<td style='width:33vw;'>");
+                                    print("<h4>Vacant Properties - Residential & Rural (300 Series)</h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '3%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+                                    print("</tr>");
+
+                                    print("<tr>");
+                                    //Commercial (400 Series)
+                                    print("<td style='width:33vw;'>");
+                                    print("<h4>Commercial Properties (400 Series)<br><br><br></h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '4%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+
+                                    //? (500 Series)
+                                    print("<td style='width:33vw;'>");
+                                    print("<h4>Recreation & Entertainment Properties - Golf, Movie Theaters, etc. (500 Series)<br><br></h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '5%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+
+                                    //Community Properties (600 Series)
+                                    print("<td style='width:33vw;'>");
+                                    print("<h4>Community Properties - Schools, Hospitals, Govt. Buildings, etc. (600 Series)</h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '6%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+                                    print("</tr>");
+
+                                    print("<tr>");
+                                    //Manufacturing Properties (700 Series)
+                                    print("<td style='width:33vw;'>");
+                                    print("<h4>Manufacturing Properties (700 Series)<br><br></h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '7%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+
+                                    //Infrastructure (800 Series)
+                                    print("<td style='width:33vw;'>");
+                                    print("<h4>Infrastructure Properties - Water Supply, Phones, Sewer, etc. (800 Series)</h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '8%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+
+                                    //State Land (900 Series)
+                                    print("<td style='width:33vw;'>");
+                                    print("<h4>State-Owned Properties - Public Parks, Preserves, etc. (900 Series)</h4>");
+                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '9%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
+                                    $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
+                                    if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
+                                        while($row = mysqli_fetch_array($getPropertyClassResult)) {
+                                            $id = $row[0];
+                                            $meaning = $row[1];
+                                            $count = $row[2];
+                                            $txt = "{$id} : {$meaning} ({$count})";
+                                            print("<option class='ms-options-wrap' value='{$id}'>{$txt}</option>");
+                                        }
+                                    }
+                                    print("</select>");
+                                    print("</td>");
+                                    ?>
+                            </table>
                         </td>
                     </tr>
                 </table>
@@ -495,4 +648,5 @@
         selectAll: true
     });
 
+	$('.ui-tabs').tabs();
 </script>
