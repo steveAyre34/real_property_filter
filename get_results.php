@@ -35,6 +35,18 @@ $datatablesFields = ['Actions', 'CompanyName', 'FirstName', 'MiddleInitial', 'La
                         'AddressLine1', 'AddressLine2', 'City', 'State', 'Zip', 'Country', 'CRRT', 'DP3'];
 
 
+/*$codeMeanings = array();
+
+foreach($fields as $field) {
+    if(!empty($codeTypes) && in_array($field, $codeTypes)) {
+        $getCodeMeaningStatement = "SELECT meaning FROM codes WHERE type='{$field}' AND code='{$results[$i][$field]}';";
+        $getCodeMeaningResult = mysqli_query($link, $getCodeMeaningStatement);
+        if($getCodeMeaningResult && $getCodeMeaningResult->num_rows > 0) {
+            $innerRow = mysqli_fetch_assoc($getCodeMeaningResult);
+            $row["{$field}"] = $innerRow['meaning'];
+        }
+    }
+}*/
 
 $results = array();
 $return = array();
@@ -65,7 +77,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     }
     else {
         //If this is a household query, change last name to 'The <LastName> Family'
-        if(!empty($results[$i]['ID_COUNT_HOUSEHOLD']) && $results[$i]['ID_COUNT_HOUSEHOLD'] > 1) {
+        if(!empty($results[$i]['ID_COUNT_HOUSEHOLD']) && $results[$i]['ID_COUNT_HOUSEHOLD'] > 1 && $results[$i]['FIRSTNAME_COUNT_HOUSEHOLD'] > 1) {
             $row['CompanyName'] = $results[$i]['CompanyName'];
             $row['FirstName'] = '';
             $row['MiddleInitial'] = '';
@@ -105,18 +117,22 @@ for($i = 0; $i < sizeOf($results); ++$i) {
             /*
              * If the current field is a code then substitute it with it's meaning (i.e., substitute SWIS code for SWIS label)
              */
-            if(!empty($codeTypes) && in_array($field, $codeTypes)) {
-                $getCodeMeaningStatement = "SELECT meaning FROM codes WHERE type='{$field}' AND code='{$results[$i][$field]}';";
+            /*if(!empty($codeTypes) && in_array($field, $codeTypes)) {
+                /*$getCodeMeaningStatement = "SELECT meaning FROM codes WHERE type='{$field}' AND code='{$results[$i][$field]}';";
                 $getCodeMeaningResult = mysqli_query($link, $getCodeMeaningStatement);
                 if($getCodeMeaningResult && $getCodeMeaningResult->num_rows > 0) {
                     $innerRow = mysqli_fetch_assoc($getCodeMeaningResult);
                     $row["{$field}"] = $innerRow['meaning'];
                 }
+                $row["{$field}"] = $results[$i]['meaning'];
+            }*/
+            if(!empty($results[$i]['meaning'])) {
+                $row["{$field}"] = $results[$i]['meaning'];
             }
             /*
              * If the current field is a definition then do the same thing we did with codes
              */
-            else if(!empty($definitionCodes) && in_array($field, $definitionCodes)) {
+            /*else if(!empty($definitionCodes) && in_array($field, $definitionCodes)) {
                 $query = "SHOW TABLES LIKE '%def%'";
                 if($result = mysqli_query($link, $query)) {
                     while($innerRow = $result->fetch_assoc()) {
@@ -136,7 +152,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
                         }
                     }
                 }
-            }
+            }*/
             else {
                 $row["{$field}"] = $results[$i]["{$field}"];
             }
@@ -153,7 +169,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     }
 
     //Check all fields for unnecessary quotation marks
-    foreach($row as $key => $value) {
+   foreach($row as $key => $value) {
         if(strpos($value, '"') !== FALSE) {
             $row[$key] = str_replace('"', '', $value);
         }

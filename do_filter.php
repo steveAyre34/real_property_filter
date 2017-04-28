@@ -4,13 +4,15 @@
 
 	$county = $_POST['county'];
 	$owner = $county . '_owner';
+
+
     /*$dedupe = false;
 	$household = false;*/
 	/*if(!empty($_POST['dedupe']))
 	    $dedupe = true;
 	if(!empty($_POST['household']))
 	    $household = true;*/
-
+    $codes = false;
 	if(!empty($_SESSION['codeTypes'])) {
         $codeTypes = $_SESSION['codeTypes'];
     }
@@ -65,7 +67,7 @@
     }
 
 	$dedupedStatement = $filterStatement . "{$owner}.parcel_id AS parcelID, {$owner}.owner_type AS type, ";
-	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT_HOUSEHOLD, ";
+	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT_HOUSEHOLD, COUNT({$owner}.owner_first_name) AS FIRSTNAME_COUNT_HOUSEHOLD, ";
 
 	/*
 	 * Now add the user-selected query fields to select statement
@@ -76,37 +78,39 @@
 	        //If field name ends in 'checkbox', remove '_checkbox'
             if(substr($postKey, -8) == 'checkbox') {
                 $key = substr($key, 0, -9);
-                $filterStatement .= "{$key}, ";
+                /*$filterStatement .= "{$key}, ";
                 $dedupedStatement .= "{$key}, ";
-                $householdedStatement .= "{$key}, ";
+                $householdedStatement .= "{$key}, ";*/
             }
 
             //If field name ends in 'min' or 'max', remove '_min' or '_max' accordingly
             else if((substr($postKey, -3) == 'min' || substr($postKey, -3) == 'max') && !empty($postValue)) {
                 $key = substr($key, 0, -4);
+                /*$filterStatement .= "{$key}, ";
+                $dedupedStatement .= "{$key}, ";
+                $householdedStatement .= "{$key}, ";*/
+            }
+
+            $filterStatement .= "{$key}, ";
+            $dedupedStatement .= "{$key}, ";
+            $householdedStatement .= "{$key}, ";
+            /*else if(!empty($postValue)) {
                 $filterStatement .= "{$key}, ";
                 $dedupedStatement .= "{$key}, ";
                 $householdedStatement .= "{$key}, ";
-            }
-            else if(!empty($postValue)) {
-                $filterStatement .= "{$key}, ";
-                $dedupedStatement .= "{$key}, ";
-                $householdedStatement .= "{$key}, ";
-            }
+            }*/
             /*
              * Now check if key is a code or a definition
              * If so change key added to filter statement so that we are selecting the code/definition meaning instead of the code/def number
              */
             $field = explode('.', $key);
             $field = $field[1];
-
             if(in_array($field, $codeTypes)) {
-                $getCodeMeaningStatement = "SELECT meaning FROM codes WHERE type='{$field}' AND code='{$results[$i][$field]}';";
-                $getCodeMeaningResult = mysqli_query($link, $getCodeMeaningStatement);
-                if($getCodeMeaningResult && $getCodeMeaningResult->num_rows > 0) {
-                    $innerRow = mysqli_fetch_assoc($getCodeMeaningResult);
-                    $row["{$field}"] = $innerRow['meaning'];
-                }
+                $key = "codes.meaning AS meaning";
+                $filterStatement .= "{$key}, ";
+                $dedupedStatement .= "{$key}, ";
+                $householdedStatement .= "{$key}, ";
+                $codes = true;
             }
         }
     }
@@ -114,9 +118,18 @@
 	$dedupedStatement = substr($dedupedStatement, 0, -2);
 	$householdedStatement = substr($householdedStatement, 0, -2);
 
-	$filterStatement .= " FROM {$owner} ";
-	$dedupedStatement .= " FROM {$owner} ";
-	$householdedStatement .= " FROM {$owner} ";
+	if($codes) {
+        $filterStatement .= " FROM codes, {$owner} ";
+        $dedupedStatement .= " FROM codes, {$owner} ";
+        $householdedStatement .= " FROM codes, {$owner} ";
+    }
+    else {
+        $filterStatement .= " FROM {$owner} ";
+        $dedupedStatement .= " FROM {$owner} ";
+        $householdedStatement .= " FROM {$owner} ";
+    }
+
+	//$filterStatement = "JOIN codes ON "
 
 	$tablesAddedToStatement = array();
 	$fullFieldNames = array();
@@ -179,7 +192,6 @@
 	/*
 	 * Construct the where clauses
 	 */
-
 	$filterStatement .= " WHERE(";
 	$dedupedStatement .= " WHERE(";
 	$householdedStatement .= " WHERE(";
@@ -192,6 +204,11 @@
             array_push($fullFieldNames, $fieldName);
         }
 
+        if(in_array($fieldName, $codeTypes)) {
+		    $filterStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+            $dedupedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+            $householdedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+        }
 		if(!empty($postValue) && $postKey != 'county') {
 			//Multiple values selected for this field
             if(sizeOf($postValue) > 1) {
