@@ -7,7 +7,7 @@
 
    // print_r($_POST);
     $_POST = array_filter($_POST);
-    print_r($_POST);
+    //print_r($_POST);
     echo "<br><br>";
     /*$dedupe = false;
 	$household = false;*/
@@ -293,9 +293,9 @@
     $dedupedStatement = "{$dedupedStatement} GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
     $householdedStatement = "{$householdedStatement} GROUP BY CONCAT(LastName, AddressLine1, ', ', City, ', ', State, ' ', Zip);";
 
-    echo $filterStatement . "<br>";
+    /*echo $filterStatement . "<br>";
     echo $dedupedStatement . "<br>";
-    echo $householdedStatement . "<br>";
+    echo $householdedStatement . "<br>";*/
 	//session_destroy();
 ?>
 

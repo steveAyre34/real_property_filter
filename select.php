@@ -15,6 +15,8 @@
 		die("Sorry, " . $county . " county is not in our database");
 	}
 	$default_width = 60;
+
+
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -32,11 +34,10 @@
 	<script src="jquery.multiselect.js"></script>
 	<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
 </head>
-
     <body>
-    <form name="frm_fields" action="do_filter" method="post">
+    <form id="filter" name="frm_fields" action="do_filter.php" method="POST" >
 			<h1>Real Property Data Filter for <?php echo $county ?> County:</h1>
-        <input type="submit" class="ui-button gen-filter-buttons">Get Counts!</input>
+        <button type="submit" class="ui-button gen-filter-buttons" value="Get Counts!"/>
         <button type="reset" class="ui-button gen-filter-buttons" value="Reset Criteria">Reset Criteria</button>
 
 			<div id="assessmentInformation" class="ui-accordion majorSection" style="width:45%;display:inline-block">
@@ -97,21 +98,10 @@
                         </td>
                     </tr>
                 </table>
-                <!--(hopefully) temporary hack to increase height of accordion content-->
-                <!--<br><br><br><br><br><br><br><br><br><br><br><br>-->
+
             </div>
         </div>
-        <!--</div>-->
 
-
-            <!--
-			//print(makeCheckBox('second_address', 'second_address', '<strong>Property Owners do not reside at the property <u> EXPERIMENTAL</u></strong>')); 
-			//print('</td><td>');
-			//print(makeCheckBox('primary_address', 'primary_address', '<strong>Property Owners DO reside at the property <u> EXPERIMENTAL</u></strong>'));
-                        //print('</td><td>');
-			//print('</td></tr><tr><td>');
-			print("</td></tr></table>\n");
-			?>-->
         <div id="landInformation" class="ui-accordion majorSection">
 			<div id="accordion-header_landInformation" class="ui-accordion-header">
 			    <h2>Section 3: Land Information</h2>
@@ -128,7 +118,6 @@
                             <li><a href="#full_market_value">Market Value</a></li>
                             <li><a href="#acres">Acreage</a></li>
                             <li><a href="#sqft">Square Feet</a></li>
-                            <!--<li><a href="#unit_price">Unit Price</a></li>-->
                             <li><a href="#land_value">Land Value</a></li>
                             <li><a href="#wf_feet">Feet from Waterfront</a></li>
                         </ul>
@@ -146,11 +135,6 @@
                                     At least <input type="text" class="inputText" name="<?php echo $table ?>||sqft_min"> Square Feet <br><br>
                                     At most <input type="text" class="inputText" name="<?php echo $table ?>||sqft_max"> Square Feet
                             </div>
-
-                            <!--<div id="unit_price" class="ui-tabs-panel">
-                                    At least <input type="text" class="inputText" name=<php echo $table ?>||unit_price_min"> Square Footage <br><br>
-                                    At most <input type="text" class="inputText" name=<php echo $table ?>||unit_price_max"> Square Footage
-                            </div>-->
 
                             <div id="land_value" class="ui-tabs-panel">
                                 At least <input type="text" class="inputText" name="<?php echo $table ?>||land_value_min"> Dollars <br><br>
@@ -399,10 +383,7 @@
             <div class="ui-tabs">
                 <ul>
                     <li><a href="#zoning_cd">Zoning Code</a></li>
-                    <!--<li><a href="#site_desirability">Site Desirability</a></li>
-                    <li><a href="#water_supply">Water Supply Type</a></li>-->
                     <li><a href="#sewer_type">Sewer Type</a></li>
-                    <!--<li><a href="#utilities">Utilities</a></li>-->
                     <li><a href="#nbhd_rating">Neighborhood Rating</a></li>
                 </ul>
                 <div id="zoning_cd" class="ui-tabs-panel">
@@ -410,26 +391,13 @@
                     print(makeSelectionList($link, $county, 'zoning_cd', $table, 'Zoning Code', 'zoning_cd'));
                     ?>
                 </div>
-                <!--<div id="site_desirability" class="ui-tabs-panel">
-                    <php
-                    print(makeSelectionList($link, $county, 'site_desirability', $table, 'Site Desirability'));
-                    ?>
-                </div>
-                <div id="water_supply" class="ui-tabs-panel">
-                    <php
-                    print(makeSelectionList($link, $county, 'water_supply', $table, 'Water Supply Type', 'water_supply'));
-                    ?>
-                </div>-->
+
                 <div id="sewer_type" class="ui-tabs-panel">
                     <?php
                     print(makeSelectionList($link, $county, 'sewer_type', $table, 'Sewer Type', 'sewer_type'));
                     ?>
                 </div>
-                <!--<div id="utilities" class="ui-tabs-panel">
-                    <php
-                    print(makeSelectionList($link, $county, 'utilities', $table, 'Utilities', 'utilities'));
-                    ?>
-                </div>-->
+
                 <div id="nbhd_rating" class="ui-tabs-panel">
                     <?php
                     print(makeSelectionList($link, $county, 'nbhd_rating', $table, 'Neighborhood Rating', 'nbhd_rating'));
@@ -458,32 +426,13 @@
                 </div>
                 <div class="ui-tabs">
                     <ul>
-                        <!--<li><a href="#sqft_living_area">Living Area (Sq. Ft.)</a></li>-->
                         <li><a href="#yr_blt">Year Built</a></li>
                         <li><a href="#yr_remodeled">Year Remodeled</a></li>
-                        <!--<li><a href="#nbr_rooms">Nbr. Rooms</a></li>
-                        <li><a href="#nbr_bed">Nbr. Beds</a></li>
-                        <li><a href="#nbr_full_baths">Nbr. Full Baths</a></li>
-                        <li><a href="#nbr_half_baths">Nbr. 1/2 Baths</a></li>
-                        <li><a href="#nbr_kitchens">Nbr. Kitchens</a></li>
-                        <li><a href="#nbr_fireplaces">Nbr. Fireplaces</a></li>
-                        <li><a href="#nbr_stories">Nbr. Stories</a></li>
-                        <li><a href="#first_story">1st Story Sq. Ft.</a></li>
-                        <li><a href="#second_story">2nd Story Sq. Ft.</a></li>
-                        <li><a href="#finished_attic">Finished Attic Sq. Ft.</a></li>
-                        <li><a href="#finished_recroom">Finished Recroom Sq. Ft.</a></li>
-                        <li><a href="#bsmnt_garage_capacity">Garage Capacity</a></li>
-                        <li><a href="#bsmnt_type">Basement Type</a></li>-->
                         <li><a href="#heat_type">Heating Type</a></li>
                         <li><a href="#fuel_type">Fuel Type</a></li>
                         <li><a href="#overall_cond">Overall Condition</a></li>
                         <li><a href="#ext_wall_material">Exterior Wall Material</a></li>
                     </ul>
-                    <!--<div id="sqft_living_area">
-                        <php
-                        print makeMinMaxSelector($table, 'sqft_living_area', 'Square Feet');
-                        ?>
-                    </div>-->
                     <div id="yr_blt" class="ui-tabs-panel">
                         <?php
                         print makeMinMaxSelector($table, 'yr_built', '');
@@ -494,71 +443,6 @@
                         print makeMinMaxSelector($table, 'yr_remodeled', '');
                         ?>
                     </div>
-                    <!--<div id="nbr_rooms">
-                        <php
-                        print makeMinMaxSelector($table, 'nbr_rooms', 'Rooms');
-                        ?>
-                    </div>
-                    <div id="nbr_bed">
-                        ?php
-                        print makeMinMaxSelector($table, 'nbr_bed', 'Beds');
-                        ?>
-                    </div>
-                    <div id="nbr_full_baths">
-                        <php
-                        print makeMinMaxSelector($table, 'nbr_ful_baths', 'Full Baths');
-                        ?>
-                    </div>
-                    <div id="nbr_half_baths">
-                        <php
-                        print makeMinMaxSelector($table, 'nbr_half_baths', 'Half Baths');
-                        ?>
-                    </div>
-                    <div id="nbr_kitchens">
-                        <php
-                        print makeMinMaxSelector($table, 'nbr_kitchens', 'Kitchens');
-                        ?>
-                    </div>
-                    <div id="nbr_fireplaces">
-                        <php
-                        print makeMinMaxSelector($table, 'nbr_fireplaces', 'Fireplaces');
-                        ?>
-                    </div>
-                    <div id="nbr_stories">
-                        <php
-                        print makeMinMaxSelector($table, 'nbr_stories', 'Stories');
-                        ?>
-                    </div>
-                    <div id="first_story">
-                        <php
-                        print makeMinMaxSelector($table, 'first_story', 'Square Feet');
-                        ?>
-                    </div>
-                    <div id="second_story">
-                        <php
-                        print makeMinMaxSelector($table, 'second_story', 'Square Feet');
-                        ?>
-                    </div>
-                    <div id="finished_attic">
-                        <php
-                        print makeMinMaxSelector($table, 'finished_attic', 'Square Feet');
-                        ?>
-                    </div>
-                    <div id="finished_recroom">
-                        <php
-                        print makeMinMaxSelector($table, 'finished_recroom', 'Square Feet');
-                        ?>
-                    </div>
-                    <div id="bsmnt_garage_capacity">
-                        <php
-                        print makeMinMaxSelector($table, 'bsmnt_garage_capacity', 'Cars');
-                        ?>
-                    </div>
-                    <div id="bsmnt_type">
-                        <php
-                        print makeSelectionList($link, $county, 'bsmnt_type', $table, 'Basement Type', 'bsmnt_type');
-                        ?>
-                    </div>-->
                     <div id="heat_type" class="ui-tabs-panel">
                         <?php
                         print makeSelectionList($link, $county, 'heat_type', $table, 'Heat Type', 'heat_type');
@@ -610,47 +494,7 @@
                 </div>
             </div>
         </div>
-			
-			<!--<h3>Section 4.2: Commercial Building Information</h3>
-			
-			<php
-			$table = $county . '_comm_use';
-			print("<table><tr><td>");
-			print('<input type="radio" name="building_set" id="com_buildings" value="com_buildings" title="Filter on commerical buildings"/><label for="com_buildings"><strong>Filter on Commercial Buildings</strong></label>');
-			print("</td></tr><tr><td>");
-			print(makeSelectionList($link, $county, 'used_as_cd', $table, 'Used As', 'used_as_cd', $default_width)); 
-			print("</td></tr><tr><td>");
-			print(makeCheckBox('bools[]', 'has_air_cond', 'Has Air Conditioning')); 
-			print("</td><td>");
-			print(makeCheckBox('bools[]', 'has_sprinklers', 'Has Sprinklers')); 
-			print("</td><td>");
-			print(makeCheckBox('bools[]', 'has_alarm', 'Has Alarm System')); 
-			print('</td></tr><tr><td>');
-			print(makeMinMaxSelector('nbr_1bed_apts', 'Apts', 'Number of 1BR Apts', $default_width));
-			print("</td><td>");
-			print(makeMinMaxSelector('nbr_2bed_apts', 'Apts', 'Number of 2BR Apts', $default_width));
-			print("</td><td>");
-			print(makeMinMaxSelector('nbr_3bed_apts', 'Apts', 'Number of 3BR Apts', $default_width));
-			print("</td></tr>");
-			$table = $county . '_comm_ind_util_bldg';
-			print('<tr><td width="31%">');
-			print(makeMinMaxSelector('bldg_perimeter', 'ft', 'Perimeter', $default_width));
-			print('</td><td width="31%">');
-			print(makeMinMaxSelector('gross_floor_area', 'ft^2', 'Floor Area', $default_width));
-			print('</td><td width="31%">');
-			print(makeMinMaxSelector('nbr_elevators', 'Elevators', 'Number of Elevators', $default_width));
-			print('</td></tr>');
-			print('<tr><td>');
-			print(makeMinMaxSelector('bsmnt_perimeter', 'ft', 'Basement Perimeter', $default_width));
-			print("</td><td>");
-			print(makeMinMaxSelector('nbr_stories', 'Stories', 'Number of Stories', $default_width));
-			#print("</td><td>");
-			#print(makeMinMaxSelector('year_built', '', 'Year Built', $default_width));
-			#print("Year Built temporarily disabled");
-			print('</td></tr>');
-			
-			print("</table>\n");
-			?>-->
+
         <div id="improvement_information" class="ui-accordion majorSection">
             <div class="ui-accordion-header">
                 <h2>Section 6: Improvement Information</h2>
@@ -877,54 +721,6 @@
                     <br><br><br>
             </div>
         </div>
-            <!--
-            <h2>Section 5: Improvement Information</h2>
-			<h3>Section 5.1: Structures (Pools, Sheds, Barns, etc)</h3>
-			
-			<php
-			$table = $county . '_improvement';
-			print('<table><tr><td>');
-			print(makeCheckBox('improvements', 'structs', 'Include Improvements In Filter'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_pools', 'All Pools (LS series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_farm_barn', 'All Farm/Barn (FB/FP Series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_mobile', 'All Mobile Home Additions (MH Series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_sheds', 'All Sheds(FC Series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_patio', 'All Patio(LP Series)'));
-			print('</td></tr>');
-			print('<tr><td>');
-			print(makeCheckBox('improvements_all[]', 'all_tennis', 'All Tennis (TC Series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_garage', 'All garage (RG Series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_canopy', 'All Canopy/Roofover (CP Series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_porches', 'All Porches  (RP Series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_golf', 'All Golf (GC Series)'));
-			print('</td><td>');
-			print(makeCheckBox('improvements_all[]', 'all_cold_storage', 'All Cold Storage'));
-			print('</td></tr>');
-			print('</table>');
-			print('<table><tr><td>');
-			print(makeSelectionList($link, $county, 'structure_cd', $table, 'Structure Type', 'structure_cd', $default_width * 3)); 
-			print('</td></tr></table>');
-			print('<table><tr><td width="540px">');
-			print(makeMinMaxSelector('imp_replace_cost_new', 'Dollars', 'Replacement Cost (New)', $default_width));
-			print('</td><td width="540px">');
-			print(makeMinMaxSelector('imp_replace_cost_less_depr', 'Dollars', 'Replacement Cost (Less Deprecation)', $default_width));
-			print('</td></tr><tr><td>');
-			print(makeMinMaxSelector('yr_built', '', 'Year Built', $default_width));
-			print("</td><td>");
-			print(makeMinMaxSelector('imp_sqft', 'feet^2', 'Square Feet', $default_width));
-			print("</td></tr></table>\n");
-			?>
-			
-			-->
 			<?//tell results what we want to do with what county ?>
 			<input type="hidden" name="county" value="<?php echo $county ?>" />
         <button type="submit" class="ui-button gen-filter-buttons">Get Counts!</button>
@@ -932,6 +728,13 @@
 		</form>
 	</body>
 </html>
+
+<?php
+    if(isset($_POST)) {
+        $_POST = array_filter($_POST);
+        mysqli_close($link);
+    }
+?>
 <script type="text/javascript">
 	$(".majorSection").accordion({
 		collapsible: true,
@@ -957,7 +760,24 @@
 
 	$('.ui-checkboxradio-disabled').checkboxradio();
 
-    $("#filter").submit({
-        alert($(this).serialize());
-    });
+    /*$("#filter").submit(function(event) {
+        event.preventDefault();
+        var filter = "";
+        var count = 0;
+        //$("#filter *").filter(".inputText").each(function(index, value) {
+        $.each($("#filter").serializeArray(), function(index, value){
+            count = count + 1;
+            filter = filter + " " + count + " " + value.val();
+        });
+        /*for(var i = 0; i < $(this).elements.length; ++i) {
+            var e = $(this).elements[i];
+            if(e.value != '')
+                filter += e.value + ", "
+        }*/
+        //var filter = $("#filter").serializeArray();
+        //alert(filter);
+        /*var filter = <php echo json_encode(array_filter($_POST))?>;
+        console.log("Filter: " + filter);
+        alert(filter);*/
+    //});
 </script>

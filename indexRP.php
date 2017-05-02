@@ -34,3 +34,7 @@
 <input class="ui-button" style="width:10%;" type="submit" value="Import" formmethod="GET" formaction="importChooseCounty.php"/>
 </form>
 </body>
+
+<?php
+mysqli_close($link);
+?>

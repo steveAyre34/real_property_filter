@@ -18,7 +18,7 @@
         $row = $importDateResult->fetch_assoc();
         $last_updated = $row['date'];
     }
-
+    //mysqli_close($link);
     //Get all saved queries that exist for this county
     $selectStatement = "SELECT name, cache_file FROM saved_queries WHERE county='{$county}' ";
     $selectStatement .= "AND last_cached >= '{$last_updated}';";
@@ -31,6 +31,7 @@
         }
     }
 
+    //mysqli_close($link);
     //Get names of all tables for chosen county
     $showTables = "SHOW TABLES LIKE '" . $county . "%';";
     $result = mysqli_query($link, $showTables);
@@ -50,7 +51,7 @@
             }
         }
     }
-
+    mysqli_close($link);
     $_SESSION['codeTypes'] = $codeTypes;
     //$_SESSION['definitionCodes'] = $definitionCodes;
 ?>
