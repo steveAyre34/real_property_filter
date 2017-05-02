@@ -21,7 +21,7 @@
 
 <h4>Please Select A County</h4>
 <form id="form">
-<select class="selectMenu" name="county" id="chosenCounty">
+<select class="selectMenu" style="font-size:0.75em;" name="county" id="chosenCounty">
 <?php
 	foreach($counties as $c) {
 	  $disabled = "";

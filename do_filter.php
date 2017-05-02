@@ -5,7 +5,8 @@
 	$county = $_POST['county'];
 	$owner = $county . '_owner';
 
-
+    print_r($_POST);
+    echo "<br><br>";
     /*$dedupe = false;
 	$household = false;*/
 	/*if(!empty($_POST['dedupe']))
@@ -73,7 +74,7 @@
 	 * Now add the user-selected query fields to select statement
 	 */
 	foreach($_POST as $postKey => $postValue) {
-	    if($postKey != 'county') {
+	    if($postKey != 'county' && !empty($postValue)) {
             $key = str_replace("||", ".", $postKey);
 	        //If field name ends in 'checkbox', remove '_checkbox'
             if(substr($postKey, -8) == 'checkbox') {
@@ -119,14 +120,14 @@
 	$householdedStatement = substr($householdedStatement, 0, -2);
 
 	if($codes) {
-        $filterStatement .= " FROM codes JOIN {$county}_assessment AS smerge ON (codes.code={$county}_assessment.swis), {$owner} ";
-        $dedupedStatement .= " FROM codes, {$owner} ";
-        $householdedStatement .= " FROM codes, {$owner} ";
+        $filterStatement .= " FROM codes, {$county}_assessment, {$owner} ";
+        $dedupedStatement .= " FROM codes, {$county}_assessment, {$owner} ";
+        $householdedStatement .= " FROM codes, {$county}_assessment, {$owner} ";
     }
     else {
-        $filterStatement .= " FROM {$owner} ";
-        $dedupedStatement .= " FROM {$owner} ";
-        $householdedStatement .= " FROM {$owner} ";
+        $filterStatement .= " FROM {$county}_assessment, {$owner} ";
+        $dedupedStatement .= " FROM {$county}_assessment, {$owner} ";
+        $householdedStatement .= " FROM {$county}_assessment, {$owner} ";
     }
 
 	//$filterStatement = "JOIN codes ON "
@@ -147,7 +148,8 @@
 			 */
 			$table = explode("||", $postKey);
 			$table = $table[0];
-			if($table != "${county}_owner" && !in_array($table, $tablesAddedToStatement) && strpos($table, 'def') === FALSE) {
+			if($table != "${county}_owner" && !in_array($table, $tablesAddedToStatement) && strpos($table, 'def') === FALSE &&
+            strpos($table, 'assessment') === FALSE) {
                 array_push($tablesAddedToStatement, $table);
 
                 /*
@@ -192,14 +194,14 @@
 	/*
 	 * Construct the where clauses
 	 */
-	$filterStatement .= " WHERE((codes.code={$county}_assessment.swis AND codes.type='swis') AND " ;
+	$filterStatement .= " WHERE(" ;
 	$dedupedStatement .= " WHERE(";
 	$householdedStatement .= " WHERE(";
 
 	foreach($_POST as $postKey => $postValue) {
         $fullField = str_replace('||', '.', $postKey);
         $fieldName = explode('.', $fullField);
-		if($postKey != 'county') {
+		if($postKey != 'county' && !empty($postValue)) {
             $fieldName = $fieldName[1];
             array_push($fullFieldNames, $fieldName);
         }
@@ -263,7 +265,7 @@
 
 	//Remove trailing ' AND ' (space AND space = 5 characters)
 	$filterStatement = substr($filterStatement, 0, -5);
-	$filterStatement .= ");";
+	$filterStatement .= "));";
 
     $dedupedStatement = substr($dedupedStatement, 0, -5);
     //$dedupedStatement .= ");";
@@ -318,11 +320,11 @@
 					<th>DP3</th>
                     <th>SWIS</th>
 					<!--Now headers for any selected fields that aren't a standard export field -->
-					<?php foreach($fullFieldNames as $fields) {
+					<!--<php foreach($fullFieldNames as $fields) {
    		 					if (!in_array($fields, $standardColumns)) {
         						print("<th>{$fields}</th>");
     						}
-					} ?>
+					} ?>-->
 				</tr>
 			</thead>
 			<tbody>
@@ -352,18 +354,18 @@
         { data: 'SWIS' }
     ];
 
-    <?php foreach($fullFieldNames as $fields) {
+    /*<php foreach($fullFieldNames as $fields) {
         if(substr($fields, -3) == 'min' || substr($fields, -3) == 'max') {?>
-            columns.push({ data: '<?php echo substr($fields, 0,-4) ?>' });
-        <?php }
+            columns.push({ data: '<php echo substr($fields, 0,-4) ?>' });
+        <php }
         else if(substr($fields, -8) == 'checkbox') {
         ?>
-            columns.push({ data: '<?php echo substr($fields, 0,-9) ?>' });
-        <?php }
+            columns.push({ data: '<php echo substr($fields, 0,-9) ?>' });
+        <php }
         else { ?>
-            columns.push({ data: '<?php echo $fields ?>' });
-        <?php }} ?>
-
+            columns.push({ data: '<php echo $fields ?>' });
+        <php }} ?>
+*/
 	$('#results').DataTable({
 		//"processing": true,
 		//"serverSide": true,

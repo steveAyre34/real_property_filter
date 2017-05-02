@@ -50,8 +50,8 @@ function makeCheckBox($name, $value, $label, $align='left', $checked=FALSE){
 *		units of the number
 *@return: the html for a checkbox		
 **/
-function makeMinMaxSelector($name, $units, $label, $width){
-	$html = '<table>';
+function makeMinMaxSelector($table, $field, $units) {
+	/*$html = '<table>';
 	$width = ' style="width: ' . $width . 'ex;"';
 	$label = makeCheckbox('bounds[]', $name, $label);
 	//$file = makeCheckbox('file[]', $name, '(Include Field in Output)');
@@ -64,7 +64,10 @@ function makeMinMaxSelector($name, $units, $label, $width){
 	$html .= '<td>At most&nbsp;&nbsp;</td><td><input type="text" name="max_' . $name . '" size="10"/></td><td>&nbsp ' . $units . '</td>';
 	$html .= '<input type="hidden" id="' . $name . '" name="'. $name .'[]" value="-1" />';
 	$html .= "</tr></table>"; 
-	return $html;
+	return $html;*/
+    $html = "At least <input type='text' class='inputText' name='{$table}||{$field}'> {$units} <br><br>";
+    $html .= "At most <input type='text' class='inputText' name='{$table}||{$field}'> {$units}";
+    return $html;
 }
 /********
 * returns a list for criteria with values to be selected
@@ -97,7 +100,7 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
      * If it does, get all distinct values from fields with 'code' in the name
      * Will have to manually exclude muni_code
      */
-    $definitionCodes = $_SESSION['definitionCodes'];
+    //$definitionCodes = $_SESSION['definitionCodes'];
     /*$query = "SHOW TABLES LIKE '%def%'";
     if($result = mysqli_query($link, $query)) {
         while($row = $result->fetch_assoc()) {
@@ -169,6 +172,9 @@ function makeSelectionList($link, $county, $field, $table, $label, $name){
 					$meaning = substr($meaning, 0, $endParenIndex);
 					$meaning .= ' - Village)';
 				}
+			}
+			if(strpos($meaning,'undefined') !== FALSE) {
+				$meaning = 'None given';
 			}
 			$txt = $id . ' : ' . $meaning . ' (' . $count . ')';
 			$html .= '<option class="ms-options-wrap" value="'. $id .'"> '. $txt .'</option>';

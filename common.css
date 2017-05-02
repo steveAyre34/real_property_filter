@@ -12,10 +12,22 @@ body {
     font-family: Verdana, Arial, sans-serif;
     font-size: 0.75em;
     color: #045;
+    width: 15vw;
 }
 
 .majorSection .ui-accordion-content h4 {
     color: #000066;
+    font-size: 0.80em;
+}
+
+.majorSection .ui-accordion-content p {
+    font-size: 0.75em;
+    font-style: italic;
+    color: #000066;
+}
+.majorSection .ui-accordion-header {
+    font-size: 0.50em;
+    height: auto;
 }
 * .majorSection .ms-options-wrap {
     font-size: 0.75em;
@@ -24,6 +36,7 @@ body {
 .ui-accordion {
     width: 90%;
 }
+
 .ui-accordion .ui-accordion-header .ui-accordion-content h1 {
     color: #000066;
 }
@@ -38,10 +51,31 @@ body {
 
 .ui-accordion .ui-accordion-header .ui-accordion-content h4 {
     color: #000066;
+    font-size: 3vh;
 }
 
-* .majorSection .inputText {
+.inputText {
     width: 10vh;
+}
+
+#inputText {
+    color: #000066;
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+.ui-tabs {
+    border-left-color: #000066;
+    border-bottom-color: #000066;
+}
+
+.ui-tabs a {
+    font-size:0.80em;
+}
+.ui-tabs-panel {
+    color: #000066;
+    font-size: 0.8em;
+    font-style: italic;
 }
 
 .gen-filter-buttons {
@@ -49,12 +83,12 @@ body {
     color: #000066;
     width: 45%;
     font-weight: bold;
-    height: 10vh;
-    font-size: 2em;
+    height: 5vh;
+    font-size: 0.75em;
     border-radius: 1em;
 }
 
-* .minorSection .ui-accordion-header h4 {
+.minorSection .ui-accordion-header h4 {
     color: white;
 }
 * .minorSection .ui-accordion-content {
@@ -72,4 +106,9 @@ body {
     font-family: Verdana, Arial, sans-serif;
     font-size: 0.75em;
     color: #045;
+    width: 20vw;
+}
+
+.radioButtons {
+    font-size: 0.80em;
 }

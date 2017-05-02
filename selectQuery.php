@@ -75,7 +75,7 @@
             <input type="hidden" name="county" value="<?php echo $county ?>"/>
             <input type="hidden" name="saved" value="1"/>
         <?php if(!empty($savedQueryFiles)) { ?>
-            <select class="selectMenu" name='query_name' multiple='multiple' class='selectMenu[]'>
+            <select class="selectMenu" style="font-size:0.75em;"name='query_name' multiple='multiple' class='selectMenu[]'>
                 <?php
                 for ($i = 0; $i < sizeOf($savedQueryNames); ++$i) {
                     print("<option value='{$savedQueryNames[$i]}'>{$savedQueryNames[$i]}</option>");
