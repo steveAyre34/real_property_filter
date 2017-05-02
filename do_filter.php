@@ -5,6 +5,8 @@
 	$county = $_POST['county'];
 	$owner = $county . '_owner';
 
+   // print_r($_POST);
+    $_POST = array_filter($_POST);
     print_r($_POST);
     echo "<br><br>";
     /*$dedupe = false;
@@ -42,7 +44,10 @@
 		"mail_city",
 		"owner_mail_state",
 		"mail_zip",
-		"mail_country"
+		"mail_country",
+        'swis',
+        'crrt',
+        'dp3'
 	];
 
 
@@ -120,14 +125,14 @@
 	$householdedStatement = substr($householdedStatement, 0, -2);
 
 	if($codes) {
-        $filterStatement .= " FROM codes, {$county}_assessment, {$owner} ";
-        $dedupedStatement .= " FROM codes, {$county}_assessment, {$owner} ";
-        $householdedStatement .= " FROM codes, {$county}_assessment, {$owner} ";
+        $filterStatement .= " FROM codes, {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        $dedupedStatement .= " FROM codes, {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        $householdedStatement .= " FROM codes, {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
     }
     else {
-        $filterStatement .= " FROM {$county}_assessment, {$owner} ";
-        $dedupedStatement .= " FROM {$county}_assessment, {$owner} ";
-        $householdedStatement .= " FROM {$county}_assessment, {$owner} ";
+        $filterStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        $dedupedStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        $householdedStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
     }
 
 	//$filterStatement = "JOIN codes ON "
@@ -148,8 +153,8 @@
 			 */
 			$table = explode("||", $postKey);
 			$table = $table[0];
-			if($table != "${county}_owner" && !in_array($table, $tablesAddedToStatement) && strpos($table, 'def') === FALSE &&
-            strpos($table, 'assessment') === FALSE) {
+			if($table != "${county}_owner" && !in_array($table, $tablesAddedToStatement) && strpos($table, 'def') === FALSE
+            && strpos($table, 'assessment') === FALSE) {
                 array_push($tablesAddedToStatement, $table);
 
                 /*
@@ -194,9 +199,9 @@
 	/*
 	 * Construct the where clauses
 	 */
-	$filterStatement .= " WHERE(" ;
-	$dedupedStatement .= " WHERE(";
-	$householdedStatement .= " WHERE(";
+	$filterStatement .= " WHERE " ;
+	$dedupedStatement .= " WHERE ";
+	$householdedStatement .= " WHERE ";
 
 	foreach($_POST as $postKey => $postValue) {
         $fullField = str_replace('||', '.', $postKey);
@@ -207,7 +212,7 @@
         }
 
         if(in_array($fieldName, $codeTypes)) {
-		    $filterStatement .= "((codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+		    $filterStatement .= "((codes.code='{$postValue[0]}' AND codes.type='{$fieldName}') AND ";
             $dedupedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
             $householdedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
         }
@@ -236,7 +241,7 @@
             	if(!empty($postValue[0])) {
                     //Field is a min field
                     if (substr($fullField, -3) == 'min') {
-                        $filterStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
+                        $filterStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}||{$postValue[1]}') AND ";
                         $dedupedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
                         $householdedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
                     }
@@ -263,19 +268,30 @@
         }
 	}
 
-	//Remove trailing ' AND ' (space AND space = 5 characters)
-	$filterStatement = substr($filterStatement, 0, -5);
-	$filterStatement .= "));";
+    //If there were no parameters selected then give the standard export for entire county, so need to remove WHERE
+    if(empty($fullFieldNames)) {
+	    $filterStatement = substr($filterStatement, 0, -7);
+        $dedupedStatement = substr($dedupedStatement, 0, -7);
+        $householdedStatement = substr($householdedStatement, 0, -7);
 
-    $dedupedStatement = substr($dedupedStatement, 0, -5);
-    //$dedupedStatement .= ");";
+    }
+    else {
+        //Remove trailing ' AND ' (space AND space = 5 characters)
+        $filterStatement = substr($filterStatement, 0, -5);
+        $filterStatement .= ")";
 
-    $householdedStatement = substr($householdedStatement, 0, -5);
-    //$householdedStatement .= ");";
+        $dedupedStatement = substr($dedupedStatement, 0, -5);
+        //$dedupedStatement .= ");";
 
-	//Create deduped and householded statements for possible later use
-    $dedupedStatement = "{$dedupedStatement}) GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
-    $householdedStatement = "{$householdedStatement}) GROUP BY CONCAT(LastName, AddressLine1, ', ', City, ', ', State, ' ', Zip);";
+        $householdedStatement = substr($householdedStatement, 0, -5);
+        //$householdedStatement .= ");";
+    }
+
+    $filterStatement .= ";";
+
+//Create deduped and householded statements for possible later use
+    $dedupedStatement = "{$dedupedStatement} GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
+    $householdedStatement = "{$householdedStatement} GROUP BY CONCAT(LastName, AddressLine1, ', ', City, ', ', State, ' ', Zip);";
 
     echo $filterStatement . "<br>";
     echo $dedupedStatement . "<br>";
@@ -320,11 +336,19 @@
 					<th>DP3</th>
                     <th>SWIS</th>
 					<!--Now headers for any selected fields that aren't a standard export field -->
-					<!--<php foreach($fullFieldNames as $fields) {
+					<?php foreach($fullFieldNames as $fields) {
    		 					if (!in_array($fields, $standardColumns)) {
-        						print("<th>{$fields}</th>");
-    						}
-					} ?>-->
+                                if (substr($fields, -3) == 'min' || substr($fields, -3) == 'max') {
+                                    $temp = substr($fields, 0, -3);
+                                    print("<th>{$temp}</th>");
+                                } else if (substr($fields, -8) == 'checkbox') {
+                                    $temp = substr($fields, 0, -8);
+                                    print("<th>{$temp}</th>");
+                                } else {
+                                    print("<th>{$fields}</th>");
+                                }
+                            }
+					} ?>
 				</tr>
 			</thead>
 			<tbody>
@@ -354,21 +378,24 @@
         { data: 'SWIS' }
     ];
 
-    /*<php foreach($fullFieldNames as $fields) {
-        if(substr($fields, -3) == 'min' || substr($fields, -3) == 'max') {?>
-            columns.push({ data: '<php echo substr($fields, 0,-4) ?>' });
-        <php }
-        else if(substr($fields, -8) == 'checkbox') {
-        ?>
-            columns.push({ data: '<php echo substr($fields, 0,-9) ?>' });
-        <php }
-        else { ?>
-            columns.push({ data: '<php echo $fields ?>' });
-        <php }} ?>
-*/
+    <?php foreach($fullFieldNames as $fields) {
+        if(!in_array($fields, $standardColumns)) {
+            if(substr($fields, -3) == 'min' || substr($fields, -3) == 'max') {?>
+            columns.push({data: '<?php echo substr($fields, 0, -4) ?>'});
+            <?php }
+            else if(substr($fields, -8) == 'checkbox') {
+            ?>
+            columns.push({data: '<?php echo substr($fields, 0, -9) ?>'});
+            <?php }
+            else { ?>
+            columns.push({data: '<?php echo $fields ?>'});
+            <?php }
+        }
+    }?>
+
 	$('#results').DataTable({
-		//"processing": true,
-		//"serverSide": true,
+		"processing": true,
+		"serverSide": true,
 		"ajax" : {
 		    url : "get_results.php",
 			type: "GET",

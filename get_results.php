@@ -103,7 +103,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     $row['SWIS'] = $results[$i]['SWIS'];
 
     //Now add user-selected query fields
-    /*foreach($fields as $field) {
+    foreach($fields as $field) {
         if(!empty($results[$i]["{$field}"])) {
             $row["{$field}"] = $results[$i]["{$field}"];
             if(substr($field, -3) == 'min' || substr($field, -3) == 'max')
@@ -112,7 +112,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
                 $field = substr($field, 0, -9);
 
             if(!in_array($field, $datatablesFields))
-                array_push($datatablesFields, $field);*/
+                array_push($datatablesFields, $field);
 
 
             /*
@@ -127,9 +127,9 @@ for($i = 0; $i < sizeOf($results); ++$i) {
                 }
                 $row["{$field}"] = $results[$i]['meaning'];
             }*/
-            /*if(!empty($results[$i]['meaning'])) {
+            if(!empty($results[$i]['meaning'])) {
                 $row["{$field}"] = $results[$i]['meaning'];
-            }*/
+            }
             /*
              * If the current field is a definition then do the same thing we did with codes
              */
@@ -154,7 +154,7 @@ for($i = 0; $i < sizeOf($results); ++$i) {
                     }
                 }
             }*/
-           /* else {
+            else {
                 $row["{$field}"] = $results[$i]["{$field}"];
             }
         }
@@ -166,8 +166,8 @@ for($i = 0; $i < sizeOf($results); ++$i) {
 
             if(!in_array($field, $datatablesFields))
                 array_push($datatablesFields, $field);
-        }*/
-    //}
+        }
+    }
 
     //Check all fields for unnecessary quotation marks
    foreach($row as $key => $value) {

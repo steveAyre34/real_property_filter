@@ -33,10 +33,10 @@
 	<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
 </head>
 
-<body>
-	<form name="frm_fields" action="do_filter.php" method="post">
+    <body>
+    <form name="frm_fields" action="do_filter" method="post">
 			<h1>Real Property Data Filter for <?php echo $county ?> County:</h1>
-        <button type="submit" class="ui-button gen-filter-buttons">Get Counts!</button>
+        <input type="submit" class="ui-button gen-filter-buttons">Get Counts!</input>
         <button type="reset" class="ui-button gen-filter-buttons" value="Reset Criteria">Reset Criteria</button>
 
 			<div id="assessmentInformation" class="ui-accordion majorSection" style="width:45%;display:inline-block">
@@ -66,7 +66,7 @@
             </div>
             <div id="accordion-content_parcelInformation" class="ui-accordion-content">
                 <?php
-                    $table = $county . '_site';
+                    $table = $county . '_assessment';
                 ?>
                 <table>
                     <tr>
@@ -78,9 +78,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <?php
-                            $table = $county . '_assessment';
-                        ?>
                         <td style="width:20vw;">
                             <h4>School Code</h4>
                             <?php
@@ -156,13 +153,13 @@
                             </div>-->
 
                             <div id="land_value" class="ui-tabs-panel">
-                                At least <input type="text" class="inputText" name=<?php echo $table ?>||land_value_min"> Dollars <br><br>
-                                At most <input type="text" class="inputText" name=<?php echo $table ?>||land_value_max"> Dollars
+                                At least <input type="text" class="inputText" name="<?php echo $table ?>||land_value_min"> Dollars <br><br>
+                                At most <input type="text" class="inputText" name="<?php echo $table ?>||land_value_max"> Dollars
                             </div>
 
                             <div id="wf_feet" class="ui-tabs-panel">
-                                    At least <input type="text" class="inputText" name=<?php echo $table ?>||wf_feet_min"> Feet <br><br>
-                                    At most <input type="text" class="inputText" name=<?php echo $table ?>||wf_feet_max"> Feet
+                                    At least <input type="text" class="inputText" name="<?php echo $table ?>||wf_feet_min"> Feet <br><br>
+                                    At most <input type="text" class="inputText" name="<?php echo $table ?>||wf_feet_max"> Feet
                             </div>
                     </div>
                     <table>
@@ -959,4 +956,8 @@
 	$('.ui-tabs').tabs();
 
 	$('.ui-checkboxradio-disabled').checkboxradio();
+
+    $("#filter").submit({
+        alert($(this).serialize());
+    });
 </script>
