@@ -316,6 +316,9 @@
         <link rel="stylesheet" type="text/css" href="common.css"/>
 	</head>
 	<body>
+        <button onclick="standardResults()">Standard</button>
+        <button onclick="dedupeResults()">Dedupe</button>
+        <button onclick="householdResults()">Household</button>
 		<table id="results" class="resultsTable">
 			<thead>
 				<tr>
@@ -354,8 +357,6 @@
 			<tbody>
 			</tbody>
 		</table>
-        <button onclick="dedupeResults()">Dedupe</button>
-        <button onclick="householdResults()">Household</button>
 	</body>
 </html>
 
@@ -377,6 +378,7 @@
         { data: 'DP3' },
         { data: 'SWIS' }
     ];
+    $("#results").hide();
 
     <?php foreach($fullFieldNames as $fields) {
         if(!in_array($fields, $standardColumns)) {
@@ -393,22 +395,26 @@
         }
     }?>
 
-	$('#results').DataTable({
-		"processing": true,
-		"serverSide": true,
-		"ajax" : {
-		    url : "get_results.php",
-			type: "GET",
-			data: {filterStatement: "<?php echo $filterStatement ?>", fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)}
-		},
-		columns: columns,
-        dom: 'Bfrtip',
-        buttons: [
-            { extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
-            { extend: 'excelHtml5', title: '<?php echo $county ?>_export' },
-            { extend: 'csvHtml5', title: '<?php echo $county ?>_export' },
-            { extend: 'pdfHtml5', title: '<?php echo $county ?>_export' }]
-	});
+	function standardResults() {
+	    //$('#results').DataTable().destroy();
+	    $('#results').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax" : {
+                url : "get_results.php",
+                type: "GET",
+                data: {filterStatement: "<?php echo $filterStatement ?>", fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)}
+            },
+            columns: columns,
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
+                { extend: 'excelHtml5', title: '<?php echo $county ?>_export' },
+                { extend: 'csvHtml5', title: '<?php echo $county ?>_export' },
+                { extend: 'pdfHtml5', title: '<?php echo $county ?>_export' }]
+        });
+	    $('#results').show();
+    }
 
 	function dedupeResults() {
         $('#results').DataTable().destroy();
