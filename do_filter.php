@@ -4,6 +4,9 @@
 
 	$county = $_POST['county'];
 	$owner = $county . '_owner';
+	$countRegular = 0;
+	$countDeduped = 0;
+	$countHouseholded = 0;
 
    // print_r($_POST);
     $_POST = array_filter($_POST);
@@ -72,9 +75,10 @@
         $filterStatement .= "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, {$county}_assessment.swis AS SWIS, ";
     }
 
-	$dedupedStatement = $filterStatement . "{$owner}.parcel_id AS parcelID, {$owner}.owner_type AS type, ";
+    //$dedupedStatement = "{$filterStatement}";
 	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT_HOUSEHOLD, COUNT({$owner}.owner_first_name) AS FIRSTNAME_COUNT_HOUSEHOLD, ";
-
+   // $countRegularStatement = "{$filterStatement} SUM(COUNT(*)) ";
+    //$countDedupedStatement = "SELECT COUNT(*) FROM {$owner}_owner ";
 	/*
 	 * Now add the user-selected query fields to select statement
 	 */
@@ -98,7 +102,7 @@
             }
 
             $filterStatement .= "{$key}, ";
-            $dedupedStatement .= "{$key}, ";
+            //$dedupedStatement .= "{$key}, ";
             $householdedStatement .= "{$key}, ";
             /*else if(!empty($postValue)) {
                 $filterStatement .= "{$key}, ";
@@ -114,28 +118,31 @@
             if(in_array($field, $codeTypes)) {
                 $key = "codes.meaning AS meaning";
                 $filterStatement .= "{$key}, ";
-                $dedupedStatement .= "{$key}, ";
+                //$dedupedStatement .= "{$key}, ";
                 $householdedStatement .= "{$key}, ";
                 $codes = true;
             }
         }
     }
     $filterStatement = substr($filterStatement, 0, -2);
-	$dedupedStatement = substr($dedupedStatement, 0, -2);
+	//$dedupedStatement = substr($dedupedStatement, 0, -2);
 	$householdedStatement = substr($householdedStatement, 0, -2);
 
 	if($codes) {
         $filterStatement .= " FROM codes, {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
-        $dedupedStatement .= " FROM codes, {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        //$dedupedStatement .= " FROM codes, {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
         $householdedStatement .= " FROM codes, {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        //$countRegularStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        //$countDedupedStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
     }
     else {
         $filterStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
-        $dedupedStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        //$dedupedStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
         $householdedStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
-    }
-
-	//$filterStatement = "JOIN codes ON "
+        //$countRegularStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        //$countDedupedStatement .= " FROM {$owner} JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+	}
+    //$filterStatement = "JOIN codes ON "
 
 	$tablesAddedToStatement = array();
 	$fullFieldNames = array();
@@ -168,11 +175,17 @@
                     $filterStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
                     $filterStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";
 
-                    $dedupedStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
-                    $dedupedStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";
+                    //$dedupedStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
+                    //$dedupedStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";
 
                     $householdedStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
                     $householdedStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";
+
+                    //$countRegularStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
+                    //$countRegularStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";
+
+                    /*$countDedupedStatement .= "JOIN {$table} ON ({$county}_owner.owner_id={$table}.owner_id AND ";
+                    $countDedupedStatement .= " {$county}_owner.muni_code={$table}.muni_code) ";*/
                 }
                 else {
                     //Table doesn't contain owner_id so make sure it contains muni_code and parcel_id
@@ -184,8 +197,10 @@
 
                     if (($checkForMuniCodeResult && $checkForParcelIdResult) && ($checkForMuniCodeResult->num_rows == 1 && $checkForParcelIdResult->num_rows == 1)) {
                         $filterStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
-                        $dedupedStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
+                        //$dedupedStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
                         $householdedStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
+                        //$countRegularStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
+                        //$countDedupedStatement .= "JOIN {$table} ON ({$county}_owner.muni_code={$table}.muni_code AND {$county}_owner.parcel_id={$table}.parcel_id) ";
                     }
                 }
             }
@@ -193,15 +208,19 @@
 	}
 	//Remove trailing space to be neat because I feel like it
 	$filterStatement = substr($filterStatement, 0, -1);
-	$dedupedStatement = substr($dedupedStatement, 0, -1);
+	//$dedupedStatement = substr($dedupedStatement, 0, -1);
 	$householdedStatement = substr($householdedStatement, 0, -1);
+    //$countRegularStatement = substr($countRegularStatement, 0, -1);
+    //$countDedupedStatement = substr($countDedupedStatement, 0, -1);
 
-	/*
-	 * Construct the where clauses
-	 */
-	$filterStatement .= " WHERE " ;
-	$dedupedStatement .= " WHERE ";
-	$householdedStatement .= " WHERE ";
+/*
+ * Construct the where clauses
+ */
+	$filterStatement .= " WHERE (" ;
+	//$dedupedStatement .= " WHERE (";
+	$householdedStatement .= " WHERE (";
+	//$countRegularStatement .= " WHERE (";
+	//$countDedupedStatement .= " WHERE ";
 
 	foreach($_POST as $postKey => $postValue) {
         $fullField = str_replace('||', '.', $postKey);
@@ -212,9 +231,11 @@
         }
 
         if(in_array($fieldName, $codeTypes)) {
-		    $filterStatement .= "((codes.code='{$postValue[0]}' AND codes.type='{$fieldName}') AND ";
-            $dedupedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+		    $filterStatement .= "(codes.code='{$postValue[0]}' AND codes.type='{$fieldName}') AND ";
+            //$dedupedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
             $householdedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+            //$countRegularStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+            //$countDedupedStatement .= "(codes.code='{$postValue[0]}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
         }
 		if(!empty($postValue) && $postKey != 'county') {
 			//Multiple values selected for this field
@@ -223,37 +244,51 @@
 				foreach($postValue as $value) {
 					if($value != '') {
                         $filterStatement .= "{$fullField}='{$value}' OR ";
-                        $dedupedStatement .= "{$fullField}='{$value}' OR ";
+                        //$dedupedStatement .= "{$fullField}='{$value}' OR ";
                         $householdedStatement .= "{$fullField}='{$value}' OR ";
+                        //$countRegularStatement .= "{$fullField}='{$value}' OR ";
+                        //$countDedupedStatement .= "{$fullField}='{$value}' OR ";
                     }
 				}
 				//Remove trailing ' OR ' (space OR space = 4 characters)
 				$filterStatement = substr($filterStatement, 0, -4);
 				$filterStatement .= ") AND ";
 
-                $dedupedStatement = substr($dedupedStatement, 0, -4);
-                $dedupedStatement .= ") AND ";
+                //$dedupedStatement = substr($dedupedStatement, 0, -4);
+                //$dedupedStatement .= ") AND ";
 
                 $householdedStatement = substr($householdedStatement, 0, -4);
                 $householdedStatement .= ") AND ";
+
+                //$countRegularStatement = substr($householdedStatement, 0, -4);
+                //$countRegularStatement .= ") AND ";
+
+                /*$countDedupedStatement = substr($householdedStatement, 0, -4);
+                $countDedupedStatement .= ") AND ";*/
 			}
 			else {
             	if(!empty($postValue[0])) {
                     //Field is a min field
                     if (substr($fullField, -3) == 'min') {
                         $filterStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}||{$postValue[1]}') AND ";
-                        $dedupedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
+                        //$dedupedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
                         $householdedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
+                        //$countRegularStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
+                        //$countDedupedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
                     }
                     else if (substr($fullField, -3) == 'max') {
                         $filterStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
-                        $dedupedStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
+                        //$dedupedStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
                         $householdedStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
+                        //$countRegularStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
+                        //$countDedupedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
                     }
                     else {
                         $filterStatement .= "({$fullField}='{$postValue[0]}') AND ";
-                        $dedupedStatement .= "({$fullField}='{$postValue[0]}') AND ";
+                        //$dedupedStatement .= "({$fullField}='{$postValue[0]}') AND ";
                         $householdedStatement .= "({$fullField}='{$postValue[0]}') AND ";
+                        //$countRegularStatement .= "({$fullField}='{$postValue[0]}') AND ";
+                        //$countDedupedStatement .= "({$fullField}='{$postValue[0]}') AND ";
                     }
                 }
             }
@@ -262,8 +297,10 @@
         else {
             if (substr($fullField, -8) == 'checkbox') {
                 $filterStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
-                $dedupedStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
+                //$dedupedStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
                 $householdedStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
+                //$countRegularStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
+                //$countDedupedStatement .= "(" . substr($fullField, 0, -9) . ">'0') AND ";
             }
         }
 	}
@@ -271,31 +308,68 @@
     //If there were no parameters selected then give the standard export for entire county, so need to remove WHERE
     if(empty($fullFieldNames)) {
 	    $filterStatement = substr($filterStatement, 0, -7);
-        $dedupedStatement = substr($dedupedStatement, 0, -7);
+        //$dedupedStatement = substr($dedupedStatement, 0, -7);
         $householdedStatement = substr($householdedStatement, 0, -7);
-
+        //$countRegularStatement = substr($countRegularStatement, 0, -7);
+        //$countDedupedStatement = substr($countRegularStatement, 0, -7);
     }
     else {
         //Remove trailing ' AND ' (space AND space = 5 characters)
         $filterStatement = substr($filterStatement, 0, -5);
         $filterStatement .= ")";
 
-        $dedupedStatement = substr($dedupedStatement, 0, -5);
+        //$dedupedStatement = substr($dedupedStatement, 0, -5);
         //$dedupedStatement .= ");";
 
         $householdedStatement = substr($householdedStatement, 0, -5);
-        //$householdedStatement .= ");";
+        $householdedStatement .= ")";
+
+        //$countRegularStatement = substr($countRegularStatement, 0, -5);
+        //$countDedupedStatement = substr($countDedupedStatement, 0, -5);
     }
 
+    //Create deduped and householded statements for possible later use
+    $dedupedStatement = "{$filterStatement} GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
+    $householdedStatement = "{$householdedStatement} GROUP BY LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
+    //$countDedupedStatement = "{$countRegularStatement} GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
+    //$countHouseholdedStatement = "{$countRegularStatement}) GROUP BY LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ',  Zip);";
+    //$countRegularStatement .= ");";
     $filterStatement .= ";";
+    //$countHouseholdedStatement = $countDedupedStatement;
 
-//Create deduped and householded statements for possible later use
-    $dedupedStatement = "{$dedupedStatement} GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
-    $householdedStatement = "{$householdedStatement} GROUP BY CONCAT(LastName, AddressLine1, ', ', City, ', ', State, ' ', Zip);";
+    /*if($county == 'dutchess') {
+        $countDedupedStatement .= " GROUP BY {$owner}.owner_first_name, {$owner}.owner_last_name, CONCAT({$owner}.concatenated_address_1, ', ', ";
+        $countDedupedStatement .= "{$owner}.owner_mail_city, ', ', {$owner}.owner_mail_state, ' ', {$owner}.owner_mail_zip);";
+        $countHouseholdedStatement .= " GROUP BY {$owner}.owner+last_name, CONCAT({$owner}.concatenated_address_1, ', ', ";
+        $countHouseholdedStatement .= "{$owner}.owner_mail_city, ', ', {$owner}.owner_mail_state, ' ', {$owner}.owner_mail_zip);";
+    }
+    else {
+        $countDedupedStatement .= " GROUP BY {$owner}.owner_first_name, {$owner}.owner_last_name, CONCAT({$owner}.concatenated_address_1, ', ', ";
+        $countDedupedStatement .= "{$owner}.owner_mail_city, ', ', {$owner}.owner_mail_state, ' ', {$owner}.owner_mail_zip);";
+        $countHouseholdedStatement .= " GROUP BY {$owner}.owner_last_name, CONCAT({$owner}.concatenated_address_1, ', ', ";
+        $countHouseholdedStatement .= "{$owner}.mail_city, ', ', {$owner}.owner_mail_state, ' ', {$owner}.mail_zip);";
+    }*/
 
-    /*echo $filterStatement . "<br>";
-    echo $dedupedStatement . "<br>";
-    echo $householdedStatement . "<br>";*/
+    $countRegularResult = mysqli_query($link, $filterStatement);
+    if($countRegularResult) {
+        $countRegular = $countRegularResult->num_rows;
+    }
+
+    $countDedupeResult = mysqli_query($link, $dedupedStatement);
+    if($countDedupeResult && $countDedupeResult->num_rows > 0) {
+        $countDeduped = $countDedupeResult->num_rows;
+    }
+
+    $countHouseholdResult = mysqli_query($link, $householdedStatement);
+    if($countHouseholdResult && $countHouseholdResult->num_rows >0) {
+        $countHouseholded = $countHouseholdResult->num_rows;
+    }
+/*echo "REG: {$filterStatement}<br>";*/
+//echo "DEDUPE: {$dedupedStatement}<br>";
+//echo "{$householdedStatement}<br>";
+/*echo "{$countRegularStatement}<br>";*/
+//echo "{$countDedupedStatement}<br>";
+//echo "{$countHouseholdedStatement}<br>";
 	//session_destroy();
 ?>
 
@@ -306,9 +380,9 @@
 		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
         <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.3.1/js/dataTables.buttons.min.js"></script>
         <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.3.1/js/buttons.html5.min.js"></script>
-        <script src='pdfmake-master/pdfmake-master/build/pdfmake.min.js'></script>
-        <script src='pdfmake-master/pdfmake-master/build/vfs_fonts.js'></script>
-        <script src='jszip/Stuk-jszip-ab3829a/dist/jszip.min.js'></script>
+        <script src='pdfmake-master/build/pdfmake.min.js'></script>
+        <script src='pdfmake-master/build/vfs_fonts.js'></script>
+        <script src='Stuk-jszip-ab3829a/dist/jszip.min.js'></script>
 		<!--<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>-->
 		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"/>
@@ -318,9 +392,9 @@
         <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
 	</head>
 	<body>
-        <h4>Standard Count: <input class="ui-button" onclick="standardResults()" value="Results" /></h4><br><br>
-        <h4>Dedupded Count: <input class="ui-button" onclick="dedupeResults()" value="Results"/></h4><br><br>
-        <h4>Householded Count: <input class="ui-button" onclick="householdResults()" value="Results"/></h4><br><br>
+        <h4>Standard Count: <?php echo $countRegular ?> <input class="ui-button" onclick="standardResults()" value="Results" /></h4><br><br>
+        <h4>Dedupded Count: <?php echo $countDeduped ?> <input class="ui-button" onclick="dedupeResults()" value="Results"/></h4><br><br>
+        <h4>Householded Count: <?php echo $countHouseholded ?> <input class="ui-button" onclick="householdResults()" value="Results"/></h4><br><br>
 		<table id="results" class="resultsTable">
 			<thead>
 				<tr>
@@ -412,10 +486,10 @@
             columns: columns,
             dom: 'Bfrtip',
             buttons: [
-                { extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
-                { extend: 'excelHtml5', title: '<?php echo $county ?>_export' },
-                { extend: 'csvHtml5', title: '<?php echo $county ?>_export' },
-                { extend: 'pdfHtml5', title: '<?php echo $county ?>_export' }]
+                //{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
+                { extend: 'excelHtml5', title: '<?php echo $county ?>_export' }]
+                //{ extend: 'csvHtml5', title: '<php echo $county ?>_export' },
+                //{ extend: 'pdfHtml5', title: '<php echo $county ?>_export' }]
         });
 	    $('#results').show();
     }
@@ -424,40 +498,99 @@
         if($.fn.DataTable.isDataTable('#results')) {
             $('#results').DataTable().destroy();
         }
-        $('#results').DataTable({
-            ajax: {
-                url: "get_results.php",
-                type: "GET",
-                data: {
-                    filterStatement: "<?php echo $dedupedStatement ?>",
-                    fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
-                    //dedupe: true
-                }
-            },
-            columns: columns,
-            dom: 'Bfrtip',
-            buttons: [{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}}, 'excelHtml5', 'csvHtml5', 'pdfHtml5']
-        });
+            /*$('#results').DataTable({
+                "processing": true,
+                "serverSide": true,
+                ajax: {
+                    url: "get_results.php",
+                    type: "GET",
+                    data: {
+                        filterStatement: "<?php echo $dedupedStatement ?>",
+                        fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
+                        //dedupe: true
+                    }
+                },
+                columns: columns,
+                dom: 'Bfrtip',
+                buttons: [
+                    //{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
+                    { extend: 'excelHtml5', title: '<?php echo $county ?>_export' }]
+                //{ extend: 'csvHtml5', title: '<php echo $county ?>_export' },
+                //{ extend: 'pdfHtml5', title: '<php echo $county ?>_export' }]
+            });
+        }
+        else {*/
+            $('#results').DataTable({
+                "processing": true,
+                "serverSide": true,
+                ajax: {
+                    url: "get_results.php",
+                    type: "GET",
+                    data: {
+                        filterStatement: "<?php echo $dedupedStatement ?>",
+                        fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
+                        //dedupe: true
+                    }
+                },
+                columns: columns,
+                dom: 'Bfrtip',
+                buttons: [
+                    //{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
+                    {extend: 'excelHtml5', title: '<?php echo $county ?>_export'}]
+                //{ extend: 'csvHtml5', title: '<php echo $county ?>_export' },
+                //{ extend: 'pdfHtml5', title: '<php echo $county ?>_export' }]
+            });
+        //}
+            $('#results').show();
     }
 
     function householdResults() {
         if($.fn.DataTable.isDataTable('#results')) {
             $('#results').DataTable().destroy();
         }
-
-	    $('#results').DataTable({
-            ajax: {
-                url: "get_results.php",
-                type: "GET",
-                data: {
-                    filterStatement: "<?php echo $householdedStatement ?>",
-                    fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
-                    //household: true
-                }
-            },
-            columns: columns,
-            dom: 'Bfrtip',
-            buttons: [{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}}, 'excelHtml5', 'csvHtml5', 'pdfHtml5']
-        });
+            /*$('#results').DataTable({
+                "processing": true,
+                "serverSide": true,
+                ajax: {
+                    url: "get_results.php",
+                    type: "GET",
+                    data: {
+                        filterStatement: "<?php echo $householdedStatement ?>",
+                        fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
+                        //household: true
+                    }
+                },
+                columns: columns,
+                dom: 'Bfrtip',
+                buttons: [
+                    //{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
+                    { extend: 'excelHtml5', title: '<?php echo $county ?>_export' }]
+                //{ extend: 'csvHtml5', title: '<php echo $county ?>_export' },
+                //{ extend: 'pdfHtml5', title: '<php echo $county ?>_export' }]
+            });
+        }
+        else {*/
+            $('#results').DataTable({
+                "processing": true,
+                "serverSide": true,
+                ajax: {
+                    url: "get_results.php",
+                    type: "GET",
+                    data: {
+                        filterStatement: "<?php echo $householdedStatement ?>",
+                        fields: JSON.stringify(<?php echo json_encode($fullFieldNames) ?>)
+                        //household: true
+                    }
+                },
+                columns: columns,
+                dom: 'Bfrtip',
+                buttons: [
+                    //{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
+                    {extend: 'excelHtml5', title: '<?php echo $county ?>_export'}]
+                //{ extend: 'csvHtml5', title: '<php echo $county ?>_export' },
+                //{ extend: 'pdfHtml5', title: '<php echo $county ?>_export' }]
+            });
+        //}
+            $('#results').show();
     }
 </script>

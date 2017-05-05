@@ -57,7 +57,7 @@ if($filterQuery && $filterQuery->num_rows > 0) {
 }
 
 $return['data'] = array();
-$return['columns'] = array();
+//$return['columns'] = array();
 
 for($i = 0; $i < sizeOf($results); ++$i) {
     $row = array();

@@ -101,14 +101,14 @@
                 if($value != "Owner") {?>
                     <div id="<?php echo $value ?>" class="ui-accordion ui-state-disabled">
                         <div id="accordion-header_<?php echo $value ?>" class="ui-accordion-header">
-                            <?php echo $value ?>
+                            <h4><?php echo $value ?></h4>
                         </div>
                         <div id="accordion-content_<?php echo $value ?>" class="ui-accordion-content">
                         </div>
                     </div>
                 <?php			}
             } ?>
-<button class="ui-button" type="submit" id="createButton">Create</button>
+<button class="gen-filter-buttons" type="submit" id="createButton">Create</button>
 </form>
 </body>
 </html>

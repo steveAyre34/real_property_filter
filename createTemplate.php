@@ -138,7 +138,7 @@
     <body>
         <form id="query_form" method="POST" action="do_filter.php">
             <input type="hidden" name="county" value="<?php echo $county ?>"/>
-            <div class="ui-accordion">
+            <div class="ui-accordion majorSection">
                 <div class="ui-accordion-header">
                     <h2>Checkboxes</h2>
                 </div>
@@ -172,7 +172,7 @@
                     </table>
                 </div>
             </div>
-            <div class="ui-accordion">
+            <div class="ui-accordion majorSection">
                 <div class="ui-accordion-header">
                     <h2>Min/Max Categories</h2>
                 </div>
@@ -213,7 +213,7 @@
                     </table>
                 </div>
             </div>
-            <div class="ui-accordion">
+            <div class="ui-accordion majorSection">
                 <div class="ui-accordion-header">
                     <h2>Select Menus</h2>
                 </div>

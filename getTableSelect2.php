@@ -83,12 +83,15 @@
 ?>
 
 <html>
-    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
-    <script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
-    <script src="jquery.multiselect.js"></script>
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>
-    <link rel="stylesheet" href="jquery.multiselect.css"/>
-
+    <head>
+        <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+        <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+        <script src="jquery.multiselect.js"></script>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
+        <link rel="stylesheet" href="jquery.multiselect.css"/>
+        <link rel="stylesheet" href="common.css"/>
+    </head>
     <body>
         <table>
             <?php

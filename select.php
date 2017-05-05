@@ -36,8 +36,8 @@
 </head>
     <body>
     <form id="filter" name="frm_fields" action="do_filter.php" method="POST" >
-			<h1>Real Property Data Filter for <?php echo $county ?> County:</h1>
-        <button type="submit" class="ui-button gen-filter-buttons" value="Get Counts!"/>
+			<h1>Real Property Data Filter for <?php echo ucfirst($county) ?> County:</h1>
+        <button type="submit" class="ui-button gen-filter-buttons" value="Get Counts!">Get Counts!</button>
         <button type="reset" class="ui-button gen-filter-buttons" value="Reset Criteria">Reset Criteria</button>
 
 			<div id="assessmentInformation" class="ui-accordion majorSection" style="width:45%;display:inline-block">
