@@ -383,7 +383,6 @@
         <script src='pdfmake-master/build/pdfmake.min.js'></script>
         <script src='pdfmake-master/build/vfs_fonts.js'></script>
         <script src='Stuk-jszip-ab3829a/dist/jszip.min.js'></script>
-		<!--<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"/>-->
 		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"/>
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.3.1/css/buttons.dataTables.min.css"/>
@@ -392,7 +391,7 @@
         <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
 	</head>
 	<body>
-        <h4>Standard Count: <?php echo $countRegular ?> <input class="ui-button" onclick="standardResults()" value="Results" /></h4><br><br>
+        <p>Standard Count: <?php echo $countRegular ?> <input class="ui-button" onclick="standardResults()" value="Results" /></p><br><br>
         <h4>Dedupded Count: <?php echo $countDeduped ?> <input class="ui-button" onclick="dedupeResults()" value="Results"/></h4><br><br>
         <h4>Householded Count: <?php echo $countHouseholded ?> <input class="ui-button" onclick="householdResults()" value="Results"/></h4><br><br>
 		<table id="results" class="resultsTable">

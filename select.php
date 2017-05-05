@@ -16,14 +16,55 @@
 	}
 	$default_width = 60;
 
+	//Variables needed for page caching
+    $cache_ext = ".php";
+    $cache_folder = "views/{$county}/";
+    $cache_file = "";
+    $ignore_pages = array('', '');
+    $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . "gen_{$county}" . $_SERVER['QUERY_STRING'];
+    $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
+    $county_last_updated = '';
+    $filter_last_cached = '';
+    $saved = 0;
 
+    /*
+     * Check if county has had an import since the last time the page was cached
+     */
+    $checkDateStatement = "SELECT last_updated.date AS date, saved_queries.last_cached AS cached, saved_queries.cache_file AS file FROM last_updated, saved_queries WHERE saved_queries.name='gen_{$county}'";
+    $checkDateStatement .= " AND last_updated.county='{$county};";
+    $checkDateResult = mysqli_query($link, $checkDateStatement);
+    if($checkDateResult && $checkDateResult->num_rows == 1) {
+        $county_last_updated = $checkDateResult['date'];
+        $filter_last_cached = $checkDateResult['cached'];
+        $cache_file = $checkDateResult['file'];
+    }
+
+    if(!$ignore && file_exists($cache_file) && (strtotime($filter_last_cached) >= strtotime($county_last_updated))) {
+        $saved = 1;
+        ob_start('ob_gzhandler');
+        readfile($cache_file);
+        ob_end_flush();
+        exit();
+    }
+    else {
+        $today = date("Y/m/d");
+        $cache_file = $cache_folder . md5($dynamic_url) . $cache_ext;
+        $saveCacheStatement = "INSERT INTO saved_queries (name, county, last_cached, cache_file) VALUES ('gen_{$county}'";
+        $saveCacheStatement .= ", '{$county}' ,'{$today}', '{$cache_file}');";
+        $saveCacheResult = mysqli_query($link, $saveCacheStatement);
+        if($saveCacheResult === FALSE) {
+            print($saveCacheStatement . "<br>");
+            print("Error saving query: " . mysqli_error($link));
+        }
+        ob_start('ob_gzhandler');
+    }
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 	<title>Find Records</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+	<!--<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />-->
     <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
     <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
     <script src="jquery.multiselect.js"></script>
@@ -781,3 +822,16 @@
         alert(filter);*/
     //});
 </script>
+<?php
+    if($saved == 0) {
+        if(!is_dir($cache_folder)) {
+            mkdir($cache_folder);
+        }
+        if(!$ignore) {
+            $fp = fopen($cache_file, 'w');
+            fwrite($fp, ob_get_contents());
+            fclose($fp);
+        }
+        ob_end_flush();
+    }
+?>

@@ -1,6 +1,7 @@
 <?php	
 	require('common.php');
    // session_start();
+//session_destroy();
 
 ?>
 
@@ -35,6 +36,3 @@
 </form>
 </body>
 
-<?php
-mysqli_close($link);
-?>
