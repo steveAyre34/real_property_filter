@@ -57,6 +57,7 @@ if($filterQuery && $filterQuery->num_rows > 0) {
 }
 
 $return['data'] = array();
+$swis = array();
 //$return['columns'] = array();
 
 for($i = 0; $i < sizeOf($results); ++$i) {
@@ -100,7 +101,18 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     $row['Country'] = $results[$i]['Country'];
     $row['CRRT'] = $results[$i]['CRRT'];
     $row['DP3'] = $results[$i]['DP3'];
-    $row['SWIS'] = $results[$i]['SWIS'];
+    //$row['SWIS'] = $results[$i]['SWIS'];
+    if(!array_key_exists($results[$i]['SWIS'], $swis)) {
+        $getSwisMeaningStatement = "SELECT meaning FROM codes WHERE code='{$results[$i]['SWIS']}' AND type='swis';";
+        $getSwisMeaningResult = mysqli_query($link, $getSwisMeaningStatement);
+        if($getSwisMeaningResult && $getSwisMeaningResult->num_rows == 1) {
+            $innerRow = mysqli_fetch_assoc($getSwisMeaningResult);
+            $swis["{$results[$i]['SWIS']}"] = $innerRow['meaning'];
+            $row['SWIS'] = $innerRow['meaning'];
+        }
+    }
+    else
+        $row['SWIS'] = $swis["{$results[$i]['SWIS']}"];
 
     //Now add user-selected query fields
     foreach($fields as $field) {

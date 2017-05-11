@@ -23,8 +23,8 @@
     $ignore_pages = array('', '');
     $dynamic_url = 'http://' . $_SERVER['HTTP_HOST'] . "gen_{$county}" . $_SERVER['QUERY_STRING'];
     $ignore = (in_array($dynamic_url, $ignore_pages)) ? true : false;
-    $county_last_updated = '';
-    $filter_last_cached = '';
+    $county_last_updated = 0;
+    $filter_last_cached = 0;
     $saved = 0;
 
     /*
@@ -37,6 +37,10 @@
         $county_last_updated = $checkDateResult['date'];
         $filter_last_cached = $checkDateResult['cached'];
         $cache_file = $checkDateResult['file'];
+        /*echo "<script type='text/javascript'>
+            console.log(\'" . strtotime($filter_last_cached) . "\');
+            console.log(\'" . strtotime($county_last_updated) . "\');
+            </script>";*/
     }
 
     if(!$ignore && file_exists($cache_file) && (strtotime($filter_last_cached) >= strtotime($county_last_updated))) {
@@ -64,7 +68,6 @@
 <html>
 <head>
 	<title>Find Records</title>
-	<!--<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />-->
     <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
     <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
     <script src="jquery.multiselect.js"></script>
@@ -801,26 +804,6 @@
 
 	$('.ui-checkboxradio-disabled').checkboxradio();
 
-    /*$("#filter").submit(function(event) {
-        event.preventDefault();
-        var filter = "";
-        var count = 0;
-        //$("#filter *").filter(".inputText").each(function(index, value) {
-        $.each($("#filter").serializeArray(), function(index, value){
-            count = count + 1;
-            filter = filter + " " + count + " " + value.val();
-        });
-        /*for(var i = 0; i < $(this).elements.length; ++i) {
-            var e = $(this).elements[i];
-            if(e.value != '')
-                filter += e.value + ", "
-        }*/
-        //var filter = $("#filter").serializeArray();
-        //alert(filter);
-        /*var filter = <php echo json_encode(array_filter($_POST))?>;
-        console.log("Filter: " + filter);
-        alert(filter);*/
-    //});
 </script>
 <?php
     if($saved == 0) {
