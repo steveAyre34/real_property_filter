@@ -1,6 +1,6 @@
 <?php
 	require("connection.php");
-    session_start();
+   // session_start();
 
 	$county = $_POST['county'];
 	$owner = $county . '_owner';
@@ -176,7 +176,7 @@
  * Construct the where clauses
  */
 	$filterStatement .= " WHERE (({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) AND " ;
-	$householdedStatement .= " WHERE (";
+	$householdedStatement .= " WHERE (({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) AND " ;
 
 	foreach($_POST as $postKey => $postValue) {
         $fullField = str_replace('||', '.', $postKey);
@@ -276,6 +276,12 @@
 
 <html>
 	<head>
+        <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"/>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.3.1/css/buttons.dataTables.min.css"/>
+        <link rel="stylesheet" type="text/css" href="common.css"/>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
+        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
 		<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
 		<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>
 		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
@@ -284,12 +290,6 @@
         <script src='pdfmake-master/pdfmake-master/build/pdfmake.min.js'></script>
         <script src='pdfmake-master/pdfmake-master/build/vfs_fonts.js'></script>
         <script src='jszip/Stuk-jszip-ab3829a/dist/jszip.min.js'></script>
-		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
-        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css"/>
-        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.3.1/css/buttons.dataTables.min.css"/>
-        <link rel="stylesheet" type="text/css" href="common.css"/>
-        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
-        <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
 	</head>
 	<body>
         <p>Standard Count: <?php echo $countRegular ?> <input class="ui-button" onclick="standardResults()" value="Results" /></p><br><br>

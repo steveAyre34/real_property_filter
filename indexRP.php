@@ -10,11 +10,11 @@
 <html>
 <head>
 <title>Welcome to the New York State Real Property Data Filter</title>
-    <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
-    <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
     <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
     <link rel="stylesheet" href="common.css"/>
+    <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
 </head>
 
 <body>

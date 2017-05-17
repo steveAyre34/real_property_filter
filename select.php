@@ -68,15 +68,16 @@
 <html>
 <head>
 	<title>Find Records</title>
-    <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
-    <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
-    <script src="jquery.multiselect.js"></script>
+    <link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
     <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.min.css"/>
     <link rel="stylesheet" href="jquery-ui-1.12.1.custom/jquery-ui.theme.min.css"/>
     <link rel="stylesheet" href="jquery.multiselect.css"/>
     <link rel="stylesheet" href="common.css"/>
+    <script src="jquery-ui-1.12.1.custom/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+    <script src="jquery.multiselect.js"></script>
 	<script src="jquery.multiselect.js"></script>
-	<link rel="stylesheet" type="text/css" href="jquery.multiselect.css">
+
 </head>
     <body>
     <form id="filter" name="frm_fields" action="do_filter.php" method="POST" >
@@ -776,7 +777,7 @@
 <?php
     if(isset($_POST)) {
         $_POST = array_filter($_POST);
-        mysqli_close($link);
+        //mysqli_close($link);
     }
 ?>
 <script type="text/javascript">
