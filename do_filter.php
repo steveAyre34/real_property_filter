@@ -27,45 +27,27 @@
 	 * This way if user is filtering by a standard field, it's not appended again to the export
 	 * i.e. if user searches by zip code, then zip code column won't appear in export file twice
 	 */
-	$standardColumns = [
-		"owner_id",
-		"secondary_name",
-		"owner_first_name",
-		"owner_init_name",
-		"owner_last_name",
-		"owner_name_suffix",
-		"owner_secondary_name",
-		"concatenated_address_1",
-		"concatenated_address_2",
-		"mail_city",
-		"owner_mail_state",
-		"mail_zip",
-		"mail_country",
-        'swis',
-        'crrt',
-        'dp3'
-	];
-
+	$standardColumns = ["owner_id", "secondary_name", "owner_first_name", "owner_init_name", "owner_last_name",
+		                "owner_name_suffix", "owner_secondary_name", "concatenated_address_1", "concatenated_address_2",
+		                "mail_city", "owner_mail_state", "mail_zip", "mail_country", 'swis', 'crrt', 'dp3'];
 
 	/*
 	 * For some reason only Dutchess County stores the mailing address city and zip as 'owner_mail_city' and 'owner_mail_zip'
 	 * All other counties (that I have data available for as of now) store city and zip as 'mail_city', 'mail_zip'
 	 */
 	if($county == 'dutchess') {
-        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
-        $filterStatement .= "{$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
-        $filterStatement .= "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
-        $filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
-        $filterStatement .= "{$owner}.owner_mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.owner_mail_zip AS Zip, ";
-        $filterStatement .= "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
+        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, 
+                            {$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix,
+                            {$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1,
+                            {$owner}.concatenated_address_2 as AddressLine2, {$owner}.owner_mail_city AS City, {$owner}.owner_mail_state AS State, 
+                            {$owner}.owner_mail_zip AS Zip, {$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
     }
     else {
-        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, ";
-        $filterStatement .= "{$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, ";
-        $filterStatement .= "{$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, ";
-        $filterStatement .= "{$owner}.concatenated_address_2 as AddressLine2, ";
-        $filterStatement .= "{$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, ";
-        $filterStatement .= "{$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, {$county}_assessment.swis AS SWIS, ";
+        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName,
+        {$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix,
+        {$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, 
+        {$owner}.concatenated_address_2 as AddressLine2, {$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip,
+        {$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, {$county}_assessment.swis AS SWIS, ";
     }
 
 	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT_HOUSEHOLD, COUNT({$owner}.owner_first_name) AS FIRSTNAME_COUNT_HOUSEHOLD, ";
@@ -82,7 +64,7 @@
             }
 
             //If field name ends in 'min' or 'max', remove '_min' or '_max' accordingly
-            else if((substr($postKey, -3) == 'min' || substr($postKey, -3) == 'max') && !empty($postValue)) {
+            else if((substr($postKey, -3) == 'min' || substr($postKey, -3) == 'max')) {//} && !empty($postValue)) {
                 $key = substr($key, 0, -4);
             }
 
@@ -108,12 +90,12 @@
 	$householdedStatement = substr($householdedStatement, 0, -2);
 
 	if($codes) {
-        $filterStatement .= " FROM codes, {$owner}, {$county}_assessment ";//JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
-        $householdedStatement .= " FROM codes, {$owner}, {$county}_assessment ";//JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        $filterStatement .= " FROM codes, {$county}_assessment, {$owner} ";//JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        $householdedStatement .= " FROM codes, {$county}_assessment, {$owner} ";//JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
     }
     else {
-        $filterStatement .= " FROM {$owner}, {$county}_assessment ";// JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
-        $householdedStatement .= " FROM {$owner}, {$county}_assessment ";// JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        $filterStatement .= " FROM {$county}_assessment, {$owner} ";// JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
+        $householdedStatement .= " FROM {$county}_assessment, {$owner} ";// JOIN {$county}_assessment ON ({$owner}.owner_id={$county}_assessment.owner_id AND {$owner}.muni_code={$county}_assessment.muni_code) ";
 	}
 
 	$tablesAddedToStatement = array();
@@ -272,6 +254,9 @@
     if($countHouseholdResult && $countHouseholdResult->num_rows >0) {
         $countHouseholded = $countHouseholdResult->num_rows;
     }
+
+    $filterStatement = preg_replace('/\t+/', '',$filterStatement);
+    //print("{$filterStatement}<br>");
 ?>
 
 <html>
@@ -292,9 +277,9 @@
         <script src='jszip/Stuk-jszip-ab3829a/dist/jszip.min.js'></script>
 	</head>
 	<body>
-        <p>Standard Count: <?php echo $countRegular ?> <input class="ui-button" onclick="standardResults()" value="Results" /></p><br><br>
-        <h4>Dedupded Count: <?php echo $countDeduped ?> <input class="ui-button" onclick="dedupeResults()" value="Results"/></h4><br><br>
-        <h4>Householded Count: <?php echo $countHouseholded ?> <input class="ui-button" onclick="householdResults()" value="Results"/></h4><br><br>
+    <h4 style="display:inline-block">Standard Count: <?php echo $countRegular ?> &nbsp</h4><button id="standard" style="display:inline-block" class="ui-button" onclick="standardResults()">Results</button><br><br>
+    <h4 style="display:inline-block">Dedupded Count: <?php echo $countDeduped ?> &nbsp</h4><button id="dedupe" style="display:inline-block" class="ui-button" onclick="dedupeResults()">Results</button><br><br>
+    <h4 style="display:inline-block">Householded Count: <?php echo $countHouseholded ?> &nbsp</h4><button id="household" style="display:inline-block" class="ui-button" onclick="householdResults()">Results</button><br><br>
 		<table id="results" class="resultsTable">
 			<thead>
 				<tr>
@@ -354,7 +339,7 @@
         { data: 'DP3' },
         { data: 'SWIS' }
     ];
-    $("#results").hide();
+    //$("#results").hide();
 
     <?php foreach($fullFieldNames as $fields) {
         if(!in_array($fields, $standardColumns)) {
@@ -378,6 +363,7 @@
 	    $('#results').DataTable({
             "processing": true,
             "serverSide": true,
+            "deferLoading": 0,
             "ajax" : {
                 url : "get_results.php",
                 type: "GET",
@@ -402,6 +388,7 @@
             $('#results').DataTable({
                 "processing": true,
                 "serverSide": true,
+                "deferLoading": 0,
                 ajax: {
                     url: "get_results.php",
                     type: "GET",
@@ -430,6 +417,7 @@
             $('#results').DataTable({
                 "processing": true,
                 "serverSide": true,
+                "deferLoading": 0,
                 ajax: {
                     url: "get_results.php",
                     type: "GET",

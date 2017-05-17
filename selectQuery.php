@@ -51,7 +51,7 @@
             }
         }
     }
-    mysqli_close($link);
+   // mysqli_close($link);
     $_SESSION['codeTypes'] = $codeTypes;
     //$_SESSION['definitionCodes'] = $definitionCodes;
 ?>

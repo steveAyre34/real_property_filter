@@ -101,7 +101,6 @@ for($i = 0; $i < sizeOf($results); ++$i) {
     $row['Country'] = $results[$i]['Country'];
     $row['CRRT'] = $results[$i]['CRRT'];
     $row['DP3'] = $results[$i]['DP3'];
-    //$row['SWIS'] = $results[$i]['SWIS'];
     if(!array_key_exists($results[$i]['SWIS'], $swis)) {
         $getSwisMeaningStatement = "SELECT meaning FROM codes WHERE code='{$results[$i]['SWIS']}' AND type='swis';";
         $getSwisMeaningResult = mysqli_query($link, $getSwisMeaningStatement);

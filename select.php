@@ -30,7 +30,7 @@
     /*
      * Check if county has had an import since the last time the page was cached
      */
-    $checkDateStatement = "SELECT last_updated.date AS date, saved_queries.last_cached AS cached, saved_queries.cache_file AS file FROM last_updated, saved_queries WHERE saved_queries.name='gen_{$county}'";
+    /*$checkDateStatement = "SELECT last_updated.date AS date, saved_queries.last_cached AS cached, saved_queries.cache_file AS file FROM last_updated, saved_queries WHERE saved_queries.name='gen_{$county}'";
     $checkDateStatement .= " AND last_updated.county='{$county};";
     $checkDateResult = mysqli_query($link, $checkDateStatement);
     if($checkDateResult && $checkDateResult->num_rows == 1) {
@@ -40,7 +40,7 @@
         /*echo "<script type='text/javascript'>
             console.log(\'" . strtotime($filter_last_cached) . "\');
             console.log(\'" . strtotime($county_last_updated) . "\');
-            </script>";*/
+            </script>";*
     }
 
     if(!$ignore && file_exists($cache_file) && (strtotime($filter_last_cached) >= strtotime($county_last_updated))) {
@@ -61,7 +61,7 @@
             print("Error saving query: " . mysqli_error($link));
         }
         ob_start('ob_gzhandler');
-    }
+    }*/
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -774,12 +774,12 @@
 	</body>
 </html>
 
-<?php
-    if(isset($_POST)) {
+<!--<php
+   /* if(isset($_POST)) {
         $_POST = array_filter($_POST);
         //mysqli_close($link);
-    }
-?>
+    }*/
+?>-->
 <script type="text/javascript">
 	$(".majorSection").accordion({
 		collapsible: true,
@@ -806,7 +806,7 @@
 	$('.ui-checkboxradio-disabled').checkboxradio();
 
 </script>
-<?php
+<!--<php
     if($saved == 0) {
         if(!is_dir($cache_folder)) {
             mkdir($cache_folder);
@@ -818,4 +818,4 @@
         }
         ob_end_flush();
     }
-?>
+?>-->
