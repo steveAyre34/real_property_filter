@@ -13,3 +13,5 @@ public/*
 .idea/
 jquery-ui-1.12.1.custom/
 views/
+connection.php
+common.php
