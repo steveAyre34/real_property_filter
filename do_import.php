@@ -78,7 +78,7 @@ function createTable($fileHeaders, $databaseTable) {
 function addIndexes($fileHeaders, $databaseTable, $indexes, $link) {
     foreach($fileHeaders as $f) {
         if (in_array($f, $indexes)) {
-            $createIndexStatement = "CREATE INDEX {$f} ON {$databaseTable};";
+            $createIndexStatement = "CREATE INDEX {$f} ON {$databaseTable} ({$f});";
             $createIndexResult = mysqli_query($link, $createIndexStatement);
         }
     }

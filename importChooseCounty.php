@@ -25,7 +25,7 @@
 </html>
 
 <script type="text/javascript">
-    $('#import_form').submit(function() {
+    $('#import_form').submit(function({
         $('#uploadFile').hide();
         $('.ui-button').hide();
         $('#loading').show();
