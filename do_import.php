@@ -11,6 +11,58 @@ session_start();
 $totalSize = 0;
 $currentlyUploadedSize = 0;
 
+/*
+ * Array holding field names that should be indexed in the database
+ * Includes any fields on general filter screen plus owner id and muni code
+ */
+$indexes = ['owner_id',
+            'muni_code',
+            'total_av',
+            'land_av',
+            'swis',
+            'sch_code',
+            'loc_zip',
+            'full_market_value',
+            'acres',
+            'sqft',
+            'land_value',
+            'wf_feet',
+            'land_type',
+            'waterfront_type',
+            'soil_rating',
+            'agricultural_properties',
+            'residential_properties',
+            'residential_vacant_properties',
+            'commercial_properties',
+            'recreation_entertainment_properties',
+            'community_properties',
+            'manufacturing_properties',
+            'infrastructure_properties',
+            'state_owned_properties',
+            'zoning_cd',
+            'sewer_type',
+            'nbhd_rating',
+            'air_cond',
+            'yr_blt',
+            'yr_remodeled',
+            'heat_type',
+            'fuel_type',
+            'overall_cond',
+            'ext_wall_material',
+            'used_as_cd',
+            'pools',
+            'farm_barn',
+            'mobile_home',
+            'sheds',
+            'patios',
+            'tennis',
+            'garages',
+            'canopy_roofover',
+            'porches',
+            'golf',
+            'cold_storage'
+            ];
+
 function createTable($fileHeaders, $databaseTable) {
 	$return = "CREATE TABLE " . $databaseTable . " (primaryID INT NOT NULL AUTO_INCREMENT, ";
 	
@@ -21,6 +73,15 @@ function createTable($fileHeaders, $databaseTable) {
 	$return .= "PRIMARY KEY (primaryID));";
 	
 	return $return;
+}
+
+function addIndexes($fileHeaders, $databaseTable, $indexes, $link) {
+    foreach($fileHeaders as $f) {
+        if (in_array($f, $indexes)) {
+            $createIndexStatement = "CREATE INDEX {$f} ON {$databaseTable};";
+            $createIndexResult = mysqli_query($link, $createIndexStatement);
+        }
+    }
 }
 
 /**
@@ -94,6 +155,9 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
     if (!$checkTable) {
         print "Error creating " . $databaseTable . ".";
     }
+
+    //Add indexes if necessary
+    addIndexes($fileHeaders, $databaseTable, $indexes, $link);
 
     //Create the load data local infile statement
     $loadStatement = createLoadStatement($fileHeaders, $localFile, $databaseTable);
