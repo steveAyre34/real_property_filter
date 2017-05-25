@@ -240,6 +240,8 @@
     $householdedStatement = "{$householdedStatement} GROUP BY LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
     $filterStatement .= ";";
 
+	$filterStatement = preg_replace('/\t+/', '',$filterStatement);
+	$dedupedStatement = preg_replace('/\t+/', '', $dedupedStatement); 
     $countRegularResult = mysqli_query($link, $filterStatement);
     if($countRegularResult) {
         $countRegular = $countRegularResult->num_rows;
@@ -251,11 +253,11 @@
     }
 
     $countHouseholdResult = mysqli_query($link, $householdedStatement);
-    if($countHouseholdResult && $countHouseholdResult->num_rows >0) {
+    if($countHouseholdResult && $countHouseholdResult->num_rows > 0) {
         $countHouseholded = $countHouseholdResult->num_rows;
     }
 
-    $filterStatement = preg_replace('/\t+/', '',$filterStatement);
+    //echo $householdedStatement; 
     //print("{$filterStatement}<br>");
 ?>
 

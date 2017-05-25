@@ -117,9 +117,9 @@ function calcUploadPercentage($currentFileSize) {
 	Get total size of files to be uploaded
 */
 
-for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']);  ++$i) {
+/*for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']);  ++$i) {
 	$totalSize += $_FILES['uploadFile']['size'][$i];
-}
+}*/
 
 for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
     $filename = $_FILES['uploadFile']['name'][$i];

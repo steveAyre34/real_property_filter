@@ -16,16 +16,16 @@
 </head>
 <body>
 <form id="import_form" action="do_import.php" method="POST" enctype="multipart/form-data" accept-charset="utf-8">
-	<input class="ui-button" style="height:10%;width:10%;" type="file" id="uploadFile" name="uploadFile[]" multiple="multiple"/><br><br>
+	<input class="ui-button" style="height:5vh;width:15vw;" type="file" id="uploadFile" name="uploadFile[]" multiple="multiple"/><br><br>
 	<input type="hidden" name="county" value="<?php echo $county ?>"/>
-	<button class="ui-button" style="height:15%;width:15%;" type="submit" id="submit" name="btn btn-submit">Submit</button>
-    <img id='loading' src="loader_blue.gif" alt="Uploading...Please be patient!" style="display:none;margin-left:auto; margin-right:auto;vertical-align:middle;">
+	<button class="ui-button" style="height:5vh;width:15vw;" type="submit" id="submit" name="btn btn-submit">Submit</button>
+    <img id='loading' src="loader.gif" alt="Uploading...Please be patient!" style="display:none;margin-left:auto; margin-right:auto;vertical-align:middle;">
 </form>
 </body>
 </html>
 
 <script type="text/javascript">
-    $('#import_form').submit(function({
+    $('#import_form').submit(function(){
         $('#uploadFile').hide();
         $('.ui-button').hide();
         $('#loading').show();
@@ -33,7 +33,7 @@
         /*swal({
             title: 'Upload',
             text: 'Uploading...',
-            imageUrl: 'loader_blue.gif',
+            imageUrl: 'loader.gif',
             imageWidth: 400,
             imageHeight: 200,
             animation: false,
