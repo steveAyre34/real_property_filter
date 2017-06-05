@@ -8,10 +8,10 @@
 	$countDeduped = 0;
 	$countHouseholded = 0;
 
-    $_POST = array_filter($_POST);
+  $_POST = array_filter($_POST);
 
 
-    $codes = false;
+  $codes = false;
 	if(!empty($_SESSION['codeTypes'])) {
         $codeTypes = $_SESSION['codeTypes'];
     }
@@ -36,18 +36,10 @@
 	 * All other counties (that I have data available for as of now) store city and zip as 'mail_city', 'mail_zip'
 	 */
 	if($county == 'dutchess') {
-        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, 
-                            {$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix,
-                            {$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1,
-                            {$owner}.concatenated_address_2 as AddressLine2, {$owner}.owner_mail_city AS City, {$owner}.owner_mail_state AS State, 
-                            {$owner}.owner_mail_zip AS Zip, {$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
+        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, {$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, {$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1,{$owner}.concatenated_address_2 as AddressLine2, {$owner}.owner_mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.owner_mail_zip AS Zip, {$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, ";
     }
     else {
-        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName,
-        {$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix,
-        {$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, 
-        {$owner}.concatenated_address_2 as AddressLine2, {$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip,
-        {$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, {$county}_assessment.swis AS SWIS, ";
+        $filterStatement = "SELECT {$owner}.owner_id AS ID, {$owner}.secondary_name AS CompanyName, {$owner}.owner_first_name AS FirstName, {$owner}.owner_init_name AS MiddleInitial, {$owner}.owner_last_name AS LastName, {$owner}.owner_name_suffix AS Suffix, {$owner}.secondary_name AS SecondaryName, {$owner}.concatenated_address_1 as AddressLine1, {$owner}.concatenated_address_2 as AddressLine2, {$owner}.mail_city AS City, {$owner}.owner_mail_state AS State, {$owner}.mail_zip AS Zip, {$owner}.mail_country AS Country, {$owner}.crrt AS CRRT, {$owner}.dp3 AS DP3, {$county}_assessment.swis AS SWIS, ";
     }
 
 	$householdedStatement = $filterStatement . "COUNT({$owner}.owner_id) AS ID_COUNT_HOUSEHOLD, COUNT({$owner}.owner_first_name) AS FIRSTNAME_COUNT_HOUSEHOLD, ";
@@ -167,17 +159,28 @@
             $fieldName = $fieldName[1];
             array_push($fullFieldNames, $fieldName);
         }
-
+        
         if(in_array($fieldName, $codeTypes) && $fieldName != 'swis') {
 		    /*if($fieldName == 'swis') {
 		        $fieldValue = "0{$postValue[0]}";
             }
             else*/
-                $fieldValue = $postValue[0];
+        $fieldValue = $postValue[0];
 		    $filterStatement .= "(codes.code='{$fieldValue}' AND codes.type='{$fieldName}') AND ";
-            $householdedStatement .= "(codes.code='{$fieldValue}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
+        $householdedStatement .= "(codes.code='{$fieldValue}' AND (codes.county='" . ucfirst($county) . "' OR codes.county='all') AND codes.type='{$fieldName}') AND ";
         }
-		if(!empty($postValue) && $postKey != 'county') {
+    if($fieldName == 'prop_class') {
+        foreach($postValue as $value) {
+          $filterStatement .= "{$fullField}='{$value}' OR ";
+          $householdedStatement .= "{$fullField}='{$value}' OR ";
+        }
+        //Remove trailing space OR space 
+        $filterStatement = substr($filterStatement, 0, -4);
+        $filterStatement .= " AND ";
+        $householdedStatement = substr($householdedStatement, 0, -4);
+        $householdedStatement .= " AND ";
+    }
+		else if(!empty($postValue) && $postKey != 'county') {
 			//Multiple values selected for this field
             if(sizeOf($postValue) > 1) {
             	$filterStatement .= "(";
@@ -198,12 +201,20 @@
             	if(!empty($postValue[0])) {
                     //Field is a min field
                     if (substr($fullField, -3) == 'min') {
-                        $filterStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}||{$postValue[1]}') AND ";
-                        $householdedStatement .= "(" . substr($fullField, 0, -4) . ">='{$postValue[0]}') AND ";
+                        $min = $postValue[0];
+                        for($i = 0; $i <= strlen($postValue[0]) + 1; ++$i) {
+                          $min .= "0";
+                        }
+                        $filterStatement .= "(" . substr($fullField, 0, -4) . " >= '{$min}') AND ";
+                        $householdedStatement .= "(" . substr($fullField, 0, -4) . " >= '{$min}') AND ";
                     }
                     else if (substr($fullField, -3) == 'max') {
-                        $filterStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
-                        $householdedStatement .= "(" . substr($fullField, 0, -4) . "<='{$postValue[0]}') AND ";
+                        $max = $postValue[0];
+                        for($i = 0; $i <= strlen($postValue[0]) + 1; ++$i) {
+                          $max .= "0";
+                        }
+                        $filterStatement .= "(" . substr($fullField, 0, -4) . " <=' {$max}') AND ";
+                        $householdedStatement .= "(" . substr($fullField, 0, -4) . " <= '{$max}') AND ";
                     }
                     else {
                         $filterStatement .= "({$fullField}='{$postValue[0]}') AND ";
@@ -236,12 +247,13 @@
     }
 
     //Create deduped and householded statements for possible later use
-    $dedupedStatement = "{$filterStatement} GROUP BY FirstName, LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
+    $dedupedStatement = "{$filterStatement} GROUP BY FirstName, LastName;";
     $householdedStatement = "{$householdedStatement} GROUP BY LastName, CONCAT(AddressLine1, ', ', City, ', ', State, ' ', Zip);";
     $filterStatement .= ";";
 
-	$filterStatement = preg_replace('/\t+/', '',$filterStatement);
-	$dedupedStatement = preg_replace('/\t+/', '', $dedupedStatement); 
+	$filterStatement = preg_replace('/\t+/', ' ',$filterStatement);
+	$dedupedStatement = preg_replace('/\t+/', ' ', $dedupedStatement); 
+  $householdedStatement = preg_replace('/\t+/', ' ', $householdedStatement); 
     $countRegularResult = mysqli_query($link, $filterStatement);
     if($countRegularResult) {
         $countRegular = $countRegularResult->num_rows;
@@ -256,8 +268,11 @@
     if($countHouseholdResult && $countHouseholdResult->num_rows > 0) {
         $countHouseholded = $countHouseholdResult->num_rows;
     }
-
-    //echo $householdedStatement; 
+    
+    /*echo $filterStatement . "<br>";
+    echo $dedupedStatement . "<br>";
+    echo $householdedStatement . "<br>"; 
+    print_r($_POST);*/
     //print("{$filterStatement}<br>");
 ?>
 
@@ -274,8 +289,8 @@
 		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
         <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.3.1/js/dataTables.buttons.min.js"></script>
         <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.3.1/js/buttons.html5.min.js"></script>
-        <script src='pdfmake-master/pdfmake-master/build/pdfmake.min.js'></script>
-        <script src='pdfmake-master/pdfmake-master/build/vfs_fonts.js'></script>
+        <script src='pdfmake-master/build/pdfmake.min.js'></script>
+        <script src='pdfmake-master/build/vfs_fonts.js'></script>
         <script src='jszip/Stuk-jszip-ab3829a/dist/jszip.min.js'></script>
 	</head>
 	<body>
@@ -341,7 +356,7 @@
         { data: 'DP3' },
         { data: 'SWIS' }
     ];
-    //$("#results").hide();
+    $("#results").hide();
 
     <?php foreach($fullFieldNames as $fields) {
         if(!in_array($fields, $standardColumns)) {
@@ -365,7 +380,7 @@
 	    $('#results').DataTable({
             "processing": true,
             "serverSide": true,
-            "deferLoading": 0,
+            //"deferLoading": 0,
             "ajax" : {
                 url : "get_results.php",
                 type: "GET",
@@ -375,7 +390,7 @@
             dom: 'Bfrtip',
             buttons: [
                 //{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
-                { extend: 'excelHtml5', title: '<?php echo $county ?>_export' }]
+                { extend: 'excelHtml5', title: '<?php echo $county ?>_standard_export' }]
                 //{ extend: 'csvHtml5', title: '<php echo $county ?>_export' },
                 //{ extend: 'pdfHtml5', title: '<php echo $county ?>_export' }]
         });
@@ -390,7 +405,7 @@
             $('#results').DataTable({
                 "processing": true,
                 "serverSide": true,
-                "deferLoading": 0,
+                //"deferLoading": 0,
                 ajax: {
                     url: "get_results.php",
                     type: "GET",
@@ -404,7 +419,7 @@
                 dom: 'Bfrtip',
                 buttons: [
                     //{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
-                    {extend: 'excelHtml5', title: '<?php echo $county ?>_export'}]
+                    {extend: 'excelHtml5', title: '<?php echo $county ?>_deduped_export'}]
                 //{ extend: 'csvHtml5', title: '<php echo $county ?>_export' },
                 //{ extend: 'pdfHtml5', title: '<php echo $county ?>_export' }]
             });
@@ -419,7 +434,7 @@
             $('#results').DataTable({
                 "processing": true,
                 "serverSide": true,
-                "deferLoading": 0,
+                //"deferLoading": 0,
                 ajax: {
                     url: "get_results.php",
                     type: "GET",
@@ -433,7 +448,7 @@
                 dom: 'Bfrtip',
                 buttons: [
                     //{ extend: 'copyHtml5', exportOptions: { columns: 'contains("Office")'}},
-                    {extend: 'excelHtml5', title: '<?php echo $county ?>_export'}]
+                    {extend: 'excelHtml5', title: '<?php echo $county ?>_householded_export'}]
                 //{ extend: 'csvHtml5', title: '<php echo $county ?>_export' },
                 //{ extend: 'pdfHtml5', title: '<php echo $county ?>_export' }]
             });

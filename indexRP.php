@@ -26,9 +26,10 @@
 <?php
 	foreach($counties as $c) {
 	  $disabled = "";
-	  if (in_array($c, $counties_available)) {
+	  //if (in_array($c, $counties_available)) {
 		  ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
-	<?php }} ?>
+	<?php //}} 
+        }?>
 </select>
     <br><br>
 <input class="ui-button" style="width:10%;" type="submit" value="Filter" formmethod="GET" formaction="selectQuery.php"/>

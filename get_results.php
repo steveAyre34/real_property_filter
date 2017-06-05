@@ -170,11 +170,14 @@ for($i = 0; $i < sizeOf($results); ++$i) {
             }
         }
         else {
-            if(substr($field, -3) == 'min' || substr($field, -3) == 'max')
+            if(substr($field, -3) == 'min' || substr($field, -3) == 'max') {
                 $field = substr($field, 0, -4);
-            else if(substr($field, -8) == 'checkbox')
+                $row["{$field}"] = $results[$i]["{$field}"];
+            }
+            else if(substr($field, -8) == 'checkbox') {
                 $field = substr($field, 0, -9);
-
+                $row["{$field}"] = $results[$i]["{$field}"];
+            }
             if(!in_array($field, $datatablesFields))
                 array_push($datatablesFields, $field);
         }

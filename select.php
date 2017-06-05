@@ -91,13 +91,13 @@
 				</div>
 				<div id="accordion-content_assessmentInformation" class="ui-accordion-content">
                     <?php
-                        $table = $county . '_class';
+                        $table = $county . '_assessment';
                     ?>
                     <table><tr>
                     <td style="width:20vw;">
                             <h4>Total Assessment</h4>
-                                <p>At least <input type="text" class="inputText" name="<?php echo $table ?>||total_av_min"> Dollars</p>
-                                <p>At most <input type="text" class="inputText" name="<?php echo $table ?>||total_av_max"> Dollars</p>
+                                <p>At least <input type="number" class="inputText" name="<?php echo $table ?>||total_av_min"></input> Dollars</p>
+                                <p>At most <input type="number" class="inputText" name="<?php echo $table ?>||total_av_max"> </input> Dollars</p>
                     </td>
                     <td style="width:20vw;">
                         <h4>Land Assessment</h4>
@@ -226,7 +226,7 @@
                 $table = $county . '_site';
                 ?>
                 <h4 style="color:#000066;">Property Class</h4>
-                    <div>
+                    <!--<div>
                         <div class="radioButtons">
                             <label for="all_residential_properties" class="ui-checkboxradio-label">All Residential Properties</label>
                             <input type="radio" class="ui-checkboxradio-disabled" name="all_residential_properties" id="all_residential_properties">
@@ -234,7 +234,7 @@
                             <input type="radio" class="ui-checkboxradio-disabled" name="all_commercial_properties" id="all_commercial_properties">
                             <label for="both_properties" class="ui-checkboxradio-label">All Commercial & All Residential Properties</label>
                             <input type="radio" class="ui-checkboxradio-disabled" name="both_properties" id="both_properties">
-                        </div>
+                        </div>-->
                         <div class="ui-tabs">
                             <ul>
                                 <li><a href="#agricultural_properties">Agricultural Properties (100 Series)</a></li>
@@ -256,7 +256,7 @@
 
                                     //Agricultural (100 Series)
                                     //print("<h4>Agricultural Properties (100 Series)<br><br></h4>");
-                                    print("<select name='{$table}||prop_class[]' multiple class='multiple_checkbox selectMenu'>");
+                                    print("<select name='{$table}||prop_class' multiple class='multiple_checkbox selectMenu'>");
                                     $getPropertyClassStatement = "SELECT {$table}.prop_class, codes.meaning, COUNT(*) FROM {$table} LEFT JOIN codes ON codes.code = {$table}.prop_class WHERE {$table}.prop_class LIKE '1%' AND codes.type='prop_class' GROUP BY codes.meaning ORDER BY {$table}.prop_class;";
                                     $getPropertyClassResult = mysqli_query($link, $getPropertyClassStatement);
                                     if($getPropertyClassResult && $getPropertyClassResult->num_rows > 0){
@@ -422,7 +422,7 @@
                                     ?>
                         </div>
                 <!--(hopefully) temporary hack to increase height of accordion content-->
-                    </div>
+                    <!--</div>-->
 
 			<h4 style="color: #000066;">Other Site Information</h4>
             <div class="ui-tabs">
