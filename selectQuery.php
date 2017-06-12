@@ -8,7 +8,7 @@
     include("connection.php");
 
     session_start();
-    $county = $_GET['county'];
+    $county = $_GET['countyFilter'];
     $_SESSION['county'] = $county;
 
     //Get the date of last import for this county

@@ -168,8 +168,8 @@
                         </ul>
                             <div id="full_market_value" class="ui-tabs-panel">
 
-                                    At least <input type="text" class="inputText" name="<?php echo $table ?>||full_market_value_min"> Dollars <br><br>
-                                    At most <input type="text" class="inputText" name="<?php echo $table ?>||full_market_value_max"> Dollars
+                                    At least <input type="text" class="inputText" name="<?php echo $table ?>||land_value_min"> Dollars <br><br>
+                                    At most <input type="text" class="inputText" name="<?php echo $table ?>||land_value_max"> Dollars
 
                             </div>
                             <div id="acres" class="ui-tabs-panel">
@@ -466,8 +466,8 @@
             <div class="ui-accordion-content">
                 <h4 style="color:#000066;">Residential Building Information</h4>
                 <div class="radioButtons">
-                    <label for="<?php echo $table ?>||air_cond" class="ui-checkboxradio-label">Has Air Conditioning</label>
-                    <input type="radio" class="ui-checkboxradio-disabled" name="<?php echo $table ?>||air_cond" id="<?php echo $table ?>||air_cond">
+                    <label for="<?php echo $table ?>||central_air" class="ui-checkboxradio-label">Has Air Conditioning</label>
+                    <input type="radio" class="ui-checkboxradio-disabled" name="<?php echo $table ?>||central_air" id="<?php echo $table ?>||central_air">
                 </div>
                 <div class="ui-tabs">
                     <ul>
@@ -515,8 +515,8 @@
                 ?>
 
                 <div class="radioButtons">
-                    <label for="<?php echo $table ?>||air_cond" class="ui-checkboxradio-label">Has Air Conditioning</label>
-                    <input type="radio" class="ui-checkboxradio-disabled" name="<?php echo $table ?>||air_cond" id="<?php echo $table ?>||air_cond">
+                    <label for="<?php echo $table ?>||air_conditioning_pct" class="ui-checkboxradio-label">Has Air Conditioning</label>
+                    <input type="radio" class="ui-checkboxradio-disabled" name="<?php echo $table ?>||air_conditioning_pct" id="<?php echo $table ?>||air_conditioning_pct">
                 </div>
                 <div class="ui-tabs">
                     <ul>
@@ -774,12 +774,18 @@
 	</body>
 </html>
 
-<!--<php
-   /* if(isset($_POST)) {
-        $_POST = array_filter($_POST);
-        //mysqli_close($link);
-    }*/
-?>-->
+<?php
+   if(isset($_POST)){
+       $county = $_POST['county'];
+       unset($_POST['county']);
+       if(empty($_POST)) {
+           echo "<script type=\'text/javascript\'>
+                console.log(\'empty\');
+                </script>";
+       }
+       $_POST['county'] = $county;
+   }
+?>
 <script type="text/javascript">
 	$(".majorSection").accordion({
 		collapsible: true,

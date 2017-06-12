@@ -22,17 +22,26 @@
 
 <h4>Please Select A County</h4>
 <form id="form">
-<select class="selectMenu" style="font-size:0.75em;" name="county" id="chosenCounty">
+<select class="selectMenu" style="font-size:0.75em;" name="countyFilter" id="chosenCounty">
 <?php
 	foreach($counties as $c) {
 	  $disabled = "";
-	  //if (in_array($c, $counties_available)) {
+	  if(in_array($c, $counties_available)) {
 		  ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
-	<?php //}} 
+	<?php }
         }?>
 </select>
+    <input class="ui-button" style="width:10%;" type="submit" value="Filter" formmethod="GET" formaction="selectQuery.php"/>
     <br><br>
-<input class="ui-button" style="width:10%;" type="submit" value="Filter" formmethod="GET" formaction="selectQuery.php"/>
+    <select class="selectMenu" style="font-size:0.75em;" name="countyImport" id="chosenCounty">
+        <?php
+        foreach($counties as $c) {
+            $disabled = "";
+            //if (in_array($c, $counties_available)) {
+            ?><option value='<?php echo $c ?>'><?php echo ucwords($c) ?></option>
+            <?php //}}
+        }?>
+    </select>
 <input class="ui-button" style="width:10%;" type="submit" value="Import" formmethod="GET" formaction="importChooseCounty.php"/>
 </form>
 </body>

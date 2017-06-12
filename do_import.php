@@ -117,14 +117,14 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
     $filename = $_FILES['uploadFile']['name'][$i];
     $tempPath = $_FILES['uploadFile']['tmp_name'][$i];
     $filesize = $_FILES['uploadFile']['size'][$i];
-    $databaseTable = $_POST['county'] . '_' . $filename;
+    $databaseTable = $_POST['countyImport'] . '_' . $filename;
     $databaseTable = substr($databaseTable, 0, -4);
 
 
     /*****************
      * Move files into 'data' directory within application
      *****************/
-    $upload_dir = 'data/' . ucfirst($_POST['county']) . '/';
+    $upload_dir = 'data/' . ucfirst($_POST['countyImport']) . '/';
     copy(($_FILES['uploadFile']['tmp_name'][$i]), $upload_dir . $_FILES['uploadFile']['name'][$i]);
     $localFile = $upload_dir . $_FILES['uploadFile']['name'][$i];
 
@@ -166,7 +166,7 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
     /*
      * Now need to either add entry to last_updated or, if this county has an entry, change the last_updated date to today
      */
-    $checkUpdated = "SELECT * from last_updated WHERE county='{$_POST['county']}';";
+    $checkUpdated = "SELECT * from last_updated WHERE county='{$_POST['countyImport']}';";
 
     $updateStatement = '';
     $today = date('Y/m/d');
@@ -174,7 +174,7 @@ for($i = 0; $i < sizeOf($_FILES['uploadFile']['name']); ++$i) {
     if ($result && $result->num_rows > 0) {
         $updateStatement = "UPDATE last_updated SET date='{$today}';";
     } else {
-        $updateStatement = "INSERT INTO last_updated VALUES ('{$_POST['county']}', '{$today}');";
+        $updateStatement = "INSERT INTO last_updated VALUES ('{$_POST['countyImport']}', '{$today}');";
     }
 
     $updateStatementResult = mysqli_query($link, $updateStatement);

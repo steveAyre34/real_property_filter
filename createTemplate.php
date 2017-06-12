@@ -103,7 +103,7 @@
             print("Error saving query: " . mysqli_error($link));
         }
 
-        ob_start('ob_gzhandler');
+        //ob_start('ob_gzhandler');
 
         foreach($_POST['template_list'] as $template_list) {
             //Get table name from full field name
@@ -270,7 +270,7 @@
 </script>
 
 <?php
-    if($saved == 0) {
+    /*if($saved == 0) {
         if (!is_dir($cache_folder)) {
             mkdir($cache_folder);
         }
@@ -280,6 +280,6 @@
             fclose($fp);
         }
         ob_end_flush();
-    }
+    }*/
 ?>
 
