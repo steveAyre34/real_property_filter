@@ -278,10 +278,10 @@ else {
         $countHouseholded = $countHouseholdResult->num_rows;
     }
     
-    echo $filterStatement . "<br>";
+    /*echo $filterStatement . "<br>";
     echo $dedupedStatement . "<br>";
     echo $householdedStatement . "<br>"; 
-    print_r($_POST);
+    print_r($_POST);*/
     //print("{$filterStatement}<br>");
 ?>
 
